@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Longbreath: breathing and breath-hold trainer</title>
+<style>
+:root{
+  --bg:#E4ECEA; --surface:#F4F8F7; --ink:#15363B; --muted:#56706F; --line:#C5D5D2;
+  --in:#2B857A; --hold:#B98322; --out:#4C5AAE; --rest:#5E9A90; --danger:#B03F36;
+  --phase:var(--in);
+  --display:'Segoe UI', system-ui, sans-serif;
+  --body:'Segoe UI', system-ui, -apple-system, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F2428; --surface:#153036; --ink:#E1ECEA; --muted:#98B1AE; --line:#29494E;
+    --in:#4DB5A6; --hold:#E1AE4C; --out:#8C98E2; --rest:#6FAEA4; --danger:#E27A70;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F2428; --surface:#153036; --ink:#E1ECEA; --muted:#98B1AE; --line:#29494E;
+  --in:#4DB5A6; --hold:#E1AE4C; --out:#8C98E2; --rest:#6FAEA4; --danger:#E27A70;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--in);outline-offset:2px;border-radius:6px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;margin:0}
+p{margin:0 0 .8em}
+.wrap{max-width:760px;margin:0 auto;padding:0 18px 110px}
+
+/* Header + nav */
+.top{display:flex;align-items:center;gap:12px;padding:18px 0 10px}
+.brand{font-family:var(--display);font-weight:800;font-size:1.55rem;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.brand svg{width:30px;height:30px}
+.sync{font-size:.8rem;color:var(--muted);margin-left:auto}
+.iconbtn{background:none;border:1px solid var(--line);border-radius:999px;width:40px;height:40px;display:grid;place-items:center}
+.iconbtn svg{width:20px;height:20px}
+nav.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px;margin:6px 0 22px}
+nav.tabs button{flex:1;border:0;background:none;padding:10px 6px;border-radius:10px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.9rem}
+nav.tabs button svg{width:20px;height:20px}
+nav.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+@media (max-width:640px){
+  nav.tabs{position:fixed;left:10px;right:10px;bottom:0;margin:0;z-index:20;border-radius:16px 16px 0 0;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 24px rgba(10,40,45,.12)}
+}
+.view[hidden]{display:none}
+
+/* Practice list */
+.nextup{background:var(--ink);color:var(--bg);border-radius:18px;padding:20px 22px;margin-bottom:28px;display:grid;gap:10px}
+.nextup .pb{font-family:var(--display);font-weight:800;font-size:3rem;line-height:1;letter-spacing:-.03em}
+.nextup .pb small{display:block;font-size:.95rem;font-weight:600;opacity:.8;margin-top:6px;letter-spacing:0}
+body.focus nav.tabs{display:none}
+body.focus .top{opacity:.35}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;z-index:50;max-width:90vw;text-align:center}
+.toast[hidden]{display:none}
+.nextup p{margin:0;opacity:.9}
+.nextup button{justify-self:start;background:var(--bg);color:var(--ink);border:0;border-radius:999px;padding:10px 18px;font-weight:700}
+.group{margin-bottom:28px}
+.group h2{font-size:1.2rem;margin-bottom:4px}
+.group > p{color:var(--muted);font-size:.95rem;margin-bottom:10px}
+.exlist{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.exlist li{border-bottom:1px solid var(--line)}
+.exrow{width:100%;text-align:left;background:none;border:0;padding:14px 4px;display:grid;grid-template-columns:10px 1fr auto;gap:14px;align-items:center}
+.exrow .pip{width:10px;height:36px;border-radius:5px;background:var(--c)}
+.exrow b{font-size:1.05rem;display:block}
+.exrow span.sub{color:var(--muted);font-size:.92rem}
+.exrow .len{color:var(--muted);font-size:.85rem;white-space:nowrap}
+.exrow:hover b{text-decoration:underline;text-underline-offset:3px}
+
+/* Session */
+.back{background:none;border:0;padding:6px 0;color:var(--muted);font-weight:700;display:inline-flex;gap:6px;align-items:center}
+.sess-head h1{font-size:clamp(1.7rem,5vw,2.3rem);letter-spacing:-.02em;margin:4px 0 4px}
+.sess-head p{color:var(--muted)}
+.seg[hidden]{display:none}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 6px}
+.seg button{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-weight:700;font-size:.92rem}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.stage{display:grid;justify-items:center;padding:14px 0 6px;text-align:center}
+.orb{width:min(78vw,330px);aspect-ratio:1;position:relative}
+.orb svg{width:100%;height:100%;overflow:visible}
+.orb .ring{fill:none;stroke:var(--phase);stroke-width:3;opacity:.5;transition:stroke .6s}
+.orb .water{fill:var(--phase);fill-opacity:.5;transition:fill .6s}
+.orb .wave{animation:drift 5s linear infinite}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(-200px)}}
+@media (prefers-reduced-motion:reduce){.orb .wave{animation:none}}
+.orb .center{position:absolute;inset:0;display:grid;place-content:center;gap:2px}
+.timer{font-family:var(--display);font-weight:800;font-size:clamp(3.2rem,15vw,5rem);letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 18px var(--bg),0 0 4px var(--bg)}
+.phase{font-family:var(--display);font-weight:600;font-size:clamp(1.25rem,4.5vw,1.6rem);margin-top:16px;color:var(--phase);transition:color .6s;min-height:1.4em}
+.hint{color:var(--muted);font-size:.95rem;max-width:34ch;min-height:1.5em}
+.meta{display:flex;gap:18px;justify-content:center;color:var(--muted);font-size:.9rem;margin-top:6px;flex-wrap:wrap}
+.controls{display:flex;gap:10px;justify-content:center;margin:18px 0 8px;flex-wrap:wrap}
+.btn{border:0;border-radius:999px;padding:14px 28px;font-weight:700;font-size:1.05rem;background:var(--ink);color:var(--bg);min-width:130px}
+.btn.ghost{background:none;color:var(--ink);border:1.5px solid var(--line)}
+.btn.warn{background:var(--hold);color:#1b1305}
+.btn[hidden]{display:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;margin:18px 0;overflow:hidden}
+.panel > summary{list-style:none;padding:16px 18px;font-weight:700;font-family:var(--display);font-size:1.1rem;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
+.panel > summary::-webkit-details-marker{display:none}
+.panel > summary::after{content:"+";font-weight:400;font-size:1.4rem;line-height:1}
+.panel[open] > summary::after{content:"−"}
+.panel .inner{padding:0 18px 18px}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.field label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+.stepper{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.stepper button{border:0;background:none;width:40px;height:42px;font-size:1.2rem;font-weight:700}
+.stepper input{width:100%;min-width:0;border:0;background:none;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;height:42px;-moz-appearance:textfield}
+.stepper input::-webkit-inner-spin-button{-webkit-appearance:none}
+.note{font-size:.9rem;color:var(--muted);margin-top:12px}
+.note.warn{color:var(--danger)}
+.guide h3{font-size:1.02rem;margin:18px 0 6px}
+.guide h3:first-child{margin-top:0}
+.guide ol,.guide ul{margin:0;padding-left:1.3em}
+.guide li{margin-bottom:6px}
+.caution{border-left:4px solid var(--danger);padding:10px 14px;background:color-mix(in srgb,var(--danger) 8%,transparent);border-radius:0 10px 10px 0;margin-top:14px}
+
+/* Learn */
+.learn h1,.progress h1,.heart h1{font-size:clamp(1.7rem,5vw,2.2rem);letter-spacing:-.02em;margin-bottom:8px}
+.lede{color:var(--muted);margin-bottom:20px;max-width:62ch}
+.prose{max-width:66ch}
+.table-scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--display)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:22px}
+.stat{background:var(--surface);padding:16px}
+.stat b{display:block;font-family:var(--display);font-size:1.9rem;font-weight:800;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:.88rem}
+.chartbox{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:22px}
+.chartbox h2{font-size:1.1rem;margin-bottom:10px}
+.chartbox svg{width:100%;height:auto;display:block}
+.chartbox .empty{color:var(--muted);font-size:.95rem;padding:18px 0}
+.log{list-style:none;padding:0;margin:0}
+.log li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.log li span:last-child{color:var(--muted);white-space:nowrap}
+.dangerlink{background:none;border:0;color:var(--danger);font-weight:700;padding:8px 0;text-decoration:underline}
+
+/* Heart */
+.hrbig{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.hrbig b{font-family:var(--display);font-size:4rem;font-weight:800;letter-spacing:-.04em;line-height:1}
+.zoneband{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:14px 0 4px;position:relative}
+.zoneband i{display:block;height:100%}
+.zonemark{position:absolute;top:-5px;width:4px;height:24px;background:var(--ink);border-radius:2px;transform:translateX(-50%)}
+.zonelabels{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.input{border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;width:120px;font-weight:700}
+.tapbtn{width:min(70vw,240px);aspect-ratio:1;border-radius:50%;border:0;background:var(--danger);color:#fff;font-family:var(--display);font-size:1.4rem;font-weight:800;display:grid;place-content:center;margin:10px auto;touch-action:manipulation;transition:transform .08s}
+.tapbtn:active{transform:scale(.96)}
+.tapbtn span{font-size:3rem;line-height:1}
+
+/* Dialogs */
+dialog{border:0;border-radius:20px;padding:0;max-width:min(560px,94vw);background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(8,28,32,.55)}
+dialog .dbody{padding:22px 22px 8px;max-height:72vh;overflow:auto}
+dialog h2{font-size:1.4rem;margin-bottom:10px}
+dialog .dfoot{display:flex;gap:10px;justify-content:flex-end;padding:14px 22px 20px;flex-wrap:wrap}
+dialog ul{padding-left:1.2em}
+dialog li{margin-bottom:6px}
+.check{display:flex;gap:10px;align-items:flex-start;margin:12px 0;font-weight:700}
+.check input{width:22px;height:22px;margin-top:2px;accent-color:var(--in)}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.setrow select{border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--bg)}
+.toggle{width:50px;height:30px;accent-color:var(--in)}
+.big-result{font-family:var(--display);font-size:3rem;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M3 18c4-3 7 3 13 0s9-3 13 0v0a13 13 0 0 1-26 0z" fill="var(--in)"/></svg>
+      Longbreath
+    </div>
+    <span class="sync" id="syncStatus">On this device</span>
+    <button class="iconbtn" id="openSettings" aria-label="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" data-tab="practice" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3.5 14c3-2 5 2 8.5 0s5.5-2 8.5 0"/></svg>Practice</button>
+    <button role="tab" data-tab="learn" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></svg>Learn</button>
+    <button role="tab" data-tab="progress" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Progress</button>
+    <button role="tab" data-tab="heart" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 8.6a5 5 0 0 0-8.8-3.2 5 5 0 0 0-8.8 3.2c0 5.4 8.8 11 8.8 11s8.8-5.6 8.8-11z"/><path d="M3 12h5l2-3 3 6 2-3h6"/></svg>Heart</button>
+  </nav>
+
+  <!-- PRACTICE -->
+  <main id="v-practice" class="view">
+    <section class="nextup" id="nextup"></section>
+    <div id="groups"></div>
+  </main>
+
+  <!-- SESSION -->
+  <main id="v-session" class="view" hidden>
+    <button class="back" id="backBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>All exercises</button>
+    <div class="sess-head">
+      <h1 id="sTitle"></h1>
+      <p id="sTag"></p>
+    </div>
+    <div class="seg" id="levelSeg" role="group" aria-label="Level"></div>
+    <div class="stage">
+      <div class="orb" aria-hidden="true">
+        <svg viewBox="-110 -110 220 220">
+          <defs><clipPath id="orbClip"><circle r="100"/></clipPath></defs>
+          <g clip-path="url(#orbClip)">
+            <g id="waterG">
+              <path class="water wave" d="M-300 0 Q-250 -8 -200 0 T-100 0 T0 0 T100 0 T200 0 T300 0 T400 0 V400 H-300 Z"/>
+            </g>
+          </g>
+          <circle class="ring" r="104"/>
+        </svg>
+        <div class="center"><div class="timer" id="timer">0</div></div>
+      </div>
+      <div class="phase" id="phase" aria-live="polite">Ready when you are</div>
+      <div class="hint" id="hint"></div>
+      <div class="meta"><span id="roundInfo"></span><span id="totalInfo"></span><span id="nextInfo"></span></div>
+      <div class="controls">
+        <button class="btn" id="startBtn">Start</button>
+        <button class="btn warn" id="breathedBtn" hidden>I breathed</button>
+        <button class="btn ghost" id="contractionBtn" hidden>Contraction</button>
+        <button class="btn ghost" id="stopBtn" hidden>Stop</button>
+      </div>
+    </div>
+    <details class="panel" id="customPanel">
+      <summary>Customize timings</summary>
+      <div class="inner"><div class="fields" id="fields"></div><div id="customNote"></div></div>
+    </details>
+    <details class="panel" open>
+      <summary>How to do it</summary>
+      <div class="inner guide" id="guide"></div>
+    </details>
+  </main>
+
+  <!-- LEARN -->
+  <main id="v-learn" class="view learn" hidden></main>
+
+  <!-- PROGRESS -->
+  <main id="v-progress" class="view progress" hidden></main>
+
+  <!-- HEART -->
+  <main id="v-heart" class="view heart" hidden></main>
+</div>
+
+<!-- Safety dialog -->
+<div class="toast" id="toast" role="status" hidden></div>
+<dialog id="safetyDlg">
+  <div class="dbody">
+    <h2>Before any breath-hold training</h2>
+    <p>Breath-holds starve the brain of oxygen gradually, and you can black out without feeling it coming. On land, sitting or lying down, that is almost always harmless: your body starts breathing again by itself. In water, it can be fatal within minutes. So these rules are not optional:</p>
+    <ul>
+      <li><b>Dry land only.</b> Never do these tables in a pool, bath, lake or sea, and never alone near water.</li>
+      <li><b>Sit or lie down</b> somewhere you can't fall. Never while driving, standing, or walking.</li>
+      <li><b>Never hyperventilate</b> (fast, deep breathing) before a hold. It hides the warning signal and makes blackout more likely.</li>
+      <li><b>Stop</b> if you feel tingling, tunnel vision, confusion, chest pain or strong dizziness.</li>
+      <li>Check with a doctor first if you have a heart or blood pressure condition, epilepsy, are pregnant, or have any lung condition.</li>
+      <li>If you later want to train in water, do it only in a certified freediving course with an instructor watching you.</li>
+    </ul>
+    <label class="check"><input type="checkbox" id="ackBox"> I will do breath-hold training on dry land only, seated or lying down.</label>
+  </div>
+  <div class="dfoot">
+    <button class="btn ghost" id="safetyCancel">Not now</button>
+    <button class="btn" id="safetyOk" disabled>Continue</button>
+  </div>
+</dialog>
+
+<!-- Summary dialog -->
+<dialog id="doneDlg">
+  <div class="dbody" id="doneBody"></div>
+  <div class="dfoot"><button class="btn" id="doneOk">Done</button></div>
+</dialog>
+
+<!-- Pulse dialog -->
+<dialog id="pulseDlg">
+  <div class="dbody" style="text-align:center">
+    <h2>Measure your pulse</h2>
+    <p id="pulseInstr">Find your pulse on the thumb side of your wrist with two fingers. Press start, then tap the button once for every beat you feel for 30 seconds.</p>
+    <button class="tapbtn" id="tapBtn" aria-label="Tap for each beat"><span id="tapCount">0</span>beats</button>
+    <div class="timer" id="pulseTimer" style="font-size:2.4rem">30</div>
+  </div>
+  <div class="dfoot">
+    <button class="btn ghost" id="pulseCancel">Cancel</button>
+    <button class="btn" id="pulseStart">Start 30 seconds</button>
+  </div>
+</dialog>
+
+<!-- Settings dialog -->
+<dialog id="settingsDlg">
+  <div class="dbody">
+    <h2>Settings</h2>
+    <div class="setrow"><span>Sound cues</span><input type="checkbox" class="toggle" id="setSound"></div>
+    <div class="setrow"><span>Spoken cues (voice)</span><input type="checkbox" class="toggle" id="setVoice"></div>
+    <div class="setrow"><span>Vibration (phones)</span><input type="checkbox" class="toggle" id="setVibe"></div>
+    <div class="setrow"><span>3-second countdown ticks</span><input type="checkbox" class="toggle" id="setTicks"></div>
+    <div class="setrow"><span>Check your sound</span><button class="btn ghost" style="min-width:0;padding:8px 16px" id="testSound" type="button">Play test cue</button></div>
+    <div class="setrow"><span>Theme</span><select id="setTheme"><option value="auto">Match device</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+    <div class="setrow"><span>Breath-hold personal best (seconds)</span><input class="input" type="number" min="10" max="900" id="setPb"></div>
+    <div class="setrow"><span>Your age (for heart-rate zones)</span><input class="input" type="number" min="10" max="100" id="setAge"></div>
+    <p class="note">Your personal best sets the timings of the CO₂ and O₂ tables. Update it with the Max hold test once a week.</p>
+  </div>
+  <div class="dfoot"><button class="btn" id="settingsOk">Save settings</button></div>
+</dialog>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const r5 = n => Math.max(10, Math.round(n / 5) * 5);
+const clock = s => { s = Math.max(0, Math.round(s)); const m = Math.floor(s/60), r = s % 60; return m + ':' + String(r).padStart(2,'0'); };
+const human = s => { s = Math.round(s); if (s < 60) return s + 's'; const m = Math.floor(s/60), r = s%60; return r ? `${m}m ${r}s` : `${m} min`; };
+const dayKey = t => { const d = new Date(t); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); };
+
+/* ---------------- Data ---------------- */
+const DEFAULT = {
+  v:1, updatedAt:0, pb:40, pbHistory:[], sessions:[], hr:[], ack:false,
+  settings:{sound:true, voice:false, vibe:true, ticks:true, theme:'auto', age:''},
+  custom:{}
+};
+let S = structuredClone(DEFAULT);
+let cloudDoc = null;
+const LSKEY = 'longbreath-state-v1';
+
+function merge(base, inc){ const out = Object.assign(structuredClone(DEFAULT), base, inc); out.settings = Object.assign({}, DEFAULT.settings, base.settings, inc.settings); return out; }
+try { const raw = localStorage.getItem(LSKEY); if (raw) S = merge(DEFAULT, JSON.parse(raw)); } catch(e) {}
+
+let saveTimer = null;
+function save(){
+  S.updatedAt = Date.now();
+  try { localStorage.setItem(LSKEY, JSON.stringify(S)); } catch(e) {}
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    if (!cloudDoc) return;
+    try { await cloudDoc.set(JSON.parse(JSON.stringify(S))); setSync('Synced'); }
+    catch(e) { setSync('On this device'); }
+  }, 900);
+}
+let toastT=0; function toast(t){ const el=$('#toast'); el.textContent=t; el.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>el.hidden=true,2600); }
+function setSync(t){ $('#syncStatus').textContent = t; }
+
+(async function initCloud(){
+  try {
+    if (!window.claude || !window.claude.use) return;
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    if (!db || !user) return;
+    const uid = await user.id();
+    if (!uid) return;
+    const ref = db.doc('data/users/' + uid + '/state');
+    const snap = await ref.get();
+    cloudDoc = ref;
+    if (snap.exists) {
+      const remote = snap.data();
+      if ((remote.updatedAt || 0) > (S.updatedAt || 0)) { S = merge(DEFAULT, remote); try{localStorage.setItem(LSKEY, JSON.stringify(S));}catch(e){} renderAll(); }
+      else if ((S.updatedAt||0) > (remote.updatedAt||0)) save();
+    } else if (S.updatedAt) save();
+    setSync('Synced');
+  } catch(e) { /* stay local */ }
+})();
+
+/* ---------------- Exercises ---------------- */
+const CAT = {
+  calm:{name:'Calm and focus', desc:'Slow the heart, settle the nervous system. Good daily, and before sleep.', color:'var(--out)'},
+  base:{name:'Build your breathing base', desc:'Train the diaphragm and exhale control. The foundation for everything else.', color:'var(--in)'},
+  hold:{name:'Breath-hold training', desc:'Dry-land tables that raise your breath-hold time. Seated or lying down only.', color:'var(--hold)'}
+};
+
+function st(type, dur, label, extra){ return Object.assign({type, dur, label}, extra||{}); }
+function patternSteps(p, rounds, L){
+  const out = [];
+  for (let r = 1; r <= rounds; r++){
+    out.push(st('in', p.in, L.in || 'Breathe in', {round:r, hint:L.inHint}));
+    if (p.hold > 0) out.push(st('hold', p.hold, L.hold || 'Hold', {round:r, hint:L.holdHint}));
+    out.push(st('out', p.out, L.out || 'Breathe out', {round:r, hint:L.outHint}));
+    if (p.hold2 > 0) out.push(st('hold2', p.hold2, L.hold2 || 'Hold, lungs empty', {round:r, hint:L.hold2Hint}));
+  }
+  return out;
+}
+
+const EX = [
+{
+  id:'diaphragm', cat:'base', name:'Belly (diaphragmatic) breathing',
+  tag:'Slow breaths that move your belly, not your shoulders. The skill every other exercise builds on.',
+  params:[{k:'in',l:'Inhale',u:'s'},{k:'out',l:'Exhale',u:'s'},{k:'rounds',l:'Breaths',u:'',min:1,max:100,step:1}],
+  levels:{b:{in:4,out:6,rounds:10}, i:{in:5,out:7,rounds:15}, a:{in:6,out:9,rounds:20}},
+  build:p => patternSteps(p, p.rounds, {in:'Belly rises', inHint:'Through the nose. Chest stays still.', out:'Belly falls', outHint:'Slow and smooth, like a long sigh.'}),
+  guide:{
+    what:'Diaphragmatic breathing uses the dome-shaped muscle under your lungs to pull air deep into the lower lungs. Most adults breathe high in the chest, which uses the upper, smaller part of the lungs and keeps the body slightly on alert.',
+    why:'It lets you take in more air per breath with less effort, strengthens the diaphragm, and switches on the calming (parasympathetic) nervous system. For breath-hold training it matters twice: a relaxed body burns less oxygen, and a fuller lower lung stores more.',
+    setup:'Lie on your back with knees bent and feet flat, or sit upright in a chair. Put one hand on your chest and the other on your belly, just above the navel.',
+    steps:[
+      'Breathe out fully through your mouth to start empty.',
+      'Inhale slowly through your nose for the inhale count. Let the belly hand rise. The chest hand should barely move.',
+      'Do not force it. Think of the belly softening outward, as if filling a balloon low in your body.',
+      'Exhale through the nose or pursed lips for the longer exhale count. Let the belly fall naturally, and at the very end gently draw the navel in to push out the last air.',
+      'Keep going for all the breaths. If your mind wanders, bring attention back to the hand on your belly.'
+    ],
+    feel:'Warm, heavy, a little sleepy. Your heart rate usually drops a few beats within two or three minutes.',
+    mistakes:['Shrugging or lifting the shoulders on the inhale.','Pushing the belly out with muscle rather than letting air fill it.','Breathing too much. The goal is slow and quiet, not big.'],
+    progress:'Do this once or twice a day for the first two weeks. Once it feels automatic lying down, practise it sitting, then standing, then while walking.'
+  }
+},
+{
+  id:'box', cat:'calm', name:'Box breathing',
+  tag:'Four equal sides: in, hold, out, hold. Used by soldiers, athletes and surgeons to stay calm under pressure.',
+  params:[{k:'in',l:'Inhale',u:'s'},{k:'hold',l:'Hold full',u:'s',min:0},{k:'out',l:'Exhale',u:'s'},{k:'hold2',l:'Hold empty',u:'s',min:0},{k:'rounds',l:'Rounds',u:'',min:1,max:60,step:1}],
+  levels:{b:{in:4,hold:4,out:4,hold2:4,rounds:6}, i:{in:5,hold:5,out:5,hold2:5,rounds:8}, a:{in:6,hold:6,out:6,hold2:6,rounds:10}},
+  build:p => patternSteps(p, p.rounds, {inHint:'Through the nose, into the belly.', holdHint:'Relax your throat and shoulders.', outHint:'Slow, even, through the nose or mouth.', hold2Hint:'Stay soft. No straining.'}),
+  guide:{
+    what:'A breathing pattern with four equal phases. Picture tracing the sides of a square: up (inhale), across (hold), down (exhale), across (hold).',
+    why:'The equal rhythm gives your mind something simple to track, which interrupts anxious thinking. The holds gently raise CO₂, which trains tolerance to the "air hunger" feeling, a small first step toward longer breath-holds.',
+    setup:'Sit upright with your back supported, feet on the floor, hands resting on your thighs. Eyes closed or soft gaze at the floor.',
+    steps:[
+      'Exhale completely to begin.',
+      'Inhale through the nose for the count, filling the belly first, then the lower ribs.',
+      'Hold with lungs full. Keep the throat open and relaxed; don\u2019t clamp it shut.',
+      'Exhale smoothly for the same count until empty.',
+      'Hold with lungs empty for the same count. Stay relaxed; this is usually the hardest side.',
+      'Repeat. If any side feels strained, drop to a lower level. Comfort beats length.'
+    ],
+    feel:'Focused and steady. Mild air hunger in the empty hold is normal; panic is not, so shorten the count if you feel it.',
+    mistakes:['Holding with a tight throat and jaw.','Rushing the exhale to finish the count.','Choosing a count that is too long and gasping between rounds.'],
+    progress:'Use it before stressful moments or at the start of any training session. Move up a level when the current one feels easy for a full week.'
+  }
+},
+{
+  id:'478', cat:'calm', name:'4-7-8 breathing',
+  tag:'A long hold and an even longer exhale. Designed to wind you down for sleep.',
+  params:[{k:'in',l:'Inhale',u:'s'},{k:'hold',l:'Hold',u:'s',min:0},{k:'out',l:'Exhale',u:'s'},{k:'rounds',l:'Rounds',u:'',min:1,max:20,step:1}],
+  levels:{b:{in:4,hold:7,out:8,rounds:4}, i:{in:4,hold:7,out:8,rounds:6}, a:{in:4,hold:7,out:8,rounds:8}},
+  build:p => patternSteps(p, p.rounds, {inHint:'Quietly through the nose. Tongue behind top teeth.', holdHint:'Stay still and soft.', out:'Whoosh out', outHint:'Through the mouth around your tongue, with a soft whoosh.'}),
+  guide:{
+    what:'A pattern popularised by Dr Andrew Weil: inhale for 4, hold for 7, exhale for 8. The ratio matters more than the exact seconds.',
+    why:'The exhale is twice the inhale, which strongly slows the heart through the vagus nerve. Many people use it to fall asleep or to calm a racing heart.',
+    setup:'Sit upright, or lie in bed if using it for sleep. Place the tip of your tongue on the ridge just behind your upper front teeth and keep it there the whole time.',
+    steps:[
+      'Exhale completely through your mouth with a whoosh sound.',
+      'Close your mouth and inhale quietly through your nose for 4.',
+      'Hold your breath for 7.',
+      'Exhale through your mouth for 8, making the whoosh sound, lips slightly pursed around the tongue.',
+      'That is one round. Beginners should stop at 4 rounds; this is a strong pattern and can make you light-headed at first.'
+    ],
+    feel:'Heavy, relaxed, sometimes briefly light-headed in the first week. That fades with practice.',
+    mistakes:['Doing many rounds on day one.','Taking a huge inhale. The 4-count inhale should be gentle.','Letting the 7 hold feel like a struggle. If it does, keep the ratio but count faster.'],
+    progress:'Twice a day for a month builds the effect. Advanced here means more rounds, not longer counts.'
+  }
+},
+{
+  id:'coherent', cat:'calm', name:'Coherent (resonance) breathing',
+  tag:'About six slow breaths a minute. The best-studied pattern for heart-rate variability and resting heart rate.',
+  params:[{k:'in',l:'Inhale',u:'s',step:.5},{k:'out',l:'Exhale',u:'s',step:.5},{k:'rounds',l:'Breaths',u:'',min:1,max:200,step:1}],
+  levels:{b:{in:4,out:6,rounds:30}, i:{in:5.5,out:5.5,rounds:55}, a:{in:6,out:6,rounds:75}},
+  build:p => patternSteps(p, p.rounds, {inHint:'Nose. Smooth, no pause at the top.', outHint:'Nose. Let it flow straight into the next inhale.'}),
+  guide:{
+    what:'Breathing at roughly 5 to 6 breaths per minute with no holds. At this pace heart rate, blood pressure and breathing fall into a shared rhythm called resonance.',
+    why:'Regular practice raises heart-rate variability (a marker of a resilient, well-recovered heart) and helps bring a resting heart rate like 80 bpm down over weeks. It is the single most useful exercise here for your heart-rate goal.',
+    setup:'Sit comfortably upright. Breathe through your nose the whole time. Relax the jaw and shoulders.',
+    steps:[
+      'Follow the orb: inhale as it fills, exhale as it drains.',
+      'Make each breath smooth and continuous, like a wave. There is no pause at the top or bottom.',
+      'Keep the breath quiet and low. You should not feel short of air; if you do, you are breathing too deeply.',
+      'Stay with it for the full time. The benefit builds after the first 3\u20134 minutes.'
+    ],
+    feel:'Calm, warm hands and feet, slower pulse. Some people notice their heartbeat gently speeding up on the inhale and slowing on the exhale; that is the resonance.',
+    mistakes:['Taking breaths that are too big, which leads to light-headedness.','Adding holds. This exercise is continuous.','Checking the phone mid-session. Put it face down and use sound cues.'],
+    progress:'Aim for 10 minutes a day, most days. Measure your resting pulse every morning in the Heart tab to watch the trend.'
+  }
+},
+{
+  id:'sigh', cat:'calm', name:'Physiological sigh',
+  tag:'Two inhales, one long exhale. The fastest way to take the edge off stress in real time.',
+  params:[{k:'in',l:'First inhale',u:'s'},{k:'top',l:'Top-up inhale',u:'s'},{k:'out',l:'Long exhale',u:'s'},{k:'rounds',l:'Sighs',u:'',min:1,max:60,step:1}],
+  levels:{b:{in:2,top:1,out:6,rounds:3}, i:{in:2,top:1,out:8,rounds:5}, a:{in:2,top:1,out:8,rounds:27}},
+  build:p => { const o=[]; for(let r=1;r<=p.rounds;r++){ o.push(st('in',p.in,'Deep breath in',{round:r,to:.8,hint:'Through the nose.'})); o.push(st('in',p.top,'Sip in more',{round:r,from:.8,to:1,say:'more',hint:'A short second sniff to fill the top.'})); o.push(st('out',p.out,'Long, slow exhale',{round:r,hint:'Through the mouth, all the way out.'})); } return o; },
+  guide:{
+    what:'A double inhale through the nose (a deep breath, then a short extra sniff) followed by a long exhale through the mouth. Your body does this naturally when you sob or before sleep.',
+    why:'The second sniff re-opens collapsed air sacs in the lungs, and the long exhale offloads CO₂ efficiently and slows the heart. A 2023 Stanford study found 5 minutes a day of this "cyclic sighing" improved mood and lowered resting breathing rate more than mindfulness meditation.',
+    setup:'Any position works, which is the point: you can do one or two sighs at your desk or in traffic. For the 5-minute advanced version, sit comfortably.',
+    steps:[
+      'Inhale deeply through the nose to about 80% full.',
+      'Without exhaling, take a short second sniff through the nose to top up.',
+      'Exhale slowly through the mouth for as long as the timer shows, until your lungs feel empty.',
+      'Repeat. One to three sighs often shift a stressed state; the advanced level runs about 5 minutes.'
+    ],
+    feel:'An immediate sense of release in the chest and shoulders.',
+    mistakes:['Exhaling between the two inhales.','Rushing the exhale. The long exhale does most of the work.'],
+    progress:'Use single sighs whenever you notice stress. Do the 5-minute advanced version daily for a month to feel the lasting effect.'
+  }
+},
+{
+  id:'nadi', cat:'calm', name:'Alternate nostril (Nadi Shodhana)',
+  tag:'A classical pranayama. Slow, balanced, and very good for focus and breath control.',
+  params:[{k:'in',l:'Inhale',u:'s'},{k:'hold',l:'Hold',u:'s',min:0},{k:'out',l:'Exhale',u:'s'},{k:'rounds',l:'Rounds',u:'',min:1,max:40,step:1}],
+  levels:{b:{in:4,hold:0,out:6,rounds:5}, i:{in:4,hold:4,out:8,rounds:7}, a:{in:5,hold:10,out:10,rounds:9}},
+  build:p => { const o=[]; for(let r=1;r<=p.rounds;r++){
+      o.push(st('in',p.in,'In through left',{round:r,hint:'Thumb closes right nostril.'}));
+      if(p.hold>0) o.push(st('hold',p.hold,'Hold',{round:r,hint:'Close both nostrils.'}));
+      o.push(st('out',p.out,'Out through right',{round:r,hint:'Ring finger closes left, thumb releases right.'}));
+      o.push(st('in',p.in,'In through right',{round:r,hint:'Keep left closed.'}));
+      if(p.hold>0) o.push(st('hold',p.hold,'Hold',{round:r,hint:'Close both nostrils.'}));
+      o.push(st('out',p.out,'Out through left',{round:r,hint:'Thumb closes right, release left.'}));
+    } return o; },
+  guide:{
+    what:'You breathe through one nostril at a time, switching sides, using your right hand to close each nostril in turn. One round is: in left, out right, in right, out left.',
+    why:'The single-nostril airflow is naturally slower and more resistant, which trains long, controlled breathing. With holds added it becomes a gentle breath-retention trainer. It also improves concentration.',
+    setup:'Sit upright, spine tall. Rest your left hand on your knee. Fold the index and middle fingers of your right hand into the palm; you\u2019ll use the thumb for the right nostril and the ring finger for the left.',
+    steps:[
+      'Close the right nostril with your thumb. Inhale slowly through the left.',
+      'If there is a hold: close both nostrils and hold, staying relaxed.',
+      'Close the left nostril with your ring finger, release the thumb, and exhale slowly through the right.',
+      'Inhale through the right.',
+      'Hold if there is one, then close the right, release the left, and exhale through the left.',
+      'That completes one round. Continue following the cues.'
+    ],
+    feel:'Clear-headed and balanced. The breath should be almost silent.',
+    mistakes:['Pressing so hard the nose bends.','Letting the head tilt toward the hand.','Doing this with a blocked nose. Clear it first or choose another exercise.'],
+    progress:'The classical ratio for advanced practice is 1:4:2 (for example 5-20-10). Work toward it slowly over months, never by straining.'
+  }
+},
+{
+  id:'own', cat:'calm', name:'Build your own pattern',
+  tag:'Set any inhale, hold, exhale and empty-hold you like. Presets give you three classic shapes to start from.',
+  params:[{k:'in',l:'Inhale',u:'s',step:.5},{k:'hold',l:'Hold full',u:'s',min:0,step:.5},{k:'out',l:'Exhale',u:'s',step:.5},{k:'hold2',l:'Hold empty',u:'s',min:0,step:.5},{k:'rounds',l:'Rounds',u:'',min:1,max:200,step:1}],
+  levels:{b:{in:4,hold:0,out:8,hold2:0,rounds:15}, i:{in:4,hold:4,out:8,hold2:0,rounds:12}, a:{in:5,hold:10,out:10,hold2:5,rounds:10}},
+  build:p => patternSteps(p, p.rounds, {inHint:'Through the nose, into the belly.', holdHint:'Throat open, shoulders loose.', outHint:'Slow and even.', hold2Hint:'Stay relaxed.'}),
+  guide:{
+    what:'A blank pattern. Beginner is a simple 1:2 ratio (exhale twice as long as inhale), Intermediate adds a hold (a triangle), Advanced is a demanding 1:2:2:1 pattern. Switch to Custom to set anything you want.',
+    why:'Once you understand the basics, the ratio is what matters: longer exhales calm you, holds after the inhale build CO₂ tolerance, and holds after the exhale are the most challenging. Building your own lets you match the pattern to your goal.',
+    setup:'Sit upright or lie down, whichever suits the pattern. Longer holds are more comfortable lying down.',
+    steps:[
+      'Pick a preset or open Customize timings and set each phase. Set a hold to 0 to skip it.',
+      'Start with a pattern that feels easy for the first three rounds. It will get harder as CO₂ builds.',
+      'Follow the orb and sound cues. Inhale through the nose, exhale through the nose or pursed lips.',
+      'If you gasp between rounds, shorten the holds.'
+    ],
+    feel:'The same as the best-matched classic exercise: calm for exhale-heavy patterns, focused and slightly effortful for hold-heavy ones.',
+    mistakes:['Copying long holds from videos before your base is ready.','Making every phase long. Keep at least one phase easy.'],
+    progress:'Lengthen one phase by 1 second at a time, only after a whole week feels easy.'
+  }
+},
+{
+  id:'exhale', cat:'base', name:'Progressive long exhale',
+  tag:'Each exhale gets a little longer. Builds diaphragm control and CO₂ comfort.',
+  params:[{k:'in',l:'Inhale',u:'s'},{k:'out',l:'First exhale',u:'s'},{k:'step',l:'Add per round',u:'s',min:0,max:10},{k:'rest',l:'Easy breath between',u:'s',min:0,max:30},{k:'rounds',l:'Rounds',u:'',min:1,max:30,step:1}],
+  levels:{b:{in:4,out:8,step:1,rest:6,rounds:8}, i:{in:4,out:12,step:2,rest:6,rounds:8}, a:{in:4,out:20,step:2,rest:8,rounds:10}},
+  build:p => { const o=[]; for(let r=1;r<=p.rounds;r++){ o.push(st('in',p.in,'Breathe in',{round:r,hint:'Full belly breath through the nose.'})); o.push(st('out',p.out+(r-1)*p.step,'Slow exhale',{round:r,hint:'Through pursed lips, like cooling soup. Keep it even to the end.'})); if(p.rest>0) o.push(st('rest',p.rest,'Easy breath',{round:r,hint:'One or two normal breaths.'})); } return o; },
+  guide:{
+    what:'You take a full breath and let it out as slowly as the timer asks, with each round a little longer than the last.',
+    why:'A slow exhale is controlled by the diaphragm and abdominal muscles gently resisting the air leaving. Training it builds the fine control, relaxation and CO₂ comfort you need for longer breath-holds, singing, swimming and public speaking.',
+    setup:'Sit upright or lie on your back. One hand on your belly helps you feel the control.',
+    steps:[
+      'Inhale through the nose into the belly.',
+      'Exhale through slightly pursed lips, as if blowing gently through a straw. Squeeze the belly in slowly, like pressing a tube of toothpaste from the bottom.',
+      'Pace the air so it lasts the whole count. If you run out early, make the stream thinner next time.',
+      'Take one or two easy breaths during the rest, then go again. Each round adds a few seconds.'
+    ],
+    feel:'The last few seconds of each exhale get effortful in the belly. That is the training. Your face and shoulders should stay relaxed.',
+    mistakes:['Holding the breath instead of exhaling slowly.','Starting too fast and running out.','Gasping on the inhale. Recover calmly.'],
+    progress:'When you can finish every round comfortably, increase the first exhale by 2 seconds.'
+  }
+},
+{
+  id:'co2', cat:'hold', name:'CO₂ table', hold:true,
+  tag:'Same hold each round, shorter rest each time. The main way to raise your breath-hold. Start here.',
+  params:[{k:'hold',l:'Hold each round',u:'s',min:10,max:600,step:5},{k:'restStart',l:'First rest',u:'s',min:15,max:300,step:5},{k:'restStep',l:'Rest shrinks by',u:'s',min:0,max:60,step:5},{k:'restMin',l:'Shortest rest',u:'s',min:10,max:300,step:5},{k:'rounds',l:'Rounds',u:'',min:1,max:12,step:1}],
+  levelsFn:pb => ({ b:{hold:r5(pb*.4),restStart:120,restStep:10,restMin:60,rounds:6}, i:{hold:r5(pb*.5),restStart:120,restStep:15,restMin:30,rounds:8}, a:{hold:r5(pb*.55),restStart:120,restStep:15,restMin:15,rounds:8} }),
+  check:(p) => p.hold > S.pb*0.65 ? 'This hold is over 65% of your personal best. CO₂ tables work best with a comfortable hold; the difficulty should come from the shrinking rest.' : '',
+  build:p => { const o=[]; for(let r=1;r<=p.rounds;r++){ const rest=Math.max(p.restMin,p.restStart-(r-1)*p.restStep); o.push(st('rest',Math.max(5,rest-3),'Breathe calmly',{round:r,hint:'Slow, relaxed breaths. Longer exhales. No deep gulps.'})); o.push(st('in',3,'Full, easy breath in',{round:r,say:'Final breath',hint:'Comfortably full. Not a forced maximum.'})); o.push(st('apnea',p.hold,'Hold your breath',{round:r,hint:'Relax your face, shoulders, hands. Stay still.'})); } o.push(st('rest',30,'Recovery breathing',{round:p.rounds,hint:'Exhale, then quick inhales with short pauses. Breathe normally.'})); return o; },
+  guide:{
+    what:'A series of breath-holds that all last the same time, separated by rest periods that get shorter each round. By the end you start each hold with less recovery, so CO₂ is higher and the urge to breathe arrives sooner.',
+    why:'The urge to breathe is triggered mostly by rising carbon dioxide, not falling oxygen. CO₂ tables train your body and mind to tolerate that signal calmly. For someone at 40 seconds, this is the fastest route to 1\u20132 minutes. The hold times here are set from your personal best in Settings.',
+    setup:'Dry land only. Lie on your back on a bed or mat, or sit in a reclining chair. Loose clothing, empty-ish stomach, quiet room. Keep the phone where you can hear it without looking.',
+    steps:[
+      'During each rest, breathe slowly and naturally with slightly longer exhales. Do not breathe fast or deeply; that is hyperventilation.',
+      'On "Full, easy breath in", take a comfortably full belly-then-chest breath.',
+      'Hold. Close your eyes, soften your face, jaw, shoulders and hands. Do not move.',
+      'You will feel the urge to breathe and possibly diaphragm contractions (hiccup-like spasms). They are normal and harmless on land. Stay relaxed and let them pass.',
+      'When the hold ends, exhale briefly and take a few quick "recovery breaths": inhale, pause a moment, exhale, repeat.',
+      'If any hold becomes a real struggle, tap "I breathed". That\u2019s fine; it ends the hold safely and moves on.'
+    ],
+    feel:'Easy in early rounds, challenging in the last two or three. It should feel hard but controlled.',
+    mistakes:['Big, fast breathing during rests to "load up". It is dangerous and it defeats the purpose.','Setting the hold too long. Difficulty should come from the shrinking rest.','Doing tables every day. Your body adapts during rest days.'],
+    progress:'3 sessions a week, never two hard days in a row. When the whole table feels comfortable, add 5 seconds to the hold (or bump the level). Re-test your max once a week and the tables re-scale automatically.'
+  }
+},
+{
+  id:'o2', cat:'hold', name:'O₂ table', hold:true,
+  tag:'Same rest each round, longer hold each time. Trains your body to cope with lower oxygen.',
+  params:[{k:'rest',l:'Rest each round',u:'s',min:60,max:300,step:5},{k:'holdStart',l:'First hold',u:'s',min:10,max:600,step:5},{k:'holdStep',l:'Add per round',u:'s',min:0,max:60,step:5},{k:'rounds',l:'Rounds',u:'',min:1,max:10,step:1}],
+  levelsFn:pb => { const s=r5(pb*.4); const top=pb*.8; return { b:{rest:120,holdStart:s,holdStep:5,rounds:6}, i:{rest:120,holdStart:s,holdStep:Math.max(5,Math.round((top-s)/7/5)*5),rounds:8}, a:{rest:120,holdStart:r5(pb*.5),holdStep:Math.max(5,Math.round((top-pb*.5)/7/5)*5),rounds:8} }; },
+  check:(p) => { const last=p.holdStart+(p.rounds-1)*p.holdStep; let m=''; if(S.pb<90) m+='Your personal best is under 90 seconds. Most coaches suggest focusing on CO₂ tables until you reach 90s, then adding O₂ tables. '; if(last>S.pb*.85) m+=`Your last hold (${human(last)}) is over 85% of your personal best. Keep it at or below 80% to stay safe.`; return m; },
+  build:p => { const o=[]; for(let r=1;r<=p.rounds;r++){ o.push(st('rest',Math.max(5,p.rest-3),'Breathe calmly',{round:r,hint:'Slow, relaxed breaths. Full recovery.'})); o.push(st('in',3,'Full, easy breath in',{round:r,say:'Final breath',hint:'Comfortably full.'})); o.push(st('apnea',p.holdStart+(r-1)*p.holdStep,'Hold your breath',{round:r,hint:'Stay loose. Contractions are normal.'})); } o.push(st('rest',30,'Recovery breathing',{round:p.rounds,hint:'Quick inhales with short pauses, then normal breathing.'})); return o; },
+  guide:{
+    what:'Rest stays the same (usually 2 minutes) and each hold is a little longer than the last, climbing to about 80% of your personal best.',
+    why:'Longer holds lower blood oxygen gradually, which trains the "dive response": your heart slows, and blood is directed to the brain and heart. Over time your body uses oxygen more efficiently.',
+    setup:'Dry land only, lying down. This table is more demanding than CO₂ tables, so start it once your personal best is around 90 seconds or more.',
+    steps:[
+      'Breathe calmly and slowly during each rest. No hyperventilating.',
+      'Take a comfortable full breath on the cue and hold.',
+      'Relax completely. The last holds are close to your limit; let the contractions come and go without fighting them.',
+      'When the hold ends, do recovery breaths: short exhale, quick inhale, pause briefly, repeat three times.',
+      'If you feel tingling, vision changes or confusion, tap "I breathed" at once and stop the session.'
+    ],
+    feel:'The final holds are hard. Legs and hands may feel warm or heavy. You should never feel confused or see stars.',
+    mistakes:['Setting the last hold above 80% of your best.','Doing O₂ and CO₂ tables on the same day.','Training when tired, ill or after heavy exercise.'],
+    progress:'Once a week at most, alongside two CO₂ sessions. Your personal best should rise as both tables improve.'
+  }
+},
+{
+  id:'max', cat:'hold', name:'Max hold test', hold:true, open:true,
+  tag:'Measures your personal best. It sets the timings for your tables. Once a week at most.',
+  params:[{k:'breatheUp',l:'Relaxed breathe-up',u:'s',min:60,max:300,step:15}],
+  levels:{b:{breatheUp:120}, i:{breatheUp:120}, a:{breatheUp:150}},
+  noLevels:true,
+  build:p => [
+    st('rest',p.breatheUp,'Relaxed breathe-up',{hint:'Slow breaths, long exhales. Let your body go heavy.'}),
+    st('in',5,'Final breath in',{say:'Final breath',hint:'Belly, then ribs, then chest. Comfortably full.'}),
+    st('apnea',Infinity,'Hold. Relax everything.',{max:true,hint:'Tap "I breathed" the moment you breathe.'}),
+    st('out',1.5,'Short exhale',{say:'Recover',hint:'Recovery breaths.'}),st('in',2,'Quick inhale, pause',{hint:''}),
+    st('out',1.5,'Short exhale',{hint:''}),st('in',2,'Quick inhale, pause',{hint:''}),
+    st('out',1.5,'Short exhale',{hint:''}),st('in',2,'Quick inhale, pause',{hint:''}),
+    st('rest',30,'Breathe normally',{hint:'Stay seated or lying down for a minute.'})
+  ],
+  guide:{
+    what:'A single maximum breath-hold after a calm, relaxed breathe-up. The timer counts up and you stop it when you breathe.',
+    why:'Your personal best tells the app how long your CO₂ and O₂ table holds should be, and it is the clearest way to see progress. Tap "Contraction" when the first diaphragm spasm arrives: the gap between "first contraction" and your final time is your "struggle phase", and growing it calmly is a big part of improving.',
+    setup:'Dry land only, lying on your back. At least an hour after a meal. No caffeine just before. Have a friend nearby if you can.',
+    steps:[
+      'Breathe-up: slow, natural breathing with long exhales. Relax from toes to face. Do not breathe deeply or quickly.',
+      'Final breath: a full breath, belly then ribs then chest, without straining.',
+      'Hold. Close your eyes. Scan for tension and release it: jaw, shoulders, hands, belly.',
+      'Tap "Contraction" when you feel the first diaphragm spasm, then keep relaxing.',
+      'Tap "I breathed" as soon as you breathe. Stop well before you feel anything strange; a personal best is never worth a blackout.',
+      'Follow the recovery breaths: short exhale, quick full inhale, brief pause. Three times.'
+    ],
+    feel:'The first half is easy. Around the first contraction it becomes a mental game. Calm beats willpower.',
+    mistakes:['Testing daily. Weekly is enough.','Hyperventilating before the hold.','Pushing past tingling or vision changes.'],
+    progress:'Realistic path from 40 seconds: many people reach 1:30\u20132:00 in 1\u20133 months of CO₂ tables, and 3 minutes plus within a year. Records of 10 minutes and more come from elite freedivers after years of training, and the very longest use pure oxygen beforehand.'
+  }
+}
+];
+const exById = id => EX.find(e => e.id === id);
+
+/* ---------------- Tabs ---------------- */
+const VIEWS = ['practice','learn','progress','heart'];
+let currentTab = 'practice';
+function showTab(t){
+  if (running) return;
+  currentTab = t;
+  document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  VIEWS.forEach(v => $('#v-'+v).hidden = v !== t);
+  $('#v-session').hidden = true;
+  if (t==='progress') renderProgress();
+  if (t==='heart') renderHeart();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+/* ---------------- Practice list ---------------- */
+function estimate(ex, p){ const steps = ex.build(p); return steps.reduce((a,s)=>a+(isFinite(s.dur)?s.dur:0),0); }
+function levelsFor(ex){ return ex.levelsFn ? ex.levelsFn(S.pb) : ex.levels; }
+function suggestion(){
+  const now = Date.now(), week = 7*864e5;
+  const lastMax = S.sessions.filter(s=>s.ex==='max').pop();
+  if (!lastMax || now - lastMax.t > week) return {id:'max', why: lastMax ? 'It\u2019s been over a week since your last test. Re-test so your tables stay matched to you.' : 'Measure your baseline so the tables can be set to your level.'};
+  const lastHold = S.sessions.filter(s=>exById(s.ex)?.hold).pop();
+  if (lastHold && now - lastHold.t < 20*3600*1000) return {id:'coherent', why:'You did breath-hold training recently. Give your body a recovery day with calm breathing.'};
+  const o2count = S.sessions.filter(s=>s.ex==='o2' && now-s.t<week).length;
+  if (S.pb >= 90 && o2count === 0) return {id:'o2', why:'You\u2019re past 90 seconds. One O₂ table this week will help push your max.'};
+  return {id:'co2', why:'CO₂ tables are the core of breath-hold progress. Aim for three a week.'};
+}
+function renderPractice(){
+  const sug = suggestion();
+  const ex = exById(sug.id);
+  $('#nextup').innerHTML = `<div class="pb">${human(S.pb)}<small>breath-hold personal best</small></div>
+    <p><b>Next up: ${esc(ex.name)}.</b> ${esc(sug.why)}</p>
+    <button data-open="${ex.id}">Start ${esc(ex.name)}</button>`;
+  $('#groups').innerHTML = Object.entries(CAT).map(([k,c]) => `
+    <section class="group"><h2>${c.name}</h2><p>${c.desc}</p>
+    <ul class="exlist">${EX.filter(e=>e.cat===k).map(e => { const lv = levelsFor(e).b; const sec = e.open ? null : estimate(e, lv);
+      return `<li><button class="exrow" data-open="${e.id}" style="--c:${c.color}"><span class="pip"></span><span><b>${esc(e.name)}</b><span class="sub">${esc(e.tag)}</span></span><span class="len">${sec ? 'from ' + human(sec) : 'open'}</span></button></li>`; }).join('')}</ul></section>`).join('');
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-open]'); if (b) openExercise(b.dataset.open); });
+
+/* ---------------- Session setup ---------------- */
+let cur = null, level = 'b', params = {};
+const LVL = {b:'Beginner', i:'Intermediate', a:'Advanced', c:'Custom'};
+
+function openExercise(id){
+  const ex = exById(id);
+  if (ex.hold && !S.ack) { pendingOpen = id; $('#ackBox').checked = false; $('#safetyOk').disabled = true; $('#safetyDlg').showModal(); return; }
+  cur = ex;
+  const saved = S.custom[id];
+  level = saved?.level || 'b';
+  params = level === 'c' && saved?.params ? {...saved.params} : {...levelsFor(ex)[level === 'c' ? 'b' : level]};
+  VIEWS.forEach(v => $('#v-'+v).hidden = true);
+  $('#v-session').hidden = false;
+  $('#sTitle').textContent = ex.name;
+  $('#sTag').textContent = ex.tag;
+  $('#levelSeg').hidden = !!ex.noLevels;
+  renderLevels(); renderFields(); renderGuide(); resetStage();
+  window.scrollTo(0,0);
+}
+$('#backBtn').addEventListener('click', () => { if (running && !confirm('Stop this session and go back?')) return; if (running) stopSession(false); showTab(currentTab); renderPractice(); });
+
+function renderLevels(){
+  $('#levelSeg').innerHTML = Object.entries(LVL).map(([k,n]) => `<button aria-pressed="${k===level}" data-lvl="${k}">${n}</button>`).join('');
+}
+$('#levelSeg').addEventListener('click', e => {
+  const b = e.target.closest('[data-lvl]'); if (!b || running) return;
+  level = b.dataset.lvl;
+  if (level === 'c') { params = S.custom[cur.id]?.params ? {...S.custom[cur.id].params} : {...params}; $('#customPanel').open = true; }
+  else params = {...levelsFor(cur)[level]};
+  S.custom[cur.id] = {level, params: level==='c' ? params : (S.custom[cur.id]?.params || null)}; save();
+  renderLevels(); renderFields(); resetStage();
+});
+
+function renderFields(){
+  $('#fields').innerHTML = cur.params.map(f => `<div class="field"><label for="f-${f.k}">${f.l}${f.u?' ('+f.u+')':''}</label>
+    <div class="stepper"><button type="button" data-d="-1" data-k="${f.k}" aria-label="Decrease ${f.l}">−</button>
+    <input id="f-${f.k}" inputmode="decimal" type="number" data-k="${f.k}" value="${params[f.k]}" min="${f.min ?? 1}" max="${f.max ?? 600}" step="${f.step ?? 1}">
+    <button type="button" data-d="1" data-k="${f.k}" aria-label="Increase ${f.l}">+</button></div></div>`).join('');
+  updateNote();
+}
+function setParam(k, v){
+  const f = cur.params.find(x=>x.k===k);
+  v = Math.min(f.max ?? 600, Math.max(f.min ?? 1, Number(v)||0));
+  params[k] = v;
+  level = 'c';
+  S.custom[cur.id] = {level:'c', params:{...params}}; save();
+  renderLevels(); updateNote(); resetStage();
+  const inp = $('#f-'+k); if (inp && document.activeElement !== inp) inp.value = v;
+}
+$('#fields').addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (!b || running) return; const f = cur.params.find(x=>x.k===b.dataset.k); setParam(f.k, +(params[f.k] + (+b.dataset.d)*(f.step ?? 1)).toFixed(2)); $('#f-'+f.k).value = params[f.k]; });
+$('#fields').addEventListener('change', e => { if (e.target.dataset.k && !running) { setParam(e.target.dataset.k, e.target.value); e.target.value = params[e.target.dataset.k]; } });
+function updateNote(){
+  const msg = cur.check ? cur.check(params) : '';
+  const est = cur.open ? '' : `This session takes about ${human(estimate(cur, params))}.`;
+  const pbNote = cur.levelsFn ? ` Levels are calculated from your ${human(S.pb)} personal best.` : '';
+  $('#customNote').innerHTML = `<p class="note">${est}${pbNote}</p>` + (msg ? `<p class="note warn">${esc(msg)}</p>` : '');
+}
+
+function renderGuide(){
+  const g = cur.guide;
+  $('#guide').innerHTML = `
+    <h3>What it is</h3><p>${esc(g.what)}</p>
+    <h3>Why it works</h3><p>${esc(g.why)}</p>
+    <h3>Get into position</h3><p>${esc(g.setup)}</p>
+    <h3>Step by step</h3><ol>${g.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>
+    <h3>What it should feel like</h3><p>${esc(g.feel)}</p>
+    <h3>Common mistakes</h3><ul>${g.mistakes.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>
+    <h3>How to progress</h3><p>${esc(g.progress)}</p>
+    ${cur.hold ? `<div class="caution"><b>Safety:</b> dry land only, seated or lying down. Never in or near water, never hyperventilate before a hold, and stop at tingling, vision changes or confusion.</div>` : ''}`;
+}
+
+/* ---------------- Orb ---------------- */
+const waterG = $('#waterG');
+function setFill(f){ const y = 100 - f*200; waterG.setAttribute('transform', `translate(0 ${y.toFixed(2)})`); }
+const PHASECOL = {in:'var(--in)', hold:'var(--hold)', out:'var(--out)', hold2:'var(--out)', rest:'var(--rest)', apnea:'var(--hold)'};
+function setPhaseColor(t){ document.documentElement.style.setProperty('--phase', PHASECOL[t] || 'var(--in)'); }
+const ease = x => 0.5 - 0.5*Math.cos(Math.PI*x);
+
+/* ---------------- Audio / voice / vibe ---------------- */
+let actx = null;
+function audio(){ if (!actx) { try { actx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} } if (actx && actx.state==='suspended') actx.resume(); return actx; }
+function tone(f1, f2, dur, vol=0.12, type='sine', delay=0){
+  if (!S.settings.sound) return; const a = audio(); if (!a) return;
+  const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f1, t); o.frequency.linearRampToValueAtTime(f2, t+dur);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t+0.03); g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+0.05);
+}
+function cue(step){
+  const t = step.type;
+  if (t==='in') tone(330, 494, .45);
+  else if (t==='out') tone(494, 330, .45);
+  else if (t==='hold' || t==='hold2') tone(440, 440, .18);
+  else if (t==='rest') tone(392, 392, .25, .09);
+  else if (t==='apnea') { tone(523, 523, .12); tone(523, 523, .12, .12, 'sine', .18); }
+  if (S.settings.vibe && navigator.vibrate) navigator.vibrate(t==='apnea' ? [80,60,80] : 40);
+  if (S.settings.voice && 'speechSynthesis' in window && (step.dur >= 2.5 || step.say)) {
+    try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(step.say || step.label); u.rate = .95; u.pitch = .95; speechSynthesis.speak(u); } catch(e){}
+  }
+}
+let wakeLock = null;
+async function keepAwake(on){ try { if (on && 'wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; } } catch(e){} }
+document.addEventListener('visibilitychange', () => { if (running && !paused && document.visibilityState==='visible') keepAwake(true); });
+
+/* ---------------- Engine ---------------- */
+let steps = [], idx = 0, stepStart = 0, running = false, paused = false, pausedAt = 0, raf = 0, lastWhole = null;
+let sessionStart = 0, holdLog = [], contraction = null, pendingOpen = null, pausedTotal = 0, bgTimer = 0, sessionEndAt = null;
+
+function resetStage(){
+  steps = cur.build(params);
+  $('#timer').textContent = cur.open ? '0:00' : clock(steps.reduce((a,s)=>a+(isFinite(s.dur)?s.dur:0),0));
+  $('#phase').textContent = 'Ready when you are';
+  $('#hint').textContent = cur.hold ? 'Lie down or sit back. Dry land only.' : 'Get comfortable. Sound cues let you close your eyes.';
+  const rounds = Math.max(...steps.map(s=>s.round||1));
+  $('#roundInfo').textContent = cur.open ? '' : rounds + (rounds===1?' round':' rounds');
+  $('#totalInfo').textContent = cur.open ? '' : human(estimate(cur, params)) + ' total';
+  $('#nextInfo').textContent = '';
+  setPhaseColor('in'); setFill(cur.hold ? .5 : .15);
+  $('#startBtn').textContent = 'Start'; $('#startBtn').hidden = false;
+  $('#stopBtn').hidden = true; $('#breathedBtn').hidden = true; $('#contractionBtn').hidden = true;
+}
+
+function startSession(){
+  audio();
+  steps = cur.build(params);
+  // 3-second get ready
+  steps.unshift(st('prep', 3, 'Get ready', {hint:'Settle in. Breathe normally.'}));
+  idx = 0; running = true; paused = false; holdLog = []; contraction = null; pausedTotal = 0;
+  sessionStart = performance.now();
+  document.querySelectorAll('#fields input, #fields button, #levelSeg button').forEach(el => el.disabled = true);
+  $('#startBtn').textContent = 'Pause'; $('#stopBtn').hidden = false;
+  document.body.classList.add('focus');
+  $('.stage').scrollIntoView({block:'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+  keepAwake(true);
+  beginStep(performance.now(), false);
+  raf = requestAnimationFrame(frame);
+  clearInterval(bgTimer); bgTimer = setInterval(update, 200);
+}
+function beginStep(startAt, silent){
+  const s = steps[idx];
+  stepStart = startAt; lastWhole = null;
+  setPhaseColor(s.type === 'prep' ? 'rest' : s.type);
+  $('#phase').textContent = s.label;
+  $('#hint').textContent = s.hint || '';
+  const rounds = Math.max(...steps.map(x=>x.round||0));
+  $('#roundInfo').textContent = s.round && rounds > 1 ? `Round ${s.round} of ${rounds}` : '';
+  const nx = steps[idx+1];
+  $('#nextInfo').textContent = nx ? 'Next: ' + nx.label.toLowerCase() + (isFinite(nx.dur) ? ', ' + human(nx.dur) : '') : 'Last step';
+  const isApnea = s.type === 'apnea';
+  $('#breathedBtn').hidden = !isApnea;
+  $('#contractionBtn').hidden = !isApnea; $('#contractionBtn').disabled = false; $('#contractionBtn').textContent = 'Contraction';
+  $('#startBtn').hidden = isApnea;
+  if (silent) return;
+  if (s.type !== 'prep') cue(s); else tone(392,392,.15,.08);
+}
+function remainingTotal(){ let t = 0; for (let i = idx; i < steps.length; i++) if (isFinite(steps[i].dur)) t += steps[i].dur; return t - (performance.now()-stepStart)/1000; }
+/* One clock (performance.now) drives everything. update() runs from animation frames when visible
+   and from a timer when the tab is in the background, and it catches up over any steps that finished
+   while the page was asleep, so a session never loses time. */
+function update(){
+  if (!running || paused) return;
+  const now = performance.now();
+  let s = steps[idx], el = (now - stepStart)/1000, hops = 0;
+  while (isFinite(s.dur) && el >= s.dur) {
+    const nextStart = stepStart + s.dur*1000;
+    if (s.type === 'apnea') holdLog.push({target:s.dur, actual:s.dur, early:false, contraction});
+    contraction = null; idx++;
+    if (idx >= steps.length) { sessionEndAt = nextStart; finishSession(false); return; }
+    hops++;
+    s = steps[idx];
+    const willAlsoEnd = isFinite(s.dur) && (now - nextStart)/1000 >= s.dur;
+    beginStep(nextStart, willAlsoEnd);
+    el = (now - stepStart)/1000;
+  }
+  render(s, el);
+}
+function render(s, el){
+  let f;
+  const x = isFinite(s.dur) ? Math.min(1, el / s.dur) : 0;
+  switch (s.type) {
+    case 'in': f = (s.from ?? 0) + ((s.to ?? 1) - (s.from ?? 0)) * ease(x); break;
+    case 'out': f = (s.from ?? 1) * (1 - ease(x)); break;
+    case 'hold': case 'apnea': f = 1; break;
+    case 'hold2': f = 0; break;
+    case 'rest': f = .3 + .25*(0.5 - 0.5*Math.cos(2*Math.PI*el/10)); break;
+    default: f = .15;
+  }
+  setFill(f);
+  if (!isFinite(s.dur)) $('#timer').textContent = clock(el);
+  else {
+    const left = Math.max(1, Math.ceil(s.dur - el));
+    $('#timer').textContent = s.dur - el >= 60 ? clock(s.dur - el) : String(left);
+    if (left !== lastWhole) { if (lastWhole !== null && left <= 3 && S.settings.ticks && s.dur >= 6) tone(880,880,.05,.05); lastWhole = left; }
+  }
+  if (!cur.open) $('#totalInfo').textContent = clock(remainingTotal()) + ' left';
+}
+function frame(){ if (!running) return; update(); raf = requestAnimationFrame(frame); }
+function endStepEarly(){
+  const s = steps[idx], now = performance.now();
+  holdLog.push({target:s.dur, actual:(now-stepStart)/1000, early:isFinite(s.dur), contraction});
+  contraction = null; idx++;
+  if (idx >= steps.length) finishSession(false);
+  else beginStep(now, false);
+}
+function togglePause(){
+  if (!running) return startSession();
+  paused = !paused;
+  if (paused) { pausedAt = performance.now(); $('#startBtn').textContent = 'Resume'; $('#phase').textContent = 'Paused'; $('#hint').textContent = 'Breathe normally. Resume when ready.'; keepAwake(false); if ('speechSynthesis' in window) speechSynthesis.cancel(); }
+  else { const d = performance.now() - pausedAt; stepStart += d; pausedTotal += d; $('#startBtn').textContent = 'Pause'; $('#phase').textContent = steps[idx].label; $('#hint').textContent = steps[idx].hint || ''; keepAwake(true); }
+}
+function stopSession(silent){
+  if (!running) return;
+  finishSession(true, silent);
+}
+function finishSession(stopped, silent){
+  running = false; paused = false; cancelAnimationFrame(raf); clearInterval(bgTimer); keepAwake(false); document.body.classList.remove('focus');
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  document.querySelectorAll('#fields input, #fields button, #levelSeg button').forEach(el => el.disabled = false);
+  const secs = ((sessionEndAt ?? performance.now()) - sessionStart - pausedTotal)/1000; sessionEndAt = null;
+  let newPb = false, maxHold = null;
+  if (cur.open) { const h = holdLog[0]; if (h) { maxHold = Math.round(h.actual); } }
+  if ((secs >= 20 && !cur.open) || maxHold !== null) {
+    const rec = {t: Date.now(), ex: cur.id, level, secs: Math.round(secs), done: !stopped};
+    if (maxHold !== null) { rec.hold = maxHold; if (holdLog[0].contraction) rec.contraction = Math.round(holdLog[0].contraction); }
+    S.sessions.push(rec);
+    if (S.sessions.length > 1500) S.sessions = S.sessions.slice(-1500);
+    if (maxHold !== null) { S.pbHistory.push({t: Date.now(), v: maxHold}); if (maxHold > S.pb) { S.pb = maxHold; newPb = true; } }
+    save();
+  }
+  if (!stopped) tone(523,523,.2,.1), tone(659,659,.2,.1,'sine',.2), tone(784,784,.4,.1,'sine',.4);
+  resetStage(); renderPractice();
+  if (silent) return;
+  if (secs < 20 && stopped) { toast('Stopped. Sessions under 20 seconds aren\u2019t saved.'); return; }
+  let body = `<h2>${stopped ? 'Session stopped' : 'Session complete'}</h2>`;
+  if (maxHold !== null) {
+    const h = holdLog[0];
+    body += `<div class="big-result">${clock(maxHold)}</div><p>${newPb ? '<b>New personal best.</b> Your CO₂ and O₂ tables now scale to it.' : `Your best is still ${clock(S.pb)}. Tests vary with sleep, food and stress; the trend matters, not one day.`}</p>`;
+    if (h.contraction) body += `<p>First contraction at ${clock(h.contraction)}, so you stayed calm through ${human(maxHold - h.contraction)} of contractions. Growing that calm phase is how your max rises.</p>`;
+  } else {
+    body += `<div class="big-result">${human(secs)}</div><p>${esc(cur.name)}, ${LVL[level].toLowerCase()} level.</p>`;
+    if (holdLog.length) { const early = holdLog.filter(h=>h.early).length; body += `<p>${holdLog.length} holds completed${early ? `, ${early} ended early` : ''}. ${early === 0 ? 'All holds done. If it felt controlled, add 5 seconds next session.' : early === 1 ? 'One early finish is fine. Repeat this level next time.' : 'Lower the hold by 5 seconds next time so every round feels controlled.'}</p>`; }
+  }
+  if (cur.hold) body += `<p class="note">Rest from breath-hold tables tomorrow. A calm breathing session is ideal on rest days.</p>`;
+  $('#doneBody').innerHTML = body; $('#doneDlg').showModal();
+}
+$('#doneOk').addEventListener('click', () => $('#doneDlg').close());
+$('#startBtn').addEventListener('click', togglePause);
+$('#stopBtn').addEventListener('click', () => stopSession(false));
+$('#breathedBtn').addEventListener('click', () => { if (!running || paused) return; const s = steps[idx]; if (s.type!=='apnea') return; endStepEarly(); });
+$('#contractionBtn').addEventListener('click', () => { if (!running || contraction !== null) return; contraction = (performance.now()-stepStart)/1000; $('#contractionBtn').textContent = 'First at ' + clock(contraction); $('#contractionBtn').disabled = true; });
+document.addEventListener('keydown', e => { if ($('#v-session').hidden || document.querySelector('dialog[open]')) return; if (e.code==='Space' && e.target.tagName!=='INPUT' && e.target.tagName!=='BUTTON') { e.preventDefault(); if (running && steps[idx]?.type==='apnea') $('#breathedBtn').click(); else togglePause(); } });
+
+/* ---------------- Safety dialog ---------------- */
+$('#ackBox').addEventListener('change', e => $('#safetyOk').disabled = !e.target.checked);
+$('#safetyCancel').addEventListener('click', () => { pendingOpen = null; $('#safetyDlg').close(); });
+$('#safetyOk').addEventListener('click', () => { S.ack = true; save(); $('#safetyDlg').close(); if (pendingOpen) { const id = pendingOpen; pendingOpen = null; openExercise(id); } });
+
+/* ---------------- Charts ---------------- */
+function lineChart(pts, opt){
+  const W = opt.w || 640, H = W < 480 ? 180 : 220, P = {l:44, r:14, t:14, b:28};
+  if (!pts.length) return '';
+  const xs = pts.map(p=>p.t), ys = pts.map(p=>p.v);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs) || x0+1;
+  let y0 = opt.yMin ?? Math.min(...ys), y1 = opt.yMax ?? Math.max(...ys);
+  if (opt.pad) { y0 = Math.max(0, Math.min(y0, ...ys) - opt.pad); y1 = Math.max(y1, ...ys) + opt.pad; }
+  if (y1 === y0) y1 = y0 + 1;
+  const X = t => P.l + (x1===x0 ? (W-P.l-P.r)/2 : (t-x0)/(x1-x0)*(W-P.l-P.r));
+  const Y = v => H - P.b - (v-y0)/(y1-y0)*(H-P.t-P.b);
+  const ticks = 4; let grid = '';
+  for (let i=0;i<=ticks;i++){ const v = y0 + (y1-y0)*i/ticks; grid += `<line x1="${P.l}" x2="${W-P.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${P.l-8}" y="${Y(v)+4}" text-anchor="end" font-size="12" fill="var(--muted)">${opt.fmt ? opt.fmt(v) : Math.round(v)}</text>`; }
+  let bands = '';
+  (opt.bands||[]).forEach(b => { const a = Math.max(y0,b.from), c = Math.min(y1,b.to); if (c>a) bands += `<rect x="${P.l}" width="${W-P.l-P.r}" y="${Y(c)}" height="${Y(a)-Y(c)}" fill="${b.color}" opacity=".12"/>`; });
+  const d = pts.map((p,i)=>(i?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)).join(' ');
+  const dots = pts.map(p=>`<circle cx="${X(p.t)}" cy="${Y(p.v)}" r="4" fill="${opt.color}"><title>${new Date(p.t).toLocaleDateString()}: ${opt.fmt?opt.fmt(p.v):p.v}</title></circle>`).join('');
+  const fd = t => new Date(t).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label)}">${bands}${grid}<path d="${d}" fill="none" stroke="${opt.color}" stroke-width="3" stroke-linejoin="round"/>${dots}
+    <text x="${P.l}" y="${H-6}" font-size="12" fill="var(--muted)">${fd(x0)}</text><text x="${W-P.r}" y="${H-6}" font-size="12" text-anchor="end" fill="var(--muted)">${fd(x1)}</text></svg>`;
+}
+function barChart(vals, labels, opt){
+  const W = opt.w || 640, H = W < 480 ? 170 : 200, P = {l:8, r:8, t:16, b:26}, n = vals.length;
+  const max = Math.max(10, ...vals), bw = (W-P.l-P.r)/n;
+  const Y = v => H - P.b - v/max*(H-P.t-P.b);
+  let s = `<line x1="${P.l}" x2="${W-P.r}" y1="${H-P.b}" y2="${H-P.b}" stroke="var(--line)"/>`;
+  vals.forEach((v,i) => { s += `<rect x="${P.l+i*bw+bw*.18}" width="${bw*.64}" y="${Y(v)}" height="${H-P.b-Y(v)}" rx="4" fill="${opt.color}"><title>${labels[i]}: ${v} min</title></rect>`;
+    if (v) s += `<text x="${P.l+i*bw+bw/2}" y="${Y(v)-4}" font-size="11" text-anchor="middle" fill="var(--muted)">${v}</text>`;
+    s += `<text x="${P.l+i*bw+bw/2}" y="${H-8}" font-size="11" text-anchor="middle" fill="var(--muted)">${labels[i]}</text>`; });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label)}">${s}</svg>`;
+}
+
+/* ---------------- Progress ---------------- */
+const cw = sel => Math.round(Math.max(280, Math.min(700, ($(sel).clientWidth || 640) - 34)));
+let rsT=0; addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(() => { if (!$('#v-progress').hidden) renderProgress(); if (!$('#v-heart').hidden) renderHeart(); }, 250); });
+function streak(){
+  const days = new Set(S.sessions.map(s=>dayKey(s.t)));
+  let d = new Date(); let n = 0;
+  if (!days.has(dayKey(d))) d.setDate(d.getDate()-1);
+  while (days.has(dayKey(d))) { n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+function renderProgress(){
+  const now = Date.now(), wk = 7*864e5;
+  const thisWeek = S.sessions.filter(s=>now-s.t<wk);
+  const totalMin = Math.round(S.sessions.reduce((a,s)=>a+s.secs,0)/60);
+  const weeks = []; const labels = [];
+  for (let i=7;i>=0;i--){ const a = now-(i+1)*wk, b = now-i*wk; weeks.push(Math.round(S.sessions.filter(s=>s.t>a&&s.t<=b).reduce((x,s)=>x+s.secs,0)/60)); labels.push(i===0?'Now':'-'+i+'w'); }
+  const pbPts = S.pbHistory.slice(-40);
+  const recent = S.sessions.slice(-12).reverse();
+  $('#v-progress').innerHTML = `<h1>Your progress</h1><p class="lede">Consistency matters more than any single session. Three breath-hold sessions and a few calm-breathing sessions a week is a strong routine.</p>
+  <div class="stats">
+    <div class="stat"><b>${clock(S.pb)}</b><span>Breath-hold best</span></div>
+    <div class="stat"><b>${streak()}</b><span>Day streak</span></div>
+    <div class="stat"><b>${thisWeek.length}</b><span>Sessions this week</span></div>
+    <div class="stat"><b>${totalMin}</b><span>Total minutes</span></div>
+  </div>
+  <div class="chartbox"><h2>Max hold tests</h2>${pbPts.length ? lineChart(pbPts,{w:cw('#v-progress'),color:'var(--hold)',pad:10,fmt:v=>clock(v),label:'Max hold test results over time'}) : '<p class="empty">No tests yet. Do a Max hold test to set your baseline.</p>'}</div>
+  <div class="chartbox"><h2>Minutes practised per week</h2>${barChart(weeks, labels, {w:cw('#v-progress'),color:'var(--in)', label:'Minutes practised per week, last 8 weeks'})}</div>
+  <div class="chartbox"><h2>Recent sessions</h2>${recent.length ? `<ul class="log">${recent.map(s=>`<li><span>${esc(exById(s.ex)?.name||s.ex)}${s.hold!=null?' \u2013 '+clock(s.hold):''}${s.done?'':' (stopped)'}</span><span>${new Date(s.t).toLocaleDateString(undefined,{month:'short',day:'numeric'})}, ${human(s.secs)}</span></li>`).join('')}</ul>` : '<p class="empty">Nothing here yet. Your finished sessions will appear here.</p>'}</div>
+  <button class="dangerlink" id="resetAll">Erase all my data</button>`;
+  $('#resetAll').addEventListener('click', () => { if (confirm('Erase all sessions, tests, heart readings and settings? This cannot be undone.')) { S = structuredClone(DEFAULT); S.updatedAt = 0; save(); applyTheme(); renderAll(); } });
+}
+
+/* ---------------- Heart ---------------- */
+function hrZone(v){
+  if (v < 50) return {name:'Very low', text:'Under 50 bpm is common in trained endurance athletes. If you are not one and feel dizzy, tired or faint, see a doctor.'};
+  if (v < 60) return {name:'Athletic', text:'Typical of very fit people. Excellent, as long as you feel well.'};
+  if (v < 70) return {name:'Good', text:'A healthy, efficient heart. Keep training to hold it here.'};
+  if (v < 80) return {name:'Average', text:'Normal. Regular cardio and daily slow breathing can bring it down further.'};
+  if (v <= 100) return {name:'Upper normal', text:'Still within the normal 60\u2013100 range, but studies link resting rates in the 80s and 90s with higher long-term heart risk. This is very improvable.'};
+  return {name:'High', text:'A resting rate over 100 bpm is called tachycardia. If it stays that high on several calm mornings, please see a doctor.'};
+}
+function renderHeart(){
+  const hr = S.hr.slice(-60);
+  const last7 = S.hr.filter(h=>Date.now()-h.t<7*864e5);
+  const avg = last7.length ? Math.round(last7.reduce((a,h)=>a+h.v,0)/last7.length) : null;
+  const latest = hr.length ? hr[hr.length-1].v : null;
+  const show = avg ?? latest;
+  const zone = show ? hrZone(show) : null;
+  const age = +S.settings.age;
+  const pos = show ? Math.min(100, Math.max(0, (show-40)/(110-40)*100)) : null;
+  const zones = age ? (() => { const mx = 220-age; const z = [[.5,.6,'Zone 1','Warm-up, recovery walks'],[.6,.7,'Zone 2','Easy cardio. Best for lowering resting heart rate. You can hold a conversation.'],[.7,.8,'Zone 3','Moderate, steady effort'],[.8,.9,'Zone 4','Hard intervals'],[.9,1,'Zone 5','All-out sprints, very short']]; return `<div class="chartbox"><h2>Your training zones</h2><p class="note" style="margin-top:0">Estimated max heart rate: ${mx} bpm (220 minus age). This is a rough rule; individuals vary by 10\u201315 bpm.</p><div class="table-scroll"><table><thead><tr><th>Zone</th><th>Heart rate</th><th>Use it for</th></tr></thead><tbody>${z.map(r=>`<tr><td>${r[2]}</td><td>${Math.round(mx*r[0])}\u2013${Math.round(mx*r[1])}</td><td>${r[3]}</td></tr>`).join('')}</tbody></table></div><p class="note">To lower your resting rate, most of your cardio (about 80%) should be in Zone 2: 30\u201345 minutes, 4\u20135 times a week, plus one harder session.</p></div>`; })() : `<div class="chartbox"><h2>Your training zones</h2><p class="empty">Add your age in Settings to see personal heart-rate zones for cardio training.</p></div>`;
+  $('#v-heart').innerHTML = `<h1>Resting heart rate</h1><p class="lede">Measure it the same way every morning: right after waking, before coffee or getting out of bed. One reading means little; the weekly average is what to watch.</p>
+  <div class="chartbox">
+    ${show ? `<div class="hrbig"><b>${show}</b><span>bpm, ${avg ? '7-day average' : 'latest reading'}</span></div>
+    <div class="zoneband" aria-hidden="true"><i style="flex:14;background:var(--out)"></i><i style="flex:14;background:var(--in)"></i><i style="flex:14;background:var(--rest)"></i><i style="flex:28;background:var(--hold)"></i><i style="flex:10;background:var(--danger)"></i><span class="zonemark" style="left:${pos}%"></span></div>
+    <div class="zonelabels"><span>40</span><span>60</span><span>80</span><span>100</span><span>110</span></div>
+    <p style="margin-top:12px"><b>${esc(zone.name)}.</b> ${esc(zone.text)}</p>` : `<p class="empty" style="padding-top:0">No readings yet. Take your first one below; you mentioned about 80 bpm, so this will be your starting point.</p>`}
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="measureBtn">Measure with tap counter</button>
+      <div><label for="hrInput" class="note" style="display:block;margin:0 0 4px">Or type a reading</label><input class="input" id="hrInput" type="number" min="30" max="220" placeholder="bpm"></div>
+      <button class="btn ghost" id="hrSave">Save reading</button>
+    </div>
+  </div>
+  <div class="chartbox"><h2>Trend</h2>${hr.length ? lineChart(hr.map(h=>({t:h.t,v:h.v})),{w:cw('#v-heart'),color:'var(--danger)',pad:6,label:'Resting heart rate over time',bands:[{from:0,to:60,color:'var(--in)'},{from:60,to:80,color:'var(--rest)'},{from:80,to:100,color:'var(--hold)'}]}) : '<p class="empty">Your readings will be charted here.</p>'}</div>
+  ${zones}
+  <div class="chartbox prose"><h2>How to bring your resting rate down</h2>
+    <p>A resting rate falls when the heart gets stronger (pumping more blood per beat) and when the calming side of your nervous system gets more active. Typical results: 5\u201310 bpm lower over 2\u20133 months of consistent effort.</p>
+    <ul>
+      <li><b>Zone 2 cardio</b> is the biggest lever. Brisk walking, cycling, swimming or easy running where you can still talk, 150+ minutes a week.</li>
+      <li><b>Coherent breathing</b> for 10 minutes daily (in the Practice tab) raises heart-rate variability and lowers resting rate over weeks.</li>
+      <li><b>Sleep</b> 7\u20139 hours. One short night can raise the next morning\u2019s reading by several beats.</li>
+      <li><b>Hydration, alcohol and caffeine</b>. Dehydration and evening alcohol both push the morning number up noticeably.</li>
+      <li><b>Stress and illness</b> raise it. A sudden jump of 5+ bpm above your average often means you\u2019re fighting off a cold or are under-recovered, so take an easy day.</li>
+    </ul>
+    <p class="note">See a doctor if your resting rate is regularly over 100, under 50 with dizziness or fatigue, feels irregular, or comes with chest pain or breathlessness.</p>
+  </div>
+  ${hr.length ? `<div class="chartbox"><h2>Readings</h2><ul class="log">${hr.slice(-10).reverse().map((h)=>`<li><span>${h.v} bpm</span><span>${new Date(h.t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} <button class="dangerlink" style="padding:0 0 0 8px" data-delhr="${h.t}">Delete</button></span></li>`).join('')}</ul></div>` : ''}`;
+  $('#measureBtn').addEventListener('click', openPulse);
+  $('#hrSave').addEventListener('click', () => { const v = Math.round(+$('#hrInput').value); if (v >= 30 && v <= 220) { S.hr.push({t:Date.now(), v}); save(); renderHeart(); } else $('#hrInput').focus(); });
+  document.querySelectorAll('[data-delhr]').forEach(b => b.addEventListener('click', () => { S.hr = S.hr.filter(h => String(h.t) !== b.dataset.delhr); save(); renderHeart(); }));
+}
+
+/* Pulse tap counter */
+let pulseCount = 0, pulseEnd = 0, pulseRaf = 0, pulseOn = false;
+function openPulse(){ pulseCount = 0; pulseOn = false; $('#tapCount').textContent = '0'; $('#pulseTimer').textContent = '30'; $('#pulseStart').textContent = 'Start 30 seconds'; $('#pulseStart').hidden = false; $('#pulseInstr').textContent = 'Find your pulse on the thumb side of your wrist with two fingers. Press start, then tap the big button once for every beat you feel for 30 seconds.'; $('#pulseDlg').showModal(); }
+$('#pulseStart').addEventListener('click', () => {
+  if ($('#pulseStart').dataset.save) { S.hr.push({t:Date.now(), v:pulseCount*2}); save(); delete $('#pulseStart').dataset.save; $('#pulseDlg').close(); renderHeart(); return; }
+  audio(); pulseCount = 0; $('#tapCount').textContent = '0'; pulseOn = true; pulseEnd = performance.now() + 30000; $('#pulseStart').hidden = true; tone(660,660,.1);
+  const loop = () => { if (!pulseOn) return; const left = Math.max(0, (pulseEnd - performance.now())/1000); $('#pulseTimer').textContent = Math.ceil(left); if (left <= 0) { pulseOn = false; tone(523,784,.3); const bpm = pulseCount*2; $('#pulseTimer').textContent = bpm + ' bpm'; $('#pulseInstr').textContent = `${pulseCount} beats in 30 seconds \u00d7 2 = ${bpm} bpm. If you missed a few beats, cancel and type the number in instead.`; $('#pulseStart').textContent = 'Save reading'; $('#pulseStart').dataset.save = '1'; $('#pulseStart').hidden = false; return; } pulseRaf = requestAnimationFrame(loop); };
+  pulseRaf = requestAnimationFrame(loop);
+});
+$('#tapBtn').addEventListener('pointerdown', e => { e.preventDefault(); if (!pulseOn) return; pulseCount++; $('#tapCount').textContent = pulseCount; if (S.settings.vibe && navigator.vibrate) navigator.vibrate(15); });
+$('#pulseCancel').addEventListener('click', () => { pulseOn = false; cancelAnimationFrame(pulseRaf); delete $('#pulseStart').dataset.save; $('#pulseDlg').close(); });
+
+/* ---------------- Learn ---------------- */
+function renderLearn(){
+  $('#v-learn').innerHTML = `<h1>How breathing training works</h1>
+  <p class="lede">Read these once, then keep coming back to the safety and plan sections. Each exercise also has its own step-by-step guide on its practice screen.</p>
+  <details class="panel" open><summary>Why you can only hold for 40 seconds (yet)</summary><div class="inner prose">
+    <p>When you hold your breath, you are not running out of oxygen at 40 seconds. A healthy person at rest has enough oxygen in the lungs and blood for well over a minute. What stops you is <b>carbon dioxide</b>. CO₂ builds up with every second, and your brainstem reads rising CO₂ as "breathe now". Untrained people feel that signal early and strongly, and they tense up, which burns oxygen even faster.</p>
+    <p>That means your breath-hold is mostly limited by three trainable things: how calmly you tolerate CO₂, how relaxed your body stays (tense muscles burn oxygen), and how efficiently your body uses oxygen. Lung size matters much less than people think, and it barely changes in adults.</p>
+    <p>Around the halfway point of a hard hold you will feel <b>contractions</b>: rhythmic spasms of the diaphragm. On land they are harmless. Learning to relax through them is the big mental skill.</p>
+  </div></details>
+  <details class="panel"><summary>Safety rules (read these)</summary><div class="inner prose">
+    <p><b>Never practise breath-holds in or near water.</b> Oxygen can drop low enough to make you black out with no warning. On land your body restarts breathing by itself; in water you inhale water. This is called shallow water blackout and it kills strong swimmers every year.</p>
+    <p><b>Never hyperventilate before a hold.</b> Fast, deep breathing lowers CO₂ so the warning signal comes later, but it does not add useful oxygen. You get further before feeling the urge, then black out before you feel it.</p>
+    <p><b>Always sit or lie down.</b> Not while driving, standing, walking, or in the bath.</p>
+    <p><b>Stop</b> if you notice tingling in hands or lips, tunnel vision, seeing spots, confusion or chest pain.</p>
+    <p><b>If you want to train underwater</b>, take a certified freediving course (AIDA, SSI, PADI, Molchanovs). They teach one-up-one-down buddy systems and rescue.</p>
+    <p>Check with a doctor first if you have heart or blood pressure problems, epilepsy, a lung condition, or are pregnant.</p>
+  </div></details>
+  <details class="panel"><summary>A 12-week plan starting from 40 seconds</summary><div class="inner prose">
+    <p>Start with a <b>Max hold test</b> to set your baseline. The tables adjust to your personal best automatically.</p>
+    <div class="table-scroll"><table><thead><tr><th>Weeks</th><th>Breath-hold (dry land)</th><th>Daily breathing</th></tr></thead><tbody>
+      <tr><td>1\u20132</td><td>CO₂ table, beginner, 3\u00d7 a week (e.g. Mon/Wed/Fri). Max test at the end of week 2.</td><td>Belly breathing 5 min, twice a day. Box breathing when stressed.</td></tr>
+      <tr><td>3\u20134</td><td>CO₂ table, intermediate, 3\u00d7 a week. Max test weekly.</td><td>Progressive long exhale 3\u00d7 a week. Coherent breathing 10 min daily.</td></tr>
+      <tr><td>5\u20138</td><td>CO₂ table 2\u00d7 a week plus, once your best is 90s+, an O₂ table 1\u00d7 a week. Max test weekly.</td><td>Coherent breathing 10 min daily. Alternate nostril, intermediate.</td></tr>
+      <tr><td>9\u201312</td><td>CO₂ advanced 2\u00d7, O₂ 1\u00d7 a week. Max test weekly.</td><td>Coherent breathing daily. 4-7-8 at bedtime.</td></tr>
+    </tbody></table></div>
+    <p>Always leave at least one day between breath-hold sessions. Add 20\u201330 minutes of cardio on 3\u20134 other days: it improves oxygen efficiency and lowers your heart rate at the same time.</p>
+    <p><b>Realistic expectations:</b> many people go from about 40 seconds to 1:30\u20132:00 within 1\u20133 months. Three minutes plus usually takes many months. Static records above 10 minutes are held by elite freedivers after years of training; the very longest were done after breathing pure oxygen.</p>
+  </div></details>
+  <details class="panel"><summary>Breathing basics that make everything easier</summary><div class="inner prose">
+    <p><b>Nose, not mouth.</b> Nose breathing warms and filters air, slows your breathing naturally, and adds a little nitric oxide that helps oxygen uptake. Use it for all everyday breathing and for inhales in these exercises unless told otherwise.</p>
+    <p><b>Low and slow.</b> A relaxed adult at rest needs only 6\u201312 quiet breaths a minute. Over-breathing (frequent sighing, yawning, mouth breathing) keeps CO₂ low, which makes you more sensitive to it during holds.</p>
+    <p><b>Long exhales calm you down.</b> Your heart speeds up slightly on each inhale and slows on each exhale. Making exhales longer than inhales tips the balance toward calm.</p>
+    <p><b>The full breath</b> for holds fills in order: belly, then lower ribs expanding sideways, then upper chest. Stop at "comfortably full". Straining to the absolute max creates tension that costs more oxygen than it adds.</p>
+    <p><b>Relaxation is oxygen.</b> Before every hold, scan and soften your forehead, jaw, tongue, shoulders, hands, and belly. Relaxed muscles use much less oxygen.</p>
+  </div></details>
+  <details class="panel"><summary>Other things that improve breath-hold</summary><div class="inner prose">
+    <p><b>Cardio fitness.</b> Swimming, running and cycling improve how efficiently your blood carries and your muscles use oxygen.</p>
+    <p><b>Cold face immersion.</b> Cold water on the face (a bowl of cool water, face in for a few seconds while holding your breath, seated, never fully submerged) triggers the dive reflex that slows the heart. It demonstrates how the body conserves oxygen.</p>
+    <p><b>Singing or a wind instrument</b> trains long, controlled exhales naturally.</p>
+    <p><b>Timing.</b> Train on an empty-ish stomach, not straight after exercise, and not when ill. Mornings usually give lower numbers than afternoons.</p>
+  </div></details>`;
+}
+
+/* ---------------- Settings & theme ---------------- */
+function applyTheme(){ const t = S.settings.theme; if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t); }
+$('#openSettings').addEventListener('click', () => {
+  $('#setSound').checked = S.settings.sound; $('#setVoice').checked = S.settings.voice; $('#setVibe').checked = S.settings.vibe; $('#setTicks').checked = S.settings.ticks;
+  $('#setTheme').value = S.settings.theme; $('#setPb').value = S.pb; $('#setAge').value = S.settings.age || '';
+  $('#settingsDlg').showModal();
+});
+$('#testSound').addEventListener('click', () => { const sv=S.settings.sound; S.settings.sound=true; tone(330,494,.45); tone(494,330,.45,.12,'sine',.6); S.settings.sound=sv; if ($('#setVoice').checked && 'speechSynthesis' in window){ speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('Breathe in')); } if ($('#setVibe').checked && navigator.vibrate) navigator.vibrate(60); });
+$('#settingsOk').addEventListener('click', () => {
+  S.settings.sound = $('#setSound').checked; S.settings.voice = $('#setVoice').checked; S.settings.vibe = $('#setVibe').checked; S.settings.ticks = $('#setTicks').checked;
+  S.settings.theme = $('#setTheme').value; S.settings.age = $('#setAge').value;
+  const pb = Math.round(+$('#setPb').value); if (pb >= 10 && pb <= 900 && pb !== S.pb) { S.pb = pb; }
+  save(); applyTheme(); $('#settingsDlg').close(); renderAll();
+});
+
+function renderAll(){
+  applyTheme(); renderPractice(); renderLearn();
+  if (!$('#v-progress').hidden) renderProgress();
+  if (!$('#v-heart').hidden) renderHeart();
+  if (cur && !$('#v-session').hidden && !running) { if (level !== 'c') params = {...levelsFor(cur)[level]}; renderLevels(); renderFields(); resetStage(); }
+}
+renderAll();
+})();
+</script>
+</body>
+</html>
