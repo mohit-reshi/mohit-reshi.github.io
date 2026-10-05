@@ -8,7 +8,7 @@ summary: "A breathing and breath-hold trainer: guided timers, progress charts an
 role: "Builder"
 year: 2026
 tools: [HTML, CSS, JavaScript]
-tags: [ai-built, data-viz]
+tags: [data-viz]
 featured: false
 order: 45
 draft: false
@@ -24,9 +24,9 @@ featured_measures: []
 model_doc: null
 appKind: static
 stack: [HTML, CSS, JavaScript, SVG]
-ai_built: true
+ai_built: false
 needs_api_key: false
-howBuilt: "Built with an AI assistant as a single HTML file. The exercise content, timings and safety text were written and reviewed with the assistant; the charts are hand-drawn SVG."
+howBuilt: "A single HTML file with inline CSS, JavaScript and hand-drawn SVG charts. Exercise timings and safety text are part of the page."
 ---
 ## Problem
 
@@ -48,4 +48,4 @@ One HTML file with inline CSS, JavaScript and SVG. It uses system fonts and make
 
 ## Outcome
 
-A small, accessible, offline app that shows what a single AI-assisted page can do. [OWNER: add one line on why you built it or how you use it.]
+A small, accessible, offline app that shows what a single self-contained page can do. [OWNER: add one line on why you built it or how you use it.]

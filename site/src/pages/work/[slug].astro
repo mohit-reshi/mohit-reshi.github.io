@@ -35,7 +35,7 @@ const og = absoluteUrl(`og/${p.slug}.png`, Astro.site);
 const meta: Array<[string, string]> = [['Type', kindLabel[d.kind]], ['Role', d.role || '—'], ['Year', String(d.year)]];
 if (d.client_label) meta.push(['Context', d.client_label]);
 if (d.tools.length) meta.push(['Tools', d.tools.join(', ')]);
-if (app) meta.push(['AI-built', d.ai_built ? 'Yes' : 'No']);
+if (app && d.ai_built) meta.push(['AI-built', 'Yes']);
 ---
 <Base title={d.title} description={d.summary} image={og} type="article" current={app ? 'apps' : 'work'}>
   <div class="progress" aria-hidden="true"><i data-progress></i></div>

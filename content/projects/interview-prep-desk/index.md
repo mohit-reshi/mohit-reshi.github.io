@@ -8,7 +8,7 @@ summary: "A browser app that turns a job description or resume into practice que
 role: "Power BI developer"
 year: 2026
 tools: [HTML, JavaScript, Python]
-tags: [power-bi, fabric, dax, ai-built]
+tags: [power-bi, fabric, dax]
 featured: false
 order: 40
 draft: false
@@ -24,9 +24,9 @@ featured_measures: []
 model_doc: null
 appKind: static
 stack: [HTML, CSS, JavaScript, Python]
-ai_built: true
+ai_built: false
 needs_api_key: false
-howBuilt: "Built with an AI assistant from the markdown interview and learning guides. A Python script generates the single HTML file and the question data; matching and scoring were reviewed and tuned by hand."
+howBuilt: "A Python build script generates the single HTML file and the question data from the markdown interview and learning guides. Matching and scoring were tuned by hand."
 ---
 
 ## Problem
@@ -47,4 +47,4 @@ One self-contained HTML file with no server and no network requests. Your resume
 
 ## Outcome
 
-A practice tool shared as a worked example of a small, offline, AI-assisted app. [OWNER: add one line on how you use it or what you would change next.]
+A practice tool shared as a worked example of a small, offline app. [OWNER: add one line on how you use it or what you would change next.]
