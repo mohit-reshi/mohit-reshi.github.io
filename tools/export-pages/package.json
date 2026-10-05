@@ -1,0 +1,14 @@
+{
+  "name": "export-pages",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Export every page of Power BI reports to PNG/PDF with the Export To File REST API (run locally with your own credentials).",
+  "bin": { "export-pages": "src/cli.mjs" },
+  "scripts": {
+    "export": "node src/cli.mjs",
+    "dry-run": "node src/cli.mjs --dry-run",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

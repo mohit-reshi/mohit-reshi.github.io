@@ -1,0 +1,27 @@
+[
+  {
+    "file": "01-cancellation-reinstatement-analytics.webp",
+    "title": "Attrition Snapshot",
+    "caption": "Cancellation counts with a prior-year comparison, broken down by product, case tenure, reason and case size, with filters on the left."
+  },
+  {
+    "file": "02-cancellation-reinstatement-analytics.webp",
+    "title": "Recovery Snapshot",
+    "caption": "Reinstatement counts and recovery rate with the same product, tenure, reason and case size breakdowns."
+  },
+  {
+    "file": "03-cancellation-reinstatement-analytics.webp",
+    "title": "Attrition Trend",
+    "caption": "Monthly cancellations against the prior year with the change line, plus product and reason mix over time."
+  },
+  {
+    "file": "04-cancellation-reinstatement-analytics.webp",
+    "title": "Recovery Trend",
+    "caption": "Monthly reinstatements against the prior year with the change line, plus product and reason mix over time."
+  },
+  {
+    "file": "05-cancellation-reinstatement-analytics.webp",
+    "title": "Non-Payment Watch",
+    "caption": "Monthly non-payment cancellations and recoveries with the recovery rate, split by tenure and case size."
+  }
+]

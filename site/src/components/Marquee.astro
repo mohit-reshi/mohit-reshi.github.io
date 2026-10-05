@@ -1,0 +1,10 @@
+---
+import { siteConfig } from '../config';
+const words = siteConfig.marquee;
+---
+<div class="marquee" role="region" aria-label="Skills and tools">
+  <div class="marquee__track">
+    <ul class="marquee__list">{words.map((w) => <li>{w}</li>)}</ul>
+    <ul class="marquee__list" aria-hidden="true">{words.map((w) => <li>{w}</li>)}</ul>
+  </div>
+</div>

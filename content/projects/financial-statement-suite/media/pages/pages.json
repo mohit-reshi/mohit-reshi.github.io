@@ -1,0 +1,37 @@
+[
+  {
+    "file": "01-financial-statement-suite.webp",
+    "title": "Navigation",
+    "caption": "Landing page with a button for each statement page."
+  },
+  {
+    "file": "02-financial-statement-suite.webp",
+    "title": "P&L Statement",
+    "caption": "Profit and loss by account with prior-year comparison and a year selector, plus a bridge and monthly revenue by channel."
+  },
+  {
+    "file": "03-financial-statement-suite.webp",
+    "title": "Balance Sheet",
+    "caption": "Assets and liabilities by year, common financial ratios and bridge charts for assets and liabilities."
+  },
+  {
+    "file": "04-financial-statement-suite.webp",
+    "title": "Cash Flow Statement",
+    "caption": "Operating, investing and financing cash flows by year with cash in and cash out breakdowns."
+  },
+  {
+    "file": "05-financial-statement-suite.webp",
+    "title": "Aged AR",
+    "caption": "Outstanding invoices grouped by age band with a customer filter and follow-up flag."
+  },
+  {
+    "file": "06-financial-statement-suite.webp",
+    "title": "Revenue Insights",
+    "caption": "Sales, rolling average and profit margin with filters for category, channel and territory, and top customers and cities."
+  },
+  {
+    "file": "07-financial-statement-suite.webp",
+    "title": "Budget vs Actuals",
+    "caption": "Budget against actuals by account with variance and a year selector."
+  }
+]

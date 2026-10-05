@@ -1,0 +1,28 @@
+{
+  "name": "live-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Live Lab: embeddable Power BI explorer (ES module) with mock mode, Live | Code tabs and graceful fallback.",
+  "scripts": {
+    "snippets": "node scripts/build-snippets.mjs",
+    "dev": "npm run snippets && vite --config vite.demo.config.ts",
+    "build": "npm run snippets && tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run snippets && vitest run",
+    "e2e": "npm run build && playwright test",
+    "worker:test": "npm --prefix worker test",
+    "secret-scan": "node scripts/secret-scan.mjs"
+  },
+  "dependencies": {
+    "powerbi-client": "^2.23.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "jsdom": "^25.0.0",
+    "shiki": "^1.22.0",
+    "typescript": "^5.6.0",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0"
+  }
+}

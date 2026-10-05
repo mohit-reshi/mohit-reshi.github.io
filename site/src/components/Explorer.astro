@@ -1,0 +1,12 @@
+---
+// Alternative layouts for the home and work pages. Classic content stays in the page; these two are shown only when <html data-layout> says so.
+import { buildExplorerData } from '../lib/explorer';
+import { withBase } from '../lib/url';
+import IndexStage from './stages/IndexStage.astro';
+import ModelStage from './stages/ModelStage.astro';
+const data = await buildExplorerData(withBase);
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
+---
+<script type="application/json" id="explorer-data" set:html={json}></script>
+<div data-layout-view="index"><IndexStage data={data} /></div>
+<div data-layout-view="model"><ModelStage data={data} /></div>

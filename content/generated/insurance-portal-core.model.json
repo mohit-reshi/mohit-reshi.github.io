@@ -1,0 +1,1861 @@
+{
+  "slug": "insurance-portal-core",
+  "public_title": "Insurance Portal Core Model",
+  "source_kind": "pbip",
+  "storage_mode": "import",
+  "tables": [
+    {
+      "name": "Dim_Date",
+      "role": "date",
+      "columns": 7,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Employer",
+      "role": "dimension",
+      "columns": 6,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Member",
+      "role": "dimension",
+      "columns": 6,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Policy",
+      "role": "dimension",
+      "columns": 8,
+      "measures": 2,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Producer",
+      "role": "dimension",
+      "columns": 5,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Fact_Claim",
+      "role": "fact",
+      "columns": 9,
+      "measures": 7,
+      "hidden": false
+    },
+    {
+      "name": "Fact_Commission",
+      "role": "fact",
+      "columns": 5,
+      "measures": 3,
+      "hidden": false
+    },
+    {
+      "name": "Fact_Premium",
+      "role": "fact",
+      "columns": 6,
+      "measures": 4,
+      "hidden": false
+    },
+    {
+      "name": "Fact_QuoteDetail",
+      "role": "fact",
+      "columns": 5,
+      "measures": 5,
+      "hidden": false
+    },
+    {
+      "name": "Fact_QuoteHeader",
+      "role": "fact",
+      "columns": 7,
+      "measures": 4,
+      "hidden": false
+    },
+    {
+      "name": "Security_UserAccount",
+      "role": "dimension",
+      "columns": 3,
+      "measures": 0,
+      "hidden": true
+    },
+    {
+      "name": "_Measures",
+      "role": "measure-table",
+      "columns": 0,
+      "measures": 120,
+      "hidden": false
+    }
+  ],
+  "relationships": [
+    {
+      "from": "Dim_Policy[EmployerKey]",
+      "to": "Dim_Employer[EmployerKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Dim_Policy[ProducerKey]",
+      "to": "Dim_Producer[ProducerKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Dim_Member[EmployerKey]",
+      "to": "Dim_Employer[EmployerKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "both",
+      "active": true
+    },
+    {
+      "from": "Fact_Claim[PolicyKey]",
+      "to": "Dim_Policy[PolicyKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    },
+    {
+      "from": "Fact_Claim[MemberKey]",
+      "to": "Dim_Member[MemberKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Claim[SubmittedDate]",
+      "to": "Dim_Date[Date]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Premium[PolicyKey]",
+      "to": "Dim_Policy[PolicyKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Premium[BillingMonth]",
+      "to": "Dim_Date[Date]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_QuoteHeader[ProducerKey]",
+      "to": "Dim_Producer[ProducerKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_QuoteHeader[SubmittedDate]",
+      "to": "Dim_Date[Date]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_QuoteDetail[QuoteHeaderKey]",
+      "to": "Fact_QuoteHeader[QuoteHeaderKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Commission[PolicyKey]",
+      "to": "Dim_Policy[PolicyKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Commission[ProducerKey]",
+      "to": "Dim_Producer[ProducerKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    },
+    {
+      "from": "Fact_Commission[Period]",
+      "to": "Dim_Date[Date]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Claim[DecisionDate]",
+      "to": "Dim_Date[Date]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    }
+  ],
+  "measures": [
+    {
+      "name": "Active Policy Count",
+      "table": "Dim_Policy",
+      "display_folder": "Policy Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE(\n    COUNTROWS(Dim_Policy),\n    Dim_Policy[Status] = \"Active\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Premium In Force",
+      "table": "Dim_Policy",
+      "display_folder": "Policy Measures",
+      "format": "\\$#,0.00",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM(Dim_Policy[AnnualPremium]),\n    Dim_Policy[Status] = \"Active\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Claim Count",
+      "table": "Fact_Claim",
+      "display_folder": "Claim Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "COUNTROWS(Fact_Claim)",
+      "depends_on": []
+    },
+    {
+      "name": "Total Benefit Paid",
+      "table": "Fact_Claim",
+      "display_folder": "Claim Measures",
+      "format": "\\$#,0.00",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM(Fact_Claim[BenefitAmount]),\n    Fact_Claim[Status] IN {\"Paid\", \"Closed\"}\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Denied Claim Count",
+      "table": "Fact_Claim",
+      "display_folder": "Claim Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE(\n    [Claim Count],\n    Fact_Claim[Status] = \"Denied\"\n)",
+      "depends_on": [
+        "Claim Count"
+      ]
+    },
+    {
+      "name": "Denial Rate %",
+      "table": "Fact_Claim",
+      "display_folder": "Claim Measures",
+      "format": "0.0%",
+      "description": "",
+      "expression": "VAR TotalClaims = [Claim Count]\nVAR DeniedClaims = [Denied Claim Count]\nRETURN\n    DIVIDE(DeniedClaims, TotalClaims)",
+      "depends_on": [
+        "Claim Count",
+        "Denied Claim Count"
+      ]
+    },
+    {
+      "name": "Open Claim Count",
+      "table": "Fact_Claim",
+      "display_folder": "Claim Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE(\n    [Claim Count],\n    Fact_Claim[Status] IN {\"Submitted\", \"Under Review\"}\n)",
+      "depends_on": [
+        "Claim Count"
+      ]
+    },
+    {
+      "name": "Average Claim Duration Days",
+      "table": "Fact_Claim",
+      "display_folder": "Claim Measures",
+      "format": "#,0.0",
+      "description": "",
+      "expression": "AVERAGE(Fact_Claim[DurationDays])",
+      "depends_on": []
+    },
+    {
+      "name": "Claim Ageing Days",
+      "table": "Fact_Claim",
+      "display_folder": "Claim Measures",
+      "format": "#,0.0",
+      "description": "Average days open for currently-open claims (Submitted / Under Review), measured to the report as-of date. Phase 5 fix: previously measured to TODAY(), which sits well after the synthetic data ends, inflating every age.",
+      "expression": "VAR ReferenceDate = [Report As-Of Date]\nRETURN\n    AVERAGEX(\n        FILTER(Fact_Claim, Fact_Claim[Status] IN {\"Submitted\", \"Under Review\"}),\n        DATEDIFF(Fact_Claim[SubmittedDate], ReferenceDate, DAY)\n    )",
+      "depends_on": [
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Total Commission",
+      "table": "Fact_Commission",
+      "display_folder": "Commission Measures",
+      "format": "\\$#,0.00",
+      "description": "",
+      "expression": "SUM(Fact_Commission[CommissionAmount])",
+      "depends_on": []
+    },
+    {
+      "name": "Total Commission - Prior Period",
+      "table": "Fact_Commission",
+      "display_folder": "Commission Measures",
+      "format": "\\$#,0.00",
+      "description": "Commission over the equal-length window immediately before the selected period. Phase 5: was DATEADD -1 MONTH, which for a year selection compared against a window overlapping 11 of 12 months (and so also changes [Commission Growth vs Prior Period %], which builds on it).",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([Total Commission], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "Total Commission"
+      ]
+    },
+    {
+      "name": "Commission Growth vs Prior Period %",
+      "table": "Fact_Commission",
+      "display_folder": "Commission Measures",
+      "format": "0.0%;-0.0%",
+      "description": "",
+      "expression": "VAR CurrentPeriodCommission = [Total Commission]\nVAR PriorPeriodCommission = [Total Commission - Prior Period]\nRETURN\n    DIVIDE(CurrentPeriodCommission - PriorPeriodCommission, PriorPeriodCommission)",
+      "depends_on": [
+        "Total Commission",
+        "Total Commission - Prior Period"
+      ]
+    },
+    {
+      "name": "Total Billed Premium",
+      "table": "Fact_Premium",
+      "display_folder": "Premium Measures",
+      "format": "\\$#,0.00",
+      "description": "",
+      "expression": "SUM(Fact_Premium[BilledAmount])",
+      "depends_on": []
+    },
+    {
+      "name": "Total Paid Premium",
+      "table": "Fact_Premium",
+      "display_folder": "Premium Measures",
+      "format": "\\$#,0.00",
+      "description": "",
+      "expression": "SUM(Fact_Premium[PaidAmount])",
+      "depends_on": []
+    },
+    {
+      "name": "Outstanding Balance",
+      "table": "Fact_Premium",
+      "display_folder": "Premium Measures",
+      "format": "\\$#,0.00",
+      "description": "",
+      "expression": "VAR BilledTotal = [Total Billed Premium]\nVAR PaidTotal = [Total Paid Premium]\nRETURN\n    BilledTotal - PaidTotal",
+      "depends_on": [
+        "Total Billed Premium",
+        "Total Paid Premium"
+      ]
+    },
+    {
+      "name": "Collection Rate %",
+      "table": "Fact_Premium",
+      "display_folder": "Premium Measures",
+      "format": "0.0%",
+      "description": "",
+      "expression": "VAR BilledTotal = [Total Billed Premium]\nVAR PaidTotal = [Total Paid Premium]\nRETURN\n    DIVIDE(PaidTotal, BilledTotal)",
+      "depends_on": [
+        "Total Billed Premium",
+        "Total Paid Premium"
+      ]
+    },
+    {
+      "name": "Quote Line Count",
+      "table": "Fact_QuoteDetail",
+      "display_folder": "Detail-Level Quote Measures",
+      "format": "#,0",
+      "description": "Detail-grain (state-line) quote count and conversion - the \"multi-quote\" one-to-many child. A 3-state case contributes 3 rows here.",
+      "expression": "COUNTROWS(Fact_QuoteDetail)",
+      "depends_on": []
+    },
+    {
+      "name": "Lines Won",
+      "table": "Fact_QuoteDetail",
+      "display_folder": "Detail-Level Quote Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE(\n    [Quote Line Count],\n    Fact_QuoteDetail[LineWonFlag] = 1\n)",
+      "depends_on": [
+        "Quote Line Count"
+      ]
+    },
+    {
+      "name": "Line Conversion Rate %",
+      "table": "Fact_QuoteDetail",
+      "display_folder": "Detail-Level Quote Measures",
+      "format": "0.0%",
+      "description": "Line-grain conversion rate = state-lines won / state-lines quoted. Do not compare this directly to [Case Conversion Rate %] without noting the grain difference - a case can be \"won\" while some of its individual state lines were not (e.g. bound in 2 of 3 quoted states).",
+      "expression": "VAR LinesQuoted = [Quote Line Count]\nVAR LinesWonCount = [Lines Won]\nRETURN\n    DIVIDE(LinesWonCount, LinesQuoted)",
+      "depends_on": [
+        "Quote Line Count",
+        "Lines Won"
+      ]
+    },
+    {
+      "name": "Total Quoted Premium",
+      "table": "Fact_QuoteDetail",
+      "display_folder": "Detail-Level Quote Measures",
+      "format": "\\$#,0.00",
+      "description": "",
+      "expression": "SUM(Fact_QuoteDetail[QuotedPremium])",
+      "depends_on": []
+    },
+    {
+      "name": "Won Quoted Premium",
+      "table": "Fact_QuoteDetail",
+      "display_folder": "Detail-Level Quote Measures",
+      "format": "\\$#,0.00",
+      "description": "",
+      "expression": "CALCULATE(\n    [Total Quoted Premium],\n    Fact_QuoteDetail[LineWonFlag] = 1\n)",
+      "depends_on": [
+        "Total Quoted Premium"
+      ]
+    },
+    {
+      "name": "Quote Case Count",
+      "table": "Fact_QuoteHeader",
+      "display_folder": "Case-Level Quote Measures",
+      "format": "#,0",
+      "description": "Case-grain (header) quote count and conversion. This is the \"multi-quote\" case level: one row per submission regardless of how many states it spans.",
+      "expression": "COUNTROWS(Fact_QuoteHeader)",
+      "depends_on": []
+    },
+    {
+      "name": "Cases Won",
+      "table": "Fact_QuoteHeader",
+      "display_folder": "Case-Level Quote Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE(\n    [Quote Case Count],\n    Fact_QuoteHeader[CaseWonFlag] = 1\n)",
+      "depends_on": [
+        "Quote Case Count"
+      ]
+    },
+    {
+      "name": "Case Conversion Rate %",
+      "table": "Fact_QuoteHeader",
+      "display_folder": "Case-Level Quote Measures",
+      "format": "0.0%",
+      "description": "Case-level conversion rate = cases won / cases quoted. Distinct from the state-line conversion rate on Fact_QuoteDetail - a multi-state case with 3 states counts once here, but as 3 rows there. Keeping these on separate tables (rather than one shared measure with a grain toggle) avoids accidental double-counting at the case grain.",
+      "expression": "VAR CasesQuoted = [Quote Case Count]\nVAR CasesWon = [Cases Won]\nRETURN\n    DIVIDE(CasesWon, CasesQuoted)",
+      "depends_on": [
+        "Quote Case Count",
+        "Cases Won"
+      ]
+    },
+    {
+      "name": "Multi-State Case Share %",
+      "table": "Fact_QuoteHeader",
+      "display_folder": "Case-Level Quote Measures",
+      "format": "0.0%",
+      "description": "",
+      "expression": "VAR TotalCases = [Quote Case Count]\nVAR MultiStateCases =\n    CALCULATE(\n        [Quote Case Count],\n        Fact_QuoteHeader[MultiState] = 1\n    )\nRETURN\n    DIVIDE(MultiStateCases, TotalCases)",
+      "depends_on": [
+        "Quote Case Count"
+      ]
+    },
+    {
+      "name": "Data as of",
+      "table": "_Measures",
+      "display_folder": "",
+      "format": "General",
+      "description": "Header text: data currency (report as-of date) plus the selected reporting period.",
+      "expression": "VAR AsOf = [Report As-Of Date]\nVAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nRETURN\n    \"Data as of \" & FORMAT(AsOf, \"mmm d, yyyy\")\n        & \"  ·  Period \" & FORMAT(PeriodStart, \"mmm d, yyyy\") & \" – \" & FORMAT(PeriodEnd, \"mmm d, yyyy\")",
+      "depends_on": [
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Member Headcount",
+      "table": "_Measures",
+      "display_folder": "",
+      "format": "#,0",
+      "description": "",
+      "expression": "DISTINCTCOUNT(Dim_Member[MemberKey])",
+      "depends_on": []
+    },
+    {
+      "name": "Report As-Of Date",
+      "table": "_Measures",
+      "display_folder": "Report Context",
+      "format": "Short Date",
+      "description": "Last date of loaded data - the reference date for renewals, ageing and \"days open\". Used instead of TODAY(): the synthetic data ends 2025-12-31, so TODAY()-based ages were inflated by however long ago that was.",
+      "expression": "CALCULATE(MAX(Dim_Date[Date]), REMOVEFILTERS())",
+      "depends_on": []
+    },
+    {
+      "name": "Lapsed Policy Count",
+      "table": "_Measures",
+      "display_folder": "Policy KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE(COUNTROWS(Dim_Policy), Dim_Policy[Status] = \"Lapsed\")",
+      "depends_on": []
+    },
+    {
+      "name": "Policy Status Summary",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Lapsed = [Lapsed Policy Count] + 0\nVAR Active = [Active Policy Count] + 0\nRETURN\n    SWITCH(\n        TRUE(),\n        Active + Lapsed = 0, \"– No policies\",\n        Lapsed = 0, \"✓ All \" & Active & \" policies active\",\n        Active = 0, \"✕ No active policy - \" & Lapsed & \" lapsed\",\n        \"⚠ \" & Lapsed & \" lapsed - review coverage\"\n    )",
+      "depends_on": [
+        "Lapsed Policy Count",
+        "Active Policy Count"
+      ]
+    },
+    {
+      "name": "Policy Status Summary Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Lapsed = [Lapsed Policy Count] + 0\nVAR Active = [Active Policy Count] + 0\nRETURN\n    SWITCH(TRUE(), Active + Lapsed = 0, \"#56666B\", Lapsed = 0, \"#1E7B3C\", Active = 0, \"#B42318\", \"#8A5A00\")",
+      "depends_on": [
+        "Lapsed Policy Count",
+        "Active Policy Count"
+      ]
+    },
+    {
+      "name": "Coverage Lines In Force",
+      "table": "_Measures",
+      "display_folder": "Policy KPIs",
+      "format": "0",
+      "description": "Distinct statutory coverage lines (Statutory Disability, Paid Family Leave) with an active policy.",
+      "expression": "CALCULATE(DISTINCTCOUNT(Dim_Policy[PolicyType]), Dim_Policy[Status] = \"Active\")",
+      "depends_on": []
+    },
+    {
+      "name": "Coverage Lines Label",
+      "table": "_Measures",
+      "display_folder": "Policy KPIs",
+      "format": "General",
+      "description": "",
+      "expression": "FORMAT([Coverage Lines In Force] + 0, \"0\") & \" of 2 lines\"",
+      "depends_on": [
+        "Coverage Lines In Force"
+      ]
+    },
+    {
+      "name": "Statutory Coverage Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Whether both statutory lines are in force. In some states employers must carry both DBL and PFL; shown as a prompt to check, not a compliance determination (the model has no per-state obligation data).",
+      "expression": "VAR HasDisability = CALCULATE(COUNTROWS(Dim_Policy), Dim_Policy[Status] = \"Active\", Dim_Policy[PolicyType] = \"Statutory Disability\") > 0\nVAR HasPFL = CALCULATE(COUNTROWS(Dim_Policy), Dim_Policy[Status] = \"Active\", Dim_Policy[PolicyType] = \"Paid Family Leave\") > 0\nRETURN\n    SWITCH(\n        TRUE(),\n        HasDisability && HasPFL, \"✓ Disability and PFL both in force\",\n        HasDisability, \"⚠ Paid Family Leave not in force\",\n        HasPFL, \"⚠ Statutory Disability not in force\",\n        \"✕ No statutory coverage in force\"\n    )",
+      "depends_on": []
+    },
+    {
+      "name": "Statutory Coverage Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Lines = [Coverage Lines In Force] + 0\nRETURN\n    SWITCH(TRUE(), Lines >= 2, \"#1E7B3C\", Lines = 1, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Coverage Lines In Force"
+      ]
+    },
+    {
+      "name": "Next Renewal Date",
+      "table": "_Measures",
+      "display_folder": "Policy KPIs",
+      "format": "mmm d, yyyy",
+      "description": "Next policy anniversary (renewal) after the report as-of date, across active policies in context. Assumes annual terms renewing on the effective-date anniversary.",
+      "expression": "VAR AsOf = [Report As-Of Date]\nRETURN\n    MINX(\n        FILTER(Dim_Policy, Dim_Policy[Status] = \"Active\"),\n        VAR Effective = Dim_Policy[EffectiveDate]\n        VAR ThisYearAnniversary = DATE(YEAR(AsOf), MONTH(Effective), DAY(Effective))\n        RETURN\n            IF(ThisYearAnniversary > AsOf, ThisYearAnniversary, DATE(YEAR(AsOf) + 1, MONTH(Effective), DAY(Effective)))\n    )",
+      "depends_on": [
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Days to Renewal",
+      "table": "_Measures",
+      "display_folder": "Policy KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR NextRenewal = [Next Renewal Date]\nRETURN\n    IF(NOT ISBLANK(NextRenewal), INT(NextRenewal - [Report As-Of Date]))",
+      "depends_on": [
+        "Next Renewal Date",
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Renewal Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Renewal window: <= 60 days red (act now - census and rate review due), 61-90 amber (prepare), otherwise green.",
+      "expression": "VAR Days = [Days to Renewal]\nVAR NextRenewal = [Next Renewal Date]\nRETURN\n    SWITCH(\n        TRUE(),\n        ISBLANK(Days), \"– No active policy\",\n        Days <= 60, \"✕ Renews \" & FORMAT(NextRenewal, \"mmm d, yyyy\") & \" - act now\",\n        Days <= 90, \"⚠ Renews \" & FORMAT(NextRenewal, \"mmm d, yyyy\") & \" - prepare\",\n        \"✓ Renews \" & FORMAT(NextRenewal, \"mmm d, yyyy\")\n    )",
+      "depends_on": [
+        "Days to Renewal",
+        "Next Renewal Date"
+      ]
+    },
+    {
+      "name": "Renewal Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Days = [Days to Renewal]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Days), \"#56666B\", Days <= 60, \"#B42318\", Days <= 90, \"#8A5A00\", \"#1E7B3C\")",
+      "depends_on": [
+        "Days to Renewal"
+      ]
+    },
+    {
+      "name": "Policy Status Label",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "SWITCH(SELECTEDVALUE(Dim_Policy[Status]), \"Active\", \"✓ Active\", \"Lapsed\", \"✕ Lapsed\", BLANK())",
+      "depends_on": []
+    },
+    {
+      "name": "Policy Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "SWITCH(SELECTEDVALUE(Dim_Policy[Status]), \"Active\", \"#1E7B3C\", \"Lapsed\", \"#B42318\", \"#56666B\")",
+      "depends_on": []
+    },
+    {
+      "name": "Policy Count",
+      "table": "_Measures",
+      "display_folder": "Policy KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "COUNTROWS(Dim_Policy)",
+      "depends_on": []
+    },
+    {
+      "name": "Policy Status Fill",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "SWITCH(SELECTEDVALUE(Dim_Policy[Status]), \"Active\", \"#2E7D46\", \"Lapsed\", \"#B42318\", \"#B5C3C5\")",
+      "depends_on": []
+    },
+    {
+      "name": "Premium In Force Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Active = [Active Policy Count] + 0\nRETURN\n    IF(Active > 0, \"Annualised · \" & Active & \" active polic\" & IF(Active = 1, \"y\", \"ies\")\n        & \"  ·  avg \" & FORMAT(DIVIDE([Premium In Force], Active), \"$#,0\"), \"– No active policy\")",
+      "depends_on": [
+        "Active Policy Count",
+        "Premium In Force"
+      ]
+    },
+    {
+      "name": "Collection Rate Target %",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0%",
+      "description": "Target: 98% of billed premium collected (assumed). Amber down to 95%.",
+      "expression": "0.98",
+      "depends_on": []
+    },
+    {
+      "name": "Total Billed Premium - Prior Period",
+      "table": "_Measures",
+      "display_folder": "Premium KPIs",
+      "format": "\\$#,0.00",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([Total Billed Premium], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "Total Billed Premium"
+      ]
+    },
+    {
+      "name": "Billed Premium Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Context only (billed premium rising is neither good nor bad for the employer) - so shown neutral, not RAG.",
+      "expression": "VAR CurrentPeriodBilled = [Total Billed Premium]\nVAR PriorPeriodBilled = [Total Billed Premium - Prior Period]\nVAR Change = DIVIDE(CurrentPeriodBilled - PriorPeriodBilled, PriorPeriodBilled)\nRETURN\n    IF(\n        ISBLANK(PriorPeriodBilled),\n        \"ⓘ No prior period in data\",\n        \"ⓘ \" & IF(Change >= 0, \"▲ \", \"▼ \") & FORMAT(Change, \"+0.0%;-0.0%\") & \" vs prior period\"\n    )",
+      "depends_on": [
+        "Total Billed Premium",
+        "Total Billed Premium - Prior Period"
+      ]
+    },
+    {
+      "name": "Collection Rate Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Rate = [Collection Rate %]\nVAR Target = [Collection Rate Target %]\nRETURN\n    IF(\n        ISBLANK(Rate),\n        \"– No billing in period\",\n        SWITCH(TRUE(), Rate >= Target, \"✓ Meets\", Rate >= 0.95, \"⚠ Below\", \"✕ Below\")\n            & \" \" & FORMAT(Target, \"0%\") & \" target\"\n    )",
+      "depends_on": [
+        "Collection Rate %",
+        "Collection Rate Target %"
+      ]
+    },
+    {
+      "name": "Collection Rate Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": ">= 98% green, 95-98% amber, < 95% red. Also used row-by-row in the policy billing table.",
+      "expression": "VAR Rate = [Collection Rate %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Rate), \"#56666B\", Rate >= [Collection Rate Target %], \"#1E7B3C\", Rate >= 0.95, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Collection Rate %",
+        "Collection Rate Target %"
+      ]
+    },
+    {
+      "name": "Open Receivables",
+      "table": "_Measures",
+      "display_folder": "Premium KPIs",
+      "format": "\\$#,0.00",
+      "description": "Billed minus paid across ALL billing periods (receivables are an as-of balance, not a period flow), still respecting employer / policy filters and RLS.",
+      "expression": "CALCULATE([Outstanding Balance], REMOVEFILTERS(Dim_Date))",
+      "depends_on": [
+        "Outstanding Balance"
+      ]
+    },
+    {
+      "name": "Unpaid Invoice Count",
+      "table": "_Measures",
+      "display_folder": "Premium KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE(COUNTROWS(Fact_Premium), Fact_Premium[PaidFlag] = 0, REMOVEFILTERS(Dim_Date))",
+      "depends_on": []
+    },
+    {
+      "name": "Oldest Unpaid Days",
+      "table": "_Measures",
+      "display_folder": "Premium KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR OldestUnpaid = CALCULATE(MIN(Fact_Premium[BillingMonth]), Fact_Premium[PaidFlag] = 0, REMOVEFILTERS(Dim_Date))\nRETURN\n    IF(NOT ISBLANK(OldestUnpaid), INT([Report As-Of Date] - OldestUnpaid))",
+      "depends_on": [
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Receivables Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Invoices = [Unpaid Invoice Count] + 0\nVAR OldestDays = [Oldest Unpaid Days]\nRETURN\n    SWITCH(\n        TRUE(),\n        Invoices = 0, \"✓ Nothing outstanding\",\n        OldestDays > 60, \"✕ \" & Invoices & \" unpaid · oldest \" & OldestDays & \" days\",\n        \"⚠ \" & Invoices & \" unpaid · oldest \" & OldestDays & \" days\"\n    )",
+      "depends_on": [
+        "Unpaid Invoice Count",
+        "Oldest Unpaid Days"
+      ]
+    },
+    {
+      "name": "Receivables Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Invoices = [Unpaid Invoice Count] + 0\nRETURN\n    SWITCH(TRUE(), Invoices = 0, \"#1E7B3C\", [Oldest Unpaid Days] > 60, \"#B42318\", \"#8A5A00\")",
+      "depends_on": [
+        "Unpaid Invoice Count",
+        "Oldest Unpaid Days"
+      ]
+    },
+    {
+      "name": "Receivables 0-30 Days",
+      "table": "_Measures",
+      "display_folder": "Receivables Ageing",
+      "format": "\\$#,0",
+      "description": "",
+      "expression": "VAR AsOf = [Report As-Of Date]\nRETURN\n    CALCULATE(\n        SUMX(\n            FILTER(Fact_Premium, VAR Age = AsOf - Fact_Premium[BillingMonth] RETURN Age <= 30),\n            Fact_Premium[BilledAmount] - Fact_Premium[PaidAmount]\n        ),\n        Fact_Premium[PaidFlag] = 0,\n        REMOVEFILTERS(Dim_Date)\n    )",
+      "depends_on": [
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Receivables 31-60 Days",
+      "table": "_Measures",
+      "display_folder": "Receivables Ageing",
+      "format": "\\$#,0",
+      "description": "",
+      "expression": "VAR AsOf = [Report As-Of Date]\nRETURN\n    CALCULATE(\n        SUMX(\n            FILTER(Fact_Premium, VAR Age = AsOf - Fact_Premium[BillingMonth] RETURN Age > 30 && Age <= 60),\n            Fact_Premium[BilledAmount] - Fact_Premium[PaidAmount]\n        ),\n        Fact_Premium[PaidFlag] = 0,\n        REMOVEFILTERS(Dim_Date)\n    )",
+      "depends_on": [
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Receivables 61-90 Days",
+      "table": "_Measures",
+      "display_folder": "Receivables Ageing",
+      "format": "\\$#,0",
+      "description": "",
+      "expression": "VAR AsOf = [Report As-Of Date]\nRETURN\n    CALCULATE(\n        SUMX(\n            FILTER(Fact_Premium, VAR Age = AsOf - Fact_Premium[BillingMonth] RETURN Age > 60 && Age <= 90),\n            Fact_Premium[BilledAmount] - Fact_Premium[PaidAmount]\n        ),\n        Fact_Premium[PaidFlag] = 0,\n        REMOVEFILTERS(Dim_Date)\n    )",
+      "depends_on": [
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Receivables 90+ Days",
+      "table": "_Measures",
+      "display_folder": "Receivables Ageing",
+      "format": "\\$#,0",
+      "description": "",
+      "expression": "VAR AsOf = [Report As-Of Date]\nRETURN\n    CALCULATE(\n        SUMX(\n            FILTER(Fact_Premium, VAR Age = AsOf - Fact_Premium[BillingMonth] RETURN Age > 90),\n            Fact_Premium[BilledAmount] - Fact_Premium[PaidAmount]\n        ),\n        Fact_Premium[PaidFlag] = 0,\n        REMOVEFILTERS(Dim_Date)\n    )",
+      "depends_on": [
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Days Outstanding",
+      "table": "_Measures",
+      "display_folder": "Receivables Ageing",
+      "format": "#,0",
+      "description": "Row-level: days since the billing month for an unpaid invoice (blank once paid).",
+      "expression": "VAR BillingMonth = MAX(Fact_Premium[BillingMonth])\nRETURN\n    IF([Open Receivables] > 0, INT([Report As-Of Date] - BillingMonth))",
+      "depends_on": [
+        "Open Receivables",
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Ageing Bucket Label",
+      "table": "_Measures",
+      "display_folder": "Receivables Ageing",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Days = [Days Outstanding]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Days), BLANK(), Days <= 30, \"● 0-30 days\", Days <= 60, \"⚠ 31-60 days\", Days <= 90, \"✕ 61-90 days\", \"✕ 90+ days\")",
+      "depends_on": [
+        "Days Outstanding"
+      ]
+    },
+    {
+      "name": "Ageing Bucket Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Days = [Days Outstanding]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Days), \"#56666B\", Days <= 30, \"#56666B\", Days <= 60, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Days Outstanding"
+      ]
+    },
+    {
+      "name": "Paid Premium Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR UnpaidFromPeriod = [Outstanding Balance]\nRETURN\n    IF(\n        ISBLANK([Total Billed Premium]),\n        \"– No billing in period\",\n        IF(UnpaidFromPeriod > 0, \"ⓘ \" & FORMAT(UnpaidFromPeriod, \"$#,0\") & \" of this period's billing unpaid\", \"✓ Period billing paid in full\")\n    )",
+      "depends_on": [
+        "Outstanding Balance",
+        "Total Billed Premium"
+      ]
+    },
+    {
+      "name": "Enrolled Members",
+      "table": "_Measures",
+      "display_folder": "Census KPIs",
+      "format": "#,0",
+      "description": "Members enrolled on or before the end of the period in context (so on a monthly axis it is the month-end headcount). Dim_Member has no date relationship; the period is applied to EnrollmentDate explicitly. [Member Headcount] ignores dates entirely, which is why the Phase 1 enrollment \"trend\" line was flat.",
+      "expression": "VAR PeriodEnd = MAX(Dim_Date[Date])\nRETURN\n    CALCULATE(DISTINCTCOUNT(Dim_Member[MemberKey]), Dim_Member[EnrollmentDate] <= PeriodEnd)",
+      "depends_on": []
+    },
+    {
+      "name": "Enrolled at Period Start",
+      "table": "_Measures",
+      "display_folder": "Census KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nRETURN\n    CALCULATE(DISTINCTCOUNT(Dim_Member[MemberKey]), Dim_Member[EnrollmentDate] < PeriodStart)",
+      "depends_on": []
+    },
+    {
+      "name": "New Enrollments",
+      "table": "_Measures",
+      "display_folder": "Census KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nRETURN\n    CALCULATE(\n        DISTINCTCOUNT(Dim_Member[MemberKey]),\n        Dim_Member[EnrollmentDate] >= PeriodStart,\n        Dim_Member[EnrollmentDate] <= PeriodEnd\n    )",
+      "depends_on": []
+    },
+    {
+      "name": "Enrollment Growth Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Context, not RAG: headcount growth is the employer's business, not a service level.",
+      "expression": "VAR AtStart = [Enrolled at Period Start] + 0\nVAR NewInPeriod = [New Enrollments] + 0\nRETURN\n    IF(\n        AtStart = 0,\n        \"ⓘ \" & NewInPeriod & \" enrolled during the period\",\n        \"ⓘ \" & IF(NewInPeriod > 0, \"▲ \", \"\") & FORMAT(DIVIDE(NewInPeriod, AtStart), \"+0.0%\") & \" since period start (\" & NewInPeriod & \" new)\"\n    )",
+      "depends_on": [
+        "Enrolled at Period Start",
+        "New Enrollments"
+      ]
+    },
+    {
+      "name": "New Enrollment Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nVAR PriorNew =\n    CALCULATE(\n        DISTINCTCOUNT(Dim_Member[MemberKey]),\n        Dim_Member[EnrollmentDate] >= PeriodStart - PeriodDays,\n        Dim_Member[EnrollmentDate] < PeriodStart\n    )\nRETURN\n    \"ⓘ \" & PriorNew + 0 & \" in the prior equal-length period\"",
+      "depends_on": []
+    },
+    {
+      "name": "Members with Claims",
+      "table": "_Measures",
+      "display_folder": "Census KPIs",
+      "format": "#,0",
+      "description": "Distinct members who submitted at least one claim in the period.",
+      "expression": "DISTINCTCOUNT(Fact_Claim[MemberKey])",
+      "depends_on": []
+    },
+    {
+      "name": "Claim Incidence %",
+      "table": "_Measures",
+      "display_folder": "Census KPIs",
+      "format": "0.0%",
+      "description": "",
+      "expression": "DIVIDE([Members with Claims], [Enrolled Members])",
+      "depends_on": [
+        "Members with Claims",
+        "Enrolled Members"
+      ]
+    },
+    {
+      "name": "Claim Incidence Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Incidence = [Claim Incidence %]\nRETURN\n    IF(ISBLANK(Incidence), \"– No enrolled members\", \"ⓘ \" & FORMAT(Incidence, \"0.0%\") & \" of enrolled members filed a claim\")",
+      "depends_on": [
+        "Claim Incidence %"
+      ]
+    },
+    {
+      "name": "Average Tenure (Months)",
+      "table": "_Measures",
+      "display_folder": "Census KPIs",
+      "format": "#,0.0",
+      "description": "Average months enrolled at period end (members enrolled by then). Also the row value in the roster.",
+      "expression": "VAR PeriodEnd = MAX(Dim_Date[Date])\nRETURN\n    AVERAGEX(\n        FILTER(Dim_Member, Dim_Member[EnrollmentDate] <= PeriodEnd),\n        DATEDIFF(Dim_Member[EnrollmentDate], PeriodEnd, MONTH)\n    )",
+      "depends_on": []
+    },
+    {
+      "name": "Tenure Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR PeriodEnd = MAX(Dim_Date[Date])\nVAR UnderSixMonths =\n    COUNTROWS(FILTER(Dim_Member, Dim_Member[EnrollmentDate] <= PeriodEnd && DATEDIFF(Dim_Member[EnrollmentDate], PeriodEnd, MONTH) < 6))\nRETURN\n    \"ⓘ \" & UnderSixMonths + 0 & \" members under 6 months\"",
+      "depends_on": []
+    },
+    {
+      "name": "Enrollment Label",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Row label for the roster; blank for members not yet enrolled at period end (so they drop out of the table).",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR Enrolled = MAX(Dim_Member[EnrollmentDate])\nRETURN\n    SWITCH(TRUE(), ISBLANK(Enrolled) || Enrolled > PeriodEnd, BLANK(), Enrolled >= PeriodStart, \"★ New this period\", \"Enrolled\")",
+      "depends_on": []
+    },
+    {
+      "name": "Decision Target Days",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0",
+      "description": "Service standard: claims decided within 14 days of submission on average (assumed; every decided claim in the synthetic data is within 30 days, so a 30-day measure would show nothing).",
+      "expression": "14",
+      "depends_on": []
+    },
+    {
+      "name": "Days to Decision (Avg)",
+      "table": "_Measures",
+      "display_folder": "Claim KPIs",
+      "format": "#,0.0",
+      "description": "",
+      "expression": "AVERAGEX(\n    FILTER(Fact_Claim, NOT ISBLANK(Fact_Claim[DecisionDate])),\n    DATEDIFF(Fact_Claim[SubmittedDate], Fact_Claim[DecisionDate], DAY)\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Decision Time Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Days = [Days to Decision (Avg)]\nVAR Target = [Decision Target Days]\nRETURN\n    IF(\n        ISBLANK(Days),\n        \"– No decisions in period\",\n        SWITCH(TRUE(), Days <= Target, \"✓ Within\", Days <= Target * 1.25, \"⚠ Over\", \"✕ Over\")\n            & \" \" & Target & \"-day service standard\"\n    )",
+      "depends_on": [
+        "Days to Decision (Avg)",
+        "Decision Target Days"
+      ]
+    },
+    {
+      "name": "Decision Time Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Days = [Days to Decision (Avg)]\nVAR Target = [Decision Target Days]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Days), \"#56666B\", Days <= Target, \"#1E7B3C\", Days <= Target * 1.25, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Days to Decision (Avg)",
+        "Decision Target Days"
+      ]
+    },
+    {
+      "name": "Decision Time Fill",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Days = [Days to Decision (Avg)]\nVAR Target = [Decision Target Days]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Days), \"#B5C3C5\", Days <= Target, \"#2E7D46\", Days <= Target * 1.25, \"#C07F12\", \"#B42318\")",
+      "depends_on": [
+        "Days to Decision (Avg)",
+        "Decision Target Days"
+      ]
+    },
+    {
+      "name": "Claim Count - Prior Period",
+      "table": "_Measures",
+      "display_folder": "Claim KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([Claim Count], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "Claim Count"
+      ]
+    },
+    {
+      "name": "Claims Submitted Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Context only: claim volume reflects the workforce's leave needs, not performance.",
+      "expression": "VAR CurrentPeriodClaims = [Claim Count] + 0\nVAR PriorPeriodClaims = [Claim Count - Prior Period]\nRETURN\n    IF(\n        ISBLANK(PriorPeriodClaims),\n        \"ⓘ No prior period in data\",\n        \"ⓘ \" & IF(CurrentPeriodClaims >= PriorPeriodClaims, \"▲ \", \"▼ \")\n            & FORMAT(DIVIDE(CurrentPeriodClaims - PriorPeriodClaims, PriorPeriodClaims), \"+0%;-0%\") & \" vs prior period\"\n    )",
+      "depends_on": [
+        "Claim Count",
+        "Claim Count - Prior Period"
+      ]
+    },
+    {
+      "name": "Open Claims Over 30 Days",
+      "table": "_Measures",
+      "display_folder": "Claim KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR AsOf = [Report As-Of Date]\nRETURN\n    COUNTROWS(FILTER(Fact_Claim, Fact_Claim[Status] IN {\"Submitted\", \"Under Review\"} && AsOf - Fact_Claim[SubmittedDate] > 30))",
+      "depends_on": [
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Open Claims Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Open-claim backlog health: none over 30 days green, up to half amber, more than half red.",
+      "expression": "VAR OpenClaims = [Open Claim Count] + 0\nVAR Stale = [Open Claims Over 30 Days] + 0\nRETURN\n    SWITCH(\n        TRUE(),\n        OpenClaims = 0, \"✓ No open claims\",\n        Stale = 0, \"✓ All open under 30 days\",\n        DIVIDE(Stale, OpenClaims) <= 0.5, \"⚠ \" & Stale & \" open over 30 days\",\n        \"✕ \" & Stale & \" of \" & OpenClaims & \" open over 30 days\"\n    )",
+      "depends_on": [
+        "Open Claim Count",
+        "Open Claims Over 30 Days"
+      ]
+    },
+    {
+      "name": "Open Claims Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR OpenClaims = [Open Claim Count] + 0\nVAR Stale = [Open Claims Over 30 Days] + 0\nRETURN\n    SWITCH(TRUE(), Stale = 0, \"#1E7B3C\", DIVIDE(Stale, OpenClaims) <= 0.5, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Open Claim Count",
+        "Open Claims Over 30 Days"
+      ]
+    },
+    {
+      "name": "Denial Rate % - Prior Period",
+      "table": "_Measures",
+      "display_folder": "Claim KPIs",
+      "format": "0.0%",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([Denial Rate %], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "Denial Rate %"
+      ]
+    },
+    {
+      "name": "Denial Rate Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Context only: denial is an eligibility outcome, not something the employer manages to a target.",
+      "expression": "VAR Rate = [Denial Rate %]\nVAR Prior = [Denial Rate % - Prior Period]\nRETURN\n    IF(\n        ISBLANK(Rate),\n        \"– No claims in period\",\n        \"ⓘ \" & [Denied Claim Count] + 0 & \" denied\"\n            & IF(NOT ISBLANK(Prior), \"  ·  \" & FORMAT((Rate - Prior) * 100, \"+0.0;-0.0\") & \" pts vs prior\", \"\")\n    )",
+      "depends_on": [
+        "Denial Rate %",
+        "Denial Rate % - Prior Period",
+        "Denied Claim Count"
+      ]
+    },
+    {
+      "name": "Days Open",
+      "table": "_Measures",
+      "display_folder": "Claim KPIs",
+      "format": "#,0",
+      "description": "Row-level (open-claims table): days since submission for an open claim, to the report as-of date.",
+      "expression": "VAR AsOf = [Report As-Of Date]\nRETURN\n    MAXX(FILTER(Fact_Claim, Fact_Claim[Status] IN {\"Submitted\", \"Under Review\"}), INT(AsOf - Fact_Claim[SubmittedDate]))",
+      "depends_on": [
+        "Report As-Of Date"
+      ]
+    },
+    {
+      "name": "Days Open Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "<= 14 days neutral, 15-30 amber (chase), > 30 red (escalate).",
+      "expression": "VAR Days = [Days Open]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Days), \"#56666B\", Days <= 14, \"#56666B\", Days <= 30, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Days Open"
+      ]
+    },
+    {
+      "name": "Claim Status Label",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "SWITCH(\n    SELECTEDVALUE(Fact_Claim[Status]),\n    \"Submitted\", \"◔ Submitted\",\n    \"Under Review\", \"◑ Under review\",\n    \"Approved\", \"✓ Approved\",\n    \"Paid\", \"✓ Paid\",\n    \"Closed\", \"✓ Closed\",\n    \"Denied\", \"✕ Denied\",\n    BLANK()\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Claim Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "SWITCH(SELECTEDVALUE(Fact_Claim[Status]), \"Denied\", \"#B42318\", \"Submitted\", \"#8A5A00\", \"Under Review\", \"#8A5A00\", \"#1E7B3C\")",
+      "depends_on": []
+    },
+    {
+      "name": "Claim Status Fill",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Pipeline colours: light-to-dark teal as a claim moves toward payment, red for denied (not a RAG scale).",
+      "expression": "SWITCH(\n    SELECTEDVALUE(Fact_Claim[Status]),\n    \"Submitted\", \"#8FC7C7\",\n    \"Under Review\", \"#5FADAD\",\n    \"Approved\", \"#2E8B8B\",\n    \"Paid\", \"#0F5C5C\",\n    \"Closed\", \"#56666B\",\n    \"Denied\", \"#B42318\",\n    \"#B5C3C5\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Member Greeting",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "General",
+      "description": "Under MemberPortalRole RLS this is always the signed-in member; in Desktop without a role it says it is an all-member demo view.",
+      "expression": "VAR MemberName = SELECTEDVALUE(Dim_Member[MemberName])\nRETURN\n    IF(ISBLANK(MemberName), \"All members (demo view)\", \"Hello, \" & MemberName)",
+      "depends_on": []
+    },
+    {
+      "name": "Member Context",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "General",
+      "description": "",
+      "expression": "VAR MemberKey = SELECTEDVALUE(Dim_Member[MemberKey])\nRETURN\n    IF(\n        ISBLANK(MemberKey),\n        \"Pick a member in the header to see their view\",\n        SELECTEDVALUE(Dim_Employer[EmployerName]) & \"  ·  \" & SELECTEDVALUE(Dim_Member[EmploymentClass])\n            & \"  ·  covered since \" & FORMAT(SELECTEDVALUE(Dim_Member[EnrollmentDate]), \"mmm yyyy\")\n    )",
+      "depends_on": []
+    },
+    {
+      "name": "Member Coverage Summary",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "General",
+      "description": "Which statutory benefits the member's employer has in force (member -> employer -> policy via the bidirectional r-member-employer relationship, the same path MemberPortalRole RLS relies on).",
+      "expression": "VAR HasDisability = CALCULATE(COUNTROWS(Dim_Policy), Dim_Policy[Status] = \"Active\", Dim_Policy[PolicyType] = \"Statutory Disability\") > 0\nVAR HasPFL = CALCULATE(COUNTROWS(Dim_Policy), Dim_Policy[Status] = \"Active\", Dim_Policy[PolicyType] = \"Paid Family Leave\") > 0\nRETURN\n    IF(HasDisability, \"Disability ✓\", \"Disability ✕\") & \"   \" & IF(HasPFL, \"Family leave ✓\", \"Family leave ✕\")",
+      "depends_on": []
+    },
+    {
+      "name": "Member Coverage Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Lines = [Coverage Lines In Force] + 0\nRETURN\n    SWITCH(\n        TRUE(),\n        Lines >= 2, \"✓ You're covered for both benefits\",\n        Lines = 1, \"⚠ One benefit in force - ask HR about the other\",\n        \"✕ No active coverage - contact your HR team\"\n    )",
+      "depends_on": [
+        "Coverage Lines In Force"
+      ]
+    },
+    {
+      "name": "Coverage Description",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "General",
+      "description": "Plain-language description of each benefit for the Member portal (a member reads \"what does this cover for me?\", not a policy type code).",
+      "expression": "SWITCH(\n    SELECTEDVALUE(Dim_Policy[PolicyType]),\n    \"Statutory Disability\", \"Pays part of your wages if an off-the-job illness or injury stops you working\",\n    \"Paid Family Leave\", \"Paid time off to bond with a new child, care for a seriously ill family member, or for a military deployment\",\n    BLANK()\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Member Next Step",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "General",
+      "description": "Row-level \"what happens next\" in plain language for the member's claim list.",
+      "expression": "SWITCH(\n    SELECTEDVALUE(Fact_Claim[Status]),\n    \"Submitted\", \"We've received it and will start our review\",\n    \"Under Review\", \"We're reviewing it - we may contact you for documents\",\n    \"Approved\", \"Approved - your payment is being scheduled\",\n    \"Paid\", \"Paid - nothing more to do\",\n    \"Closed\", \"Complete - nothing more to do\",\n    \"Denied\", \"Not approved - your decision letter explains how to appeal\",\n    BLANK()\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Approved Claim Count",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE([Claim Count], Fact_Claim[Status] IN {\"Approved\", \"Paid\", \"Closed\"})",
+      "depends_on": [
+        "Claim Count"
+      ]
+    },
+    {
+      "name": "Last Claim Date",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "mmm d, yyyy",
+      "description": "",
+      "expression": "MAX(Fact_Claim[SubmittedDate])",
+      "depends_on": []
+    },
+    {
+      "name": "Claims Filed Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR LastFiled = [Last Claim Date]\nRETURN\n    IF(ISBLANK(LastFiled), \"No claims filed yet\", \"ⓘ Most recent filed \" & FORMAT(LastFiled, \"mmm d, yyyy\"))",
+      "depends_on": [
+        "Last Claim Date"
+      ]
+    },
+    {
+      "name": "Member Open Claims Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR OpenClaims = [Open Claim Count] + 0\nRETURN\n    IF(OpenClaims = 0, \"✓ Nothing waiting on a decision\", \"◑ \" & OpenClaims & \" in review - we aim to decide within 14 days\")",
+      "depends_on": [
+        "Open Claim Count"
+      ]
+    },
+    {
+      "name": "Member Open Claims Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "IF([Open Claim Count] + 0 = 0, \"#1E7B3C\", \"#8A5A00\")",
+      "depends_on": [
+        "Open Claim Count"
+      ]
+    },
+    {
+      "name": "Payment Count",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "#,0",
+      "description": "Claims that have been paid (Paid or Closed) - one benefit payment per claim in this model.",
+      "expression": "CALCULATE([Claim Count], Fact_Claim[Status] IN {\"Paid\", \"Closed\"})",
+      "depends_on": [
+        "Claim Count"
+      ]
+    },
+    {
+      "name": "Benefits Received Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Payments = [Payment Count] + 0\nRETURN\n    IF(Payments = 0, \"No benefit payments yet\", \"ⓘ Across \" & Payments & \" paid claim\" & IF(Payments = 1, \"\", \"s\"))",
+      "depends_on": [
+        "Payment Count"
+      ]
+    },
+    {
+      "name": "Member Decision Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Days = [Days to Decision (Avg)]\nVAR Target = [Decision Target Days]\nRETURN\n    IF(\n        ISBLANK(Days),\n        \"No decisions yet\",\n        IF(Days <= Target, \"✓ \", \"⚠ \") & \"Decided in \" & FORMAT(Days, \"0\") & \" days on average - our standard is \" & Target\n    )",
+      "depends_on": [
+        "Days to Decision (Avg)",
+        "Decision Target Days"
+      ]
+    },
+    {
+      "name": "Leave Days",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "#,0",
+      "description": "Total days of leave / disability across claims in context.",
+      "expression": "SUM(Fact_Claim[DurationDays])",
+      "depends_on": []
+    },
+    {
+      "name": "Benefit Paid by Payment Date",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "\\$#,0.00",
+      "description": "Benefits paid, dated by payment (DecisionDate) instead of claim submission - via the inactive r-claim-decisiondate relationship. DecisionDate is used as the payment date: the model has no separate payment-date column.",
+      "expression": "CALCULATE([Total Benefit Paid], USERELATIONSHIP(Fact_Claim[DecisionDate], Dim_Date[Date]))",
+      "depends_on": [
+        "Total Benefit Paid"
+      ]
+    },
+    {
+      "name": "Cumulative Benefits Received",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "\\$#,0.00",
+      "description": "Running total of benefits received up to the end of the period in context (by payment date).",
+      "expression": "VAR PeriodEnd = MAX(Dim_Date[Date])\nRETURN\n    CALCULATE(SUM(Fact_Claim[BenefitAmount]), REMOVEFILTERS(Dim_Date), Fact_Claim[Status] IN {\"Paid\", \"Closed\"}, Fact_Claim[DecisionDate] <= PeriodEnd)",
+      "depends_on": []
+    },
+    {
+      "name": "Last Payment Date",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "mmm d, yyyy",
+      "description": "",
+      "expression": "CALCULATE(MAX(Fact_Claim[DecisionDate]), Fact_Claim[Status] IN {\"Paid\", \"Closed\"})",
+      "depends_on": []
+    },
+    {
+      "name": "Last Payment Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR LastPaid = [Last Payment Date]\nVAR Amount = CALCULATE(SUM(Fact_Claim[BenefitAmount]), Fact_Claim[Status] IN {\"Paid\", \"Closed\"}, Fact_Claim[DecisionDate] = LastPaid)\nRETURN\n    IF(ISBLANK(LastPaid), \"No payments yet\", \"✓ \" & FORMAT(Amount, \"$#,0.00\") & \" paid\")",
+      "depends_on": [
+        "Last Payment Date"
+      ]
+    },
+    {
+      "name": "Average Payment",
+      "table": "_Measures",
+      "display_folder": "Member Portal",
+      "format": "\\$#,0.00",
+      "description": "",
+      "expression": "DIVIDE([Total Benefit Paid], [Payment Count])",
+      "depends_on": [
+        "Total Benefit Paid",
+        "Payment Count"
+      ]
+    },
+    {
+      "name": "Average Payment Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Days = DIVIDE([Leave Days], [Claim Count])\nRETURN\n    IF(ISBLANK([Average Payment]), \"No payments yet\", \"ⓘ Claims last \" & FORMAT(Days, \"0\") & \" days on average\")",
+      "depends_on": [
+        "Leave Days",
+        "Claim Count",
+        "Average Payment"
+      ]
+    },
+    {
+      "name": "Employer Accounts",
+      "table": "_Measures",
+      "display_folder": "Producer KPIs",
+      "format": "#,0",
+      "description": "Employer accounts with at least one active policy in the producer's book.",
+      "expression": "CALCULATE(DISTINCTCOUNT(Dim_Policy[EmployerKey]), Dim_Policy[Status] = \"Active\")",
+      "depends_on": []
+    },
+    {
+      "name": "Top Account Share %",
+      "table": "_Measures",
+      "display_folder": "Producer KPIs",
+      "format": "0.0%",
+      "description": "Share of premium in force held by the single largest employer account - book concentration risk.",
+      "expression": "VAR BookPremium = [Premium In Force]\nVAR LargestAccount = MAXX(VALUES(Dim_Policy[EmployerKey]), [Premium In Force])\nRETURN\n    DIVIDE(LargestAccount, BookPremium)",
+      "depends_on": [
+        "Premium In Force"
+      ]
+    },
+    {
+      "name": "Concentration Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Concentration: largest account <= 25% of premium green, <= 40% amber, above that red (one lost account would hurt).",
+      "expression": "VAR Share = [Top Account Share %]\nRETURN\n    IF(\n        ISBLANK(Share),\n        \"– No active accounts\",\n        SWITCH(TRUE(), Share <= 0.25, \"✓ \", Share <= 0.40, \"⚠ \", \"✕ \")\n            & \"Largest account = \" & FORMAT(Share, \"0%\") & \" of book\"\n    )",
+      "depends_on": [
+        "Top Account Share %"
+      ]
+    },
+    {
+      "name": "Concentration Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Share = [Top Account Share %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Share), \"#56666B\", Share <= 0.25, \"#1E7B3C\", Share <= 0.40, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Top Account Share %"
+      ]
+    },
+    {
+      "name": "Renewals Due in 90 Days",
+      "table": "_Measures",
+      "display_folder": "Producer KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "COUNTROWS(FILTER(Dim_Policy, Dim_Policy[Status] = \"Active\" && [Days to Renewal] <= 90))",
+      "depends_on": [
+        "Days to Renewal"
+      ]
+    },
+    {
+      "name": "Premium Renewing in 90 Days",
+      "table": "_Measures",
+      "display_folder": "Producer KPIs",
+      "format": "\\$#,0",
+      "description": "",
+      "expression": "SUMX(FILTER(Dim_Policy, Dim_Policy[Status] = \"Active\" && [Days to Renewal] <= 90), Dim_Policy[AnnualPremium])",
+      "depends_on": [
+        "Days to Renewal"
+      ]
+    },
+    {
+      "name": "Renewal Pipeline Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Premium = [Premium Renewing in 90 Days]\nRETURN\n    IF(ISBLANK(Premium) || Premium = 0, \"✓ No renewals in the next 90 days\", \"⚠ \" & FORMAT(Premium, \"$#,0\") & \" premium up for renewal\")",
+      "depends_on": [
+        "Premium Renewing in 90 Days"
+      ]
+    },
+    {
+      "name": "Renewal Pipeline Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "IF([Renewals Due in 90 Days] + 0 > 0, \"#8A5A00\", \"#1E7B3C\")",
+      "depends_on": [
+        "Renewals Due in 90 Days"
+      ]
+    },
+    {
+      "name": "Book Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Accounts = [Employer Accounts] + 0\nRETURN\n    IF(Accounts = 0, \"– No active accounts\", \"ⓘ Across \" & Accounts & \" employer account\" & IF(Accounts = 1, \"\", \"s\"))",
+      "depends_on": [
+        "Employer Accounts"
+      ]
+    },
+    {
+      "name": "Effective Commission Rate %",
+      "table": "_Measures",
+      "display_folder": "Commission KPIs",
+      "format": "0.0%",
+      "description": "Commission earned as a share of premium billed on the same policies and period (reconciliation check).",
+      "expression": "DIVIDE([Total Commission], [Total Billed Premium])",
+      "depends_on": [
+        "Total Commission",
+        "Total Billed Premium"
+      ]
+    },
+    {
+      "name": "Commission Growth Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Growth = [Commission Growth vs Prior Period %]\nRETURN\n    IF(\n        ISBLANK([Total Commission - Prior Period]),\n        \"– No prior period in data\",\n        SWITCH(TRUE(), Growth >= 0, \"✓ ▲ \", Growth >= -0.10, \"⚠ ▼ \", \"✕ ▼ \") & FORMAT(Growth, \"+0.0%;-0.0%\") & \" vs prior period\"\n    )",
+      "depends_on": [
+        "Commission Growth vs Prior Period %",
+        "Total Commission - Prior Period"
+      ]
+    },
+    {
+      "name": "Commission Growth Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": ">= 0% growth green, down up to 10% amber, down more than 10% red. Also used row-by-row in the producer scorecard.",
+      "expression": "VAR Growth = [Commission Growth vs Prior Period %]\nRETURN\n    SWITCH(TRUE(), ISBLANK([Total Commission - Prior Period]), \"#56666B\", Growth >= 0, \"#1E7B3C\", Growth >= -0.10, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Commission Growth vs Prior Period %",
+        "Total Commission - Prior Period"
+      ]
+    },
+    {
+      "name": "Commission Rate Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Rate = [Effective Commission Rate %]\nRETURN\n    IF(ISBLANK(Rate), \"– No billing in period\", \"ⓘ of \" & FORMAT([Total Billed Premium], \"$#,0\") & \" premium billed\")",
+      "depends_on": [
+        "Effective Commission Rate %",
+        "Total Billed Premium"
+      ]
+    },
+    {
+      "name": "Policies Paid On",
+      "table": "_Measures",
+      "display_folder": "Commission KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "DISTINCTCOUNT(Fact_Commission[PolicyKey])",
+      "depends_on": []
+    },
+    {
+      "name": "Policies Paid Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Policies = [Policies Paid On] + 0\nRETURN\n    IF(Policies = 0, \"– No commission in period\", \"ⓘ avg \" & FORMAT(DIVIDE([Total Commission], Policies), \"$#,0\") & \" per policy\")",
+      "depends_on": [
+        "Policies Paid On",
+        "Total Commission"
+      ]
+    },
+    {
+      "name": "Commission Months",
+      "table": "_Measures",
+      "display_folder": "Commission KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "DISTINCTCOUNT(Fact_Commission[Period])",
+      "depends_on": []
+    },
+    {
+      "name": "Statement Period Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "\"ⓘ \" & [Commission Months] + 0 & \" monthly statement\" & IF([Commission Months] = 1, \"\", \"s\") & \" in period\"",
+      "depends_on": [
+        "Commission Months"
+      ]
+    },
+    {
+      "name": "Conversion Target %",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0%",
+      "description": "Target case conversion (cases bound / cases quoted) of 35% (assumed; the synthetic book converts ~33%). Amber to 30%.",
+      "expression": "0.35",
+      "depends_on": []
+    },
+    {
+      "name": "Quote Case Count - Prior Period",
+      "table": "_Measures",
+      "display_folder": "Quote KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([Quote Case Count], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "Quote Case Count"
+      ]
+    },
+    {
+      "name": "Quote Volume Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR CurrentPeriodCases = [Quote Case Count] + 0\nVAR PriorPeriodCases = [Quote Case Count - Prior Period]\nRETURN\n    IF(\n        ISBLANK(PriorPeriodCases),\n        \"ⓘ No prior period in data\",\n        IF(CurrentPeriodCases >= PriorPeriodCases, \"✓ ▲ \", \"⚠ ▼ \")\n            & FORMAT(DIVIDE(CurrentPeriodCases - PriorPeriodCases, PriorPeriodCases), \"+0%;-0%\") & \" vs prior period\"\n    )",
+      "depends_on": [
+        "Quote Case Count",
+        "Quote Case Count - Prior Period"
+      ]
+    },
+    {
+      "name": "Quote Volume Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR PriorPeriodCases = [Quote Case Count - Prior Period]\nRETURN\n    SWITCH(TRUE(), ISBLANK(PriorPeriodCases), \"#56666B\", [Quote Case Count] + 0 >= PriorPeriodCases, \"#1E7B3C\", \"#8A5A00\")",
+      "depends_on": [
+        "Quote Case Count - Prior Period",
+        "Quote Case Count"
+      ]
+    },
+    {
+      "name": "Case Conversion Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Rate = [Case Conversion Rate %]\nVAR Target = [Conversion Target %]\nRETURN\n    IF(\n        ISBLANK(Rate),\n        \"– No quotes in period\",\n        SWITCH(TRUE(), Rate >= Target, \"✓ Meets\", Rate >= Target - 0.05, \"⚠ Below\", \"✕ Below\")\n            & \" \" & FORMAT(Target, \"0%\") & \" target  ·  \" & [Cases Won] + 0 & \" cases bound\"\n    )",
+      "depends_on": [
+        "Case Conversion Rate %",
+        "Conversion Target %",
+        "Cases Won"
+      ]
+    },
+    {
+      "name": "Case Conversion Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": ">= 35% green, 30-35% amber, < 30% red. Used for case-grain rates only.",
+      "expression": "VAR Rate = [Case Conversion Rate %]\nVAR Target = [Conversion Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Rate), \"#56666B\", Rate >= Target, \"#1E7B3C\", Rate >= Target - 0.05, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Case Conversion Rate %",
+        "Conversion Target %"
+      ]
+    },
+    {
+      "name": "Case Conversion Fill",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Rate = [Case Conversion Rate %]\nVAR Target = [Conversion Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Rate), \"#B5C3C5\", Rate >= Target, \"#2E7D46\", Rate >= Target - 0.05, \"#C07F12\", \"#B42318\")",
+      "depends_on": [
+        "Case Conversion Rate %",
+        "Conversion Target %"
+      ]
+    },
+    {
+      "name": "Line Conversion Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Context, deliberately not RAG-scored against the case target: the two grains are not comparable; the gap between them is the insight.",
+      "expression": "VAR LineRate = [Line Conversion Rate %]\nVAR CaseRate = [Case Conversion Rate %]\nRETURN\n    IF(\n        ISBLANK(LineRate),\n        \"– No quotes in period\",\n        \"ⓘ \" & FORMAT((LineRate - CaseRate) * 100, \"+0.0;-0.0\") & \" pts vs case rate - per state line, not per case\"\n    )",
+      "depends_on": [
+        "Line Conversion Rate %",
+        "Case Conversion Rate %"
+      ]
+    },
+    {
+      "name": "Line Conversion Fill",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "State bars: dark = at or above your overall line conversion, light = below it (relative, not a target).",
+      "expression": "VAR Rate = [Line Conversion Rate %]\nVAR BookRate = CALCULATE([Line Conversion Rate %], REMOVEFILTERS(Fact_QuoteDetail[State]))\nRETURN\n    SWITCH(TRUE(), ISBLANK(Rate), \"#B5C3C5\", Rate >= BookRate, \"#1B3A5C\", \"#8FA9BC\")",
+      "depends_on": [
+        "Line Conversion Rate %"
+      ]
+    },
+    {
+      "name": "Won Premium Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Quoted = [Total Quoted Premium]\nRETURN\n    IF(ISBLANK(Quoted), \"– No quotes in period\", \"ⓘ \" & FORMAT(DIVIDE([Won Quoted Premium], Quoted), \"0%\") & \" of \" & FORMAT(Quoted, \"$#,0\") & \" quoted\")",
+      "depends_on": [
+        "Total Quoted Premium",
+        "Won Quoted Premium"
+      ]
+    },
+    {
+      "name": "Case Outcome Label",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "SWITCH(MAX(Fact_QuoteHeader[CaseWonFlag]), 1, \"✓ Bound\", 0, \"✕ Not bound\", BLANK())",
+      "depends_on": []
+    },
+    {
+      "name": "Case Outcome Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Lost cases in neutral grey, not red: losing a competitive quote is normal, not an exception to chase.",
+      "expression": "SWITCH(MAX(Fact_QuoteHeader[CaseWonFlag]), 1, \"#1E7B3C\", 0, \"#56666B\", \"#56666B\")",
+      "depends_on": []
+    },
+    {
+      "name": "Lines Won Label",
+      "table": "_Measures",
+      "display_folder": "Quote KPIs",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Lines = [Quote Line Count]\nRETURN\n    IF(Lines > 0, [Lines Won] + 0 & \" of \" & Lines & \" state\" & IF(Lines = 1, \"\", \"s\"))",
+      "depends_on": [
+        "Quote Line Count",
+        "Lines Won"
+      ]
+    },
+    {
+      "name": "Policy Retention %",
+      "table": "_Measures",
+      "display_folder": "Producer KPIs",
+      "format": "0.0%",
+      "description": "Active policies / all policies written - a simple persistency proxy (the model has no lapse dates, so not time-based).",
+      "expression": "DIVIDE([Active Policy Count], [Policy Count])",
+      "depends_on": [
+        "Active Policy Count",
+        "Policy Count"
+      ]
+    },
+    {
+      "name": "Retention Target %",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0%",
+      "description": "Target policy retention of 85% (assumed). Amber to 75%.",
+      "expression": "0.85",
+      "depends_on": []
+    },
+    {
+      "name": "Retention Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Rate = [Policy Retention %]\nVAR Target = [Retention Target %]\nRETURN\n    IF(\n        ISBLANK(Rate),\n        \"– No policies\",\n        SWITCH(TRUE(), Rate >= Target, \"✓ Meets\", Rate >= Target - 0.10, \"⚠ Below\", \"✕ Below\")\n            & \" \" & FORMAT(Target, \"0%\") & \"  ·  \" & [Lapsed Policy Count] + 0 & \" lapsed\"\n    )",
+      "depends_on": [
+        "Policy Retention %",
+        "Retention Target %",
+        "Lapsed Policy Count"
+      ]
+    },
+    {
+      "name": "Retention Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Rate = [Policy Retention %]\nVAR Target = [Retention Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Rate), \"#56666B\", Rate >= Target, \"#1E7B3C\", Rate >= Target - 0.10, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Policy Retention %",
+        "Retention Target %"
+      ]
+    }
+  ],
+  "rls": [
+    {
+      "role": "EmployerPortalRole",
+      "filters": [
+        {
+          "table": "Dim_Employer",
+          "expression": "VAR CurrentUserAccounts =\n    CALCULATETABLE(\n        VALUES(Security_UserAccount[PortalAccountKey]),\n        Security_UserAccount[UserPrincipalName] = USERNAME(),\n        Security_UserAccount[RoleType] = \"Employer\"\n    )\nRETURN\n    Dim_Employer[PortalAccountKey] IN CurrentUserAccounts"
+        }
+      ]
+    },
+    {
+      "role": "MemberPortalRole",
+      "filters": [
+        {
+          "table": "Dim_Member",
+          "expression": "VAR CurrentUserAccounts =\n    CALCULATETABLE(\n        VALUES(Security_UserAccount[PortalAccountKey]),\n        Security_UserAccount[UserPrincipalName] = USERNAME(),\n        Security_UserAccount[RoleType] = \"Member\"\n    )\nRETURN\n    Dim_Member[MemberPortalAccountKey] IN CurrentUserAccounts"
+        }
+      ]
+    },
+    {
+      "role": "ProducerPortalRole",
+      "filters": [
+        {
+          "table": "Dim_Producer",
+          "expression": "VAR CurrentUserAccounts =\n    CALCULATETABLE(\n        VALUES(Security_UserAccount[PortalAccountKey]),\n        Security_UserAccount[UserPrincipalName] = USERNAME(),\n        Security_UserAccount[RoleType] = \"Producer\"\n    )\nRETURN\n    Dim_Producer[ProducerPortalAccountKey] IN CurrentUserAccounts"
+        }
+      ]
+    }
+  ],
+  "pages": [],
+  "techniques": [
+    "USERELATIONSHIP",
+    "VAR",
+    "SELECTEDVALUE",
+    "SWITCH",
+    "time-intelligence",
+    "RLS",
+    "dynamic-RLS",
+    "bidirectional-filter",
+    "inactive-relationships",
+    "measure-driven-formatting",
+    "calculated-tables"
+  ],
+  "stats": {
+    "tables": 12,
+    "measures": 145,
+    "relationships": 15,
+    "pages": 22
+  },
+  "reports": [
+    {
+      "slug": "employer-claims-status",
+      "title": "Employer Portal: Claims Status Overview",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/employer-claims-status.pages.json"
+    },
+    {
+      "slug": "employer-member-census",
+      "title": "Employer Portal: Member Census",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/employer-member-census.pages.json"
+    },
+    {
+      "slug": "employer-policy-summary",
+      "title": "Employer Portal: Policy Summary",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/employer-policy-summary.pages.json"
+    },
+    {
+      "slug": "employer-premium-billing",
+      "title": "Employer Portal: Premium & Billing Analysis",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/employer-premium-billing.pages.json"
+    },
+    {
+      "slug": "member-benefits-overview",
+      "title": "Member Portal: Benefits Overview",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/member-benefits-overview.pages.json"
+    },
+    {
+      "slug": "member-claim-history",
+      "title": "Member Portal: Claim History",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/member-claim-history.pages.json"
+    },
+    {
+      "slug": "member-payment-history",
+      "title": "Member Portal: Payment History",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/member-payment-history.pages.json"
+    },
+    {
+      "slug": "producer-book-of-business",
+      "title": "Producer Portal: Book of Business",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/producer-book-of-business.pages.json"
+    },
+    {
+      "slug": "producer-commission-statement",
+      "title": "Producer Portal: Commission Statement",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/producer-commission-statement.pages.json"
+    },
+    {
+      "slug": "producer-performance",
+      "title": "Producer Portal: Producer Performance",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/producer-performance.pages.json"
+    },
+    {
+      "slug": "producer-quote-activity",
+      "title": "Producer Portal: Quote Activity Analysis",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/producer-quote-activity.pages.json"
+    }
+  ]
+}

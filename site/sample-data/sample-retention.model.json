@@ -1,0 +1,228 @@
+{
+  "slug": "sample-retention-model",
+  "public_title": "Sample: Retention Model (illustrative)",
+  "source_kind": "pbip",
+  "storage_mode": "import",
+  "tables": [
+    {
+      "name": "Fact_Cases",
+      "role": "fact",
+      "columns": 14,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Date",
+      "role": "date",
+      "columns": 8,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Tenure",
+      "role": "dimension",
+      "columns": 4,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Broker",
+      "role": "dimension",
+      "columns": 5,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Security_BrokerUser",
+      "role": "dimension",
+      "columns": 2,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Param_Date_Basis",
+      "role": "disconnected",
+      "columns": 3,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "_Measures",
+      "role": "measure-table",
+      "columns": 0,
+      "measures": 6,
+      "hidden": true
+    }
+  ],
+  "relationships": [
+    {
+      "from": "Fact_Cases[HistoryDateKey]",
+      "to": "Dim_Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Cases[TerminationDateKey]",
+      "to": "Dim_Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    },
+    {
+      "from": "Fact_Cases[TenureKey]",
+      "to": "Dim_Tenure[TenureKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Cases[BrokerKey]",
+      "to": "Dim_Broker[BrokerKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Security_BrokerUser[BrokerKey]",
+      "to": "Dim_Broker[BrokerKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    }
+  ],
+  "measures": [
+    {
+      "name": "Cases",
+      "table": "_Measures",
+      "display_folder": "Base",
+      "format": "#,0",
+      "description": "All cases in the current filter context.",
+      "expression": "COUNTROWS(Fact_Cases)",
+      "depends_on": []
+    },
+    {
+      "name": "Cases by Termination Date",
+      "table": "_Measures",
+      "display_folder": "Toggles",
+      "format": "#,0",
+      "description": "Counts cases by termination date instead of history date.",
+      "expression": "CALCULATE([Cases], USERELATIONSHIP(Fact_Cases[TerminationDateKey], Dim_Date[DateKey]))",
+      "depends_on": [
+        "Cases"
+      ]
+    },
+    {
+      "name": "Cases (date basis)",
+      "table": "_Measures",
+      "display_folder": "Toggles",
+      "format": "#,0",
+      "description": "Reads the date-basis toggle.",
+      "expression": "VAR Basis = SELECTEDVALUE(Param_Date_Basis[Key], 1)\nRETURN\n    SWITCH(Basis, 1, [Cases], 2, [Cases by Termination Date], [Cases])",
+      "depends_on": [
+        "Cases",
+        "Cases by Termination Date"
+      ]
+    },
+    {
+      "name": "Recovered %",
+      "table": "_Measures",
+      "display_folder": "Base",
+      "format": "0.0%",
+      "description": "Share of terminated cases that were reinstated.",
+      "expression": "DIVIDE(CALCULATE([Cases], Fact_Cases[Outcome] = \"Reinstated\"), CALCULATE([Cases], Fact_Cases[Outcome] <> \"Active\"))",
+      "depends_on": [
+        "Cases"
+      ]
+    },
+    {
+      "name": "Alt text: headline",
+      "table": "_Measures",
+      "display_folder": "Accessibility",
+      "format": "@",
+      "description": "Alt text that follows the selection.",
+      "expression": "\"Cases: \" & FORMAT([Cases (date basis)], \"#,0\") & \", recovered \" & FORMAT([Recovered %], \"0%\")",
+      "depends_on": [
+        "Cases (date basis)",
+        "Recovered %"
+      ]
+    },
+    {
+      "name": "Top Reason",
+      "table": "_Measures",
+      "display_folder": "Base",
+      "format": "@",
+      "description": "Most frequent termination reason.",
+      "expression": "VAR T = TOPN(1, VALUES(Fact_Cases[Reason]), CALCULATE([Cases]))\nRETURN\n    MAXX(T, Fact_Cases[Reason])",
+      "depends_on": [
+        "Cases"
+      ]
+    }
+  ],
+  "rls": [
+    {
+      "role": "Broker",
+      "filters": [
+        {
+          "table": "Security_BrokerUser",
+          "expression": "[UserEmail] = USERPRINCIPALNAME()"
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "index": 0,
+      "display_name": "Attrition Snapshot",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": true,
+      "visual_count": 32,
+      "visual_types": {
+        "card": 8,
+        "clusteredColumnChart": 3,
+        "slicer": 4
+      }
+    },
+    {
+      "index": 1,
+      "display_name": "Recovery Trend",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 31,
+      "visual_types": {
+        "lineChart": 3,
+        "card": 6
+      }
+    },
+    {
+      "index": 2,
+      "display_name": "Tooltip",
+      "hidden": false,
+      "tooltip": true,
+      "drillthrough": false,
+      "visual_count": 3,
+      "visual_types": {
+        "card": 3
+      }
+    }
+  ],
+  "techniques": [
+    "USERELATIONSHIP",
+    "VAR",
+    "SELECTEDVALUE",
+    "SWITCH",
+    "TOPN",
+    "disconnected-table",
+    "RLS",
+    "dynamic-RLS",
+    "inactive-relationships"
+  ],
+  "stats": {
+    "tables": 7,
+    "measures": 6,
+    "relationships": 5,
+    "pages": 3
+  }
+}

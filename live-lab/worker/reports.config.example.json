@@ -1,0 +1,113 @@
+{
+  "reports": {
+    "service-governance-interactive": {
+      "kind": "interactive",
+      "workspaceId": "00000000-0000-0000-0000-000000000101",
+      "reportId": "00000000-0000-0000-0000-000000000201",
+      "datasetIds": [
+        "00000000-0000-0000-0000-000000000301"
+      ],
+      "rls": false,
+      "personas": {}
+    },
+    "service-governance-paginated": {
+      "kind": "paginated",
+      "workspaceId": "00000000-0000-0000-0000-000000000101",
+      "reportId": "00000000-0000-0000-0000-000000000202",
+      "datasetIds": [],
+      "rls": false,
+      "personas": {},
+      "exportEnabled": true
+    },
+    "insurance-employer": {
+      "kind": "interactive",
+      "workspaceId": "00000000-0000-0000-0000-000000000102",
+      "reportId": "00000000-0000-0000-0000-000000000203",
+      "datasetIds": [
+        "00000000-0000-0000-0000-000000000302"
+      ],
+      "rls": true,
+      "defaultPersona": "employer",
+      "personas": {
+        "employer": {
+          "username": "employer.demo@example.com",
+          "roles": [
+            "EmployerPortalRole"
+          ]
+        },
+        "member": {
+          "username": "member.demo@example.com",
+          "roles": [
+            "MemberPortalRole"
+          ]
+        },
+        "producer": {
+          "username": "producer.demo@example.com",
+          "roles": [
+            "ProducerPortalRole"
+          ]
+        }
+      }
+    },
+    "insurance-member": {
+      "kind": "interactive",
+      "workspaceId": "00000000-0000-0000-0000-000000000102",
+      "reportId": "00000000-0000-0000-0000-000000000204",
+      "datasetIds": [
+        "00000000-0000-0000-0000-000000000302"
+      ],
+      "rls": true,
+      "defaultPersona": "member",
+      "personas": {
+        "employer": {
+          "username": "employer.demo@example.com",
+          "roles": [
+            "EmployerPortalRole"
+          ]
+        },
+        "member": {
+          "username": "member.demo@example.com",
+          "roles": [
+            "MemberPortalRole"
+          ]
+        },
+        "producer": {
+          "username": "producer.demo@example.com",
+          "roles": [
+            "ProducerPortalRole"
+          ]
+        }
+      }
+    },
+    "insurance-producer": {
+      "kind": "interactive",
+      "workspaceId": "00000000-0000-0000-0000-000000000102",
+      "reportId": "00000000-0000-0000-0000-000000000205",
+      "datasetIds": [
+        "00000000-0000-0000-0000-000000000302"
+      ],
+      "rls": true,
+      "defaultPersona": "producer",
+      "personas": {
+        "employer": {
+          "username": "employer.demo@example.com",
+          "roles": [
+            "EmployerPortalRole"
+          ]
+        },
+        "member": {
+          "username": "member.demo@example.com",
+          "roles": [
+            "MemberPortalRole"
+          ]
+        },
+        "producer": {
+          "username": "producer.demo@example.com",
+          "roles": [
+            "ProducerPortalRole"
+          ]
+        }
+      }
+    }
+  }
+}

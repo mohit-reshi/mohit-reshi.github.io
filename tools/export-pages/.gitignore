@@ -1,0 +1,6 @@
+.env*
+!.env.example
+out/
+export.config.json
+node_modules/
+export.*.config.json

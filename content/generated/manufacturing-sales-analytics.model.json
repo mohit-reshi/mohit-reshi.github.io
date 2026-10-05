@@ -1,0 +1,619 @@
+{
+  "slug": "manufacturing-sales-analytics",
+  "public_title": "Manufacturing Sales Analytics",
+  "source_kind": "pbip",
+  "storage_mode": "directlake",
+  "tables": [
+    {
+      "name": "Dim_Date",
+      "role": "date",
+      "columns": 14,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Metric_Selector",
+      "role": "disconnected",
+      "columns": 2,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "_Measure",
+      "role": "measure-table",
+      "columns": 1,
+      "measures": 37,
+      "hidden": false
+    },
+    {
+      "name": "gold_budget_actuals",
+      "role": "fact",
+      "columns": 18,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "gold_customer_summary",
+      "role": "dimension",
+      "columns": 17,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "gold_rep_performance",
+      "role": "dimension",
+      "columns": 20,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "gold_sales_summary",
+      "role": "fact",
+      "columns": 31,
+      "measures": 0,
+      "hidden": false
+    }
+  ],
+  "relationships": [
+    {
+      "from": "gold_sales_summary[SalesRepKey]",
+      "to": "gold_rep_performance[SalesRepKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "gold_sales_summary[CustomerKey]",
+      "to": "gold_customer_summary[CustomerKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "gold_sales_summary[FullDate]",
+      "to": "Dim_Date[Date]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    }
+  ],
+  "measures": [
+    {
+      "name": "Gross Revenue",
+      "table": "_Measure",
+      "display_folder": "Base",
+      "format": "#,#.#;(#,#.#);\"Zero",
+      "description": "",
+      "expression": "SUM(gold_sales_summary[GrossRevenue])",
+      "depends_on": []
+    },
+    {
+      "name": "Sale Returns",
+      "table": "_Measure",
+      "display_folder": "Base",
+      "format": "Rs.\"\\ #,0.###############;#,0.###############\\ -\"Rs.\";\"Rs.\"\\ #,0.###############",
+      "description": "",
+      "expression": "SUM(gold_sales_summary[Returns])",
+      "depends_on": []
+    },
+    {
+      "name": "Net Revenue",
+      "table": "_Measure",
+      "display_folder": "Base",
+      "format": "#,#.#;(#,#.#);\"Zero",
+      "description": "",
+      "expression": "SUM(gold_sales_summary[NetRevenue])",
+      "depends_on": []
+    },
+    {
+      "name": "COGS",
+      "table": "_Measure",
+      "display_folder": "Base",
+      "format": "Standard",
+      "description": "",
+      "expression": "SUM(gold_sales_summary[StandardCost])",
+      "depends_on": []
+    },
+    {
+      "name": "Gross Profit",
+      "table": "_Measure",
+      "display_folder": "Base",
+      "format": "Rs.\"\\ #,0.###############;#,0.###############\\ -\"Rs.\";\"Rs.\"\\ #,0.###############",
+      "description": "",
+      "expression": "[Net Revenue] - [COGS]",
+      "depends_on": [
+        "Net Revenue",
+        "COGS"
+      ]
+    },
+    {
+      "name": "Gross Profit %",
+      "table": "_Measure",
+      "display_folder": "Base",
+      "format": "0%;-0%;0%",
+      "description": "",
+      "expression": "DIVIDE([Gross Profit],[Net Revenue],BLANK())",
+      "depends_on": [
+        "Gross Profit",
+        "Net Revenue"
+      ]
+    },
+    {
+      "name": "Unit Sold",
+      "table": "_Measure",
+      "display_folder": "Base",
+      "format": "0",
+      "description": "",
+      "expression": "SUM(gold_sales_summary[UnitsSold])",
+      "depends_on": []
+    },
+    {
+      "name": "Total Transactions",
+      "table": "_Measure",
+      "display_folder": "Base",
+      "format": "0",
+      "description": "",
+      "expression": "COUNTROWS(gold_sales_summary)",
+      "depends_on": []
+    },
+    {
+      "name": "Revenue MTD",
+      "table": "_Measure",
+      "display_folder": "Time Intelligence",
+      "format": "Rs.\"\\ #,0.###############;#,0.###############\\ -\"Rs.\";\"Rs.\"\\ #,0.###############",
+      "description": "",
+      "expression": "TOTALMTD([Gross Revenue], Dim_Date[Date])",
+      "depends_on": [
+        "Gross Revenue"
+      ]
+    },
+    {
+      "name": "Revenue YTD",
+      "table": "_Measure",
+      "display_folder": "Time Intelligence",
+      "format": "Rs.\"\\ #,0.###############;#,0.###############\\ -\"Rs.\";\"Rs.\"\\ #,0.###############",
+      "description": "",
+      "expression": "TOTALYTD([Gross Revenue], Dim_Date[Date])",
+      "depends_on": [
+        "Gross Revenue"
+      ]
+    },
+    {
+      "name": "Revenue LY",
+      "table": "_Measure",
+      "display_folder": "Time Intelligence",
+      "format": "Rs.\"\\ #,0.###############;#,0.###############\\ -\"Rs.\";\"Rs.\"\\ #,0.###############",
+      "description": "",
+      "expression": "CALCULATE([Gross Revenue], SAMEPERIODLASTYEAR(Dim_Date[Date]))",
+      "depends_on": [
+        "Gross Revenue"
+      ]
+    },
+    {
+      "name": "Revenue YOY %",
+      "table": "_Measure",
+      "display_folder": "Time Intelligence",
+      "format": "0.0%;-0.0%;0.0%",
+      "description": "",
+      "expression": "VAR Current_Year_Revenue = [Gross Revenue]\n VAR Previous_Year_Revenue = CALCULATE([Gross Revenue], SAMEPERIODLASTYEAR(Dim_Date[Date]))\n RETURN\n    DIVIDE(Current_Year_Revenue - Previous_Year_Revenue, Previous_Year_Revenue, BLANK())",
+      "depends_on": [
+        "Gross Revenue"
+      ]
+    },
+    {
+      "name": "Revenue TTM",
+      "table": "_Measure",
+      "display_folder": "Rolling Window",
+      "format": "Rs.\"\\ #,0.###############;#,0.###############\\ -\"Rs.\";\"Rs.\"\\ #,0.###############",
+      "description": "",
+      "expression": "VAR selectedMonth = SELECTEDVALUE(Dim_Date[Month])\nVAR selectedYear = SELECTEDVALUE(Dim_Date[Year])\n\nVar currentYear = YEAR(TODAY())\nvar currentMonth = MONTH(TODAY())\n\nVAR endDate = IF(\n    selectedYear >= currentYear && selectedMonth >= currentMonth,\n    EOMONTH(TODAY(), -1),\n    EOMONTH(DATE(selectedYear,selectedMonth,1),0)\n)\n\nVAR startDate = EDATE(endDate,-11)\n\nRETURN\n    IF(\n        ISBLANK(selectedMonth) && ISBLANK(selectedYear),\n        BLANK(),\n        CALCULATE(\n            [Gross Revenue],\n            FILTER(\n                ALL(Dim_Date[Date]),\n                Dim_Date[Date] >= startDate && Dim_Date[Date] <= endDate\n            )\n        )\n    )",
+      "depends_on": [
+        "Gross Revenue"
+      ]
+    },
+    {
+      "name": "Budget Revenue",
+      "table": "_Measure",
+      "display_folder": "Budget vs Actuals",
+      "format": "Rs.\"\\ #,0.###############;#,0.###############\\ -\"Rs.\";\"Rs.\"\\ #,0.###############",
+      "description": "",
+      "expression": "SUM(gold_budget_actuals[GrossRevenueBudget])",
+      "depends_on": []
+    },
+    {
+      "name": "Revenue vs Budget",
+      "table": "_Measure",
+      "display_folder": "Budget vs Actuals",
+      "format": "",
+      "description": "",
+      "expression": "[Gross Revenue] - [Budget Revenue]",
+      "depends_on": [
+        "Gross Revenue",
+        "Budget Revenue"
+      ]
+    },
+    {
+      "name": "Revenue vs Budget BPS",
+      "table": "_Measure",
+      "display_folder": "Budget vs Actuals",
+      "format": "",
+      "description": "",
+      "expression": "DIVIDE([Revenue vs Budget],[Budget Revenue],BLANK()) * 10000",
+      "depends_on": [
+        "Revenue vs Budget",
+        "Budget Revenue"
+      ]
+    },
+    {
+      "name": "New Customers",
+      "table": "_Measure",
+      "display_folder": "Customer Acquisition",
+      "format": "0",
+      "description": "",
+      "expression": "VAR selectedYear = SELECTEDVALUE(Dim_Date[Year])\nVAR selectedMonth = SELECTEDVALUE(Dim_Date[Month])\nVAR windowStart = DATE(selectedYear, selectedMonth, 1)\nVAR windowEnd = EOMONTH(windowStart, 0)\nVAR customersThisMonth =\n    CALCULATETABLE(\n        VALUES(gold_sales_summary[CustomerKey]),\n        FILTER(\n            ALL(Dim_Date),\n            Dim_Date[Date] >= windowStart && Dim_Date[Date] <= windowEnd\n        )\n    )\nVAR customersBeforeThisMonth =\n    CALCULATETABLE(\n        VALUES(gold_sales_summary[CustomerKey]),\n        FILTER(\n            ALL(Dim_Date),\n            Dim_Date[Date] < windowStart\n        )\n    )\nVAR trulyNewSet = EXCEPT(customersThisMonth, customersBeforeThisMonth)\nRETURN\n    IF(\n        ISBLANK(selectedYear) || ISBLANK(selectedMonth),\n        BLANK(),\n        COUNTROWS(trulyNewSet)\n    )",
+      "depends_on": []
+    },
+    {
+      "name": "Reactivated Customers",
+      "table": "_Measure",
+      "display_folder": "Customer Acquisition",
+      "format": "0",
+      "description": "",
+      "expression": "CALCULATE(COUNTROWS(gold_customer_summary),gold_customer_summary[IsReactivatedInYear] = 1)",
+      "depends_on": []
+    },
+    {
+      "name": "Rolling Active Customers",
+      "table": "_Measure",
+      "display_folder": "Rolling Window",
+      "format": "0",
+      "description": "",
+      "expression": "VAR selectedYear = SELECTEDVALUE(Dim_Date[Year])\nVAR selectedMonth = SELECTEDVALUE(Dim_Date[Month])\nVAR currentYear = YEAR(TODAY())\nVAR currentMonth = MONTH(TODAY())\nVAR endDate = IF(\n    selectedYear >= currentYear && selectedMonth >= currentMonth,\n    EOMONTH(TODAY(), -1),\n    EOMONTH(DATE(selectedYear,selectedMonth,1),0)\n)\nVAR startDate = EDATE(endDate,-11)\nRETURN\n    IF(\n        ISBLANK(selectedYear) || ISBLANK(selectedMonth),\n        0,\n        CALCULATE(\n            DISTINCTCOUNT(gold_sales_summary[CustomerKey]),\n            FILTER(\n                ALL(Dim_Date),\n                Dim_Date[Date] >= startDate && Dim_Date[Date] <= endDate\n            )\n        )\n    )",
+      "depends_on": []
+    },
+    {
+      "name": "Lapsed Customers",
+      "table": "_Measure",
+      "display_folder": "Rolling Window",
+      "format": "0",
+      "description": "",
+      "expression": "VAR selectedYear = SELECTEDVALUE(Dim_Date[Year])\nVAR selectedMonth = SELECTEDVALUE(Dim_Date[Month])\nVAR windowStart = DATE(selectedYear, selectedMonth, 1)\nVAR windowEnd = EOMONTH(windowStart, 0)\nVAR priorStart = EDATE(windowStart, -1)\nVAR priorEnd = EDATE(windowEnd, -1)\nVAR customersThisMonth =\n    CALCULATETABLE(\n        VALUES(gold_sales_summary[CustomerKey]),\n        FILTER(\n            ALL(Dim_Date),\n            Dim_Date[Date] >= windowStart && Dim_Date[Date] <= windowEnd\n        )\n    )\nVAR customersPriorMonth =\n    CALCULATETABLE(\n        VALUES(gold_sales_summary[CustomerKey]),\n        FILTER(\n            ALL(Dim_Date),\n            Dim_Date[Date] >= priorStart && Dim_Date[Date] <= priorEnd\n        )\n    )\nVAR lapsedSet = EXCEPT(customersPriorMonth, customersThisMonth)\nRETURN\n    IF(\n        ISBLANK(selectedYear) || ISBLANK(selectedMonth),\n        BLANK(),\n        COUNTROWS(lapsedSet)\n    )",
+      "depends_on": []
+    },
+    {
+      "name": "Rep Count",
+      "table": "_Measure",
+      "display_folder": "Sales Rep",
+      "format": "0",
+      "description": "",
+      "expression": "DISTINCTCOUNT(gold_sales_summary[SalesRepKey])",
+      "depends_on": []
+    },
+    {
+      "name": "Revenue per rep",
+      "table": "_Measure",
+      "display_folder": "Sales Rep",
+      "format": "",
+      "description": "",
+      "expression": "DIVIDE([Gross Revenue], [Rep Count], BLANK())",
+      "depends_on": [
+        "Gross Revenue",
+        "Rep Count"
+      ]
+    },
+    {
+      "name": "Title_ExecutiveSummary",
+      "table": "_Measure",
+      "display_folder": "Dynamic Titles",
+      "format": "",
+      "description": "",
+      "expression": "VAR selectedYear = SELECTEDVALUE(Dim_Date[Year],\"All Years\")\nVAR selectedMonth = SELECTEDVALUE(Dim_Date[MonthName],\"All Months\")\nRETURN\n    \"Executive Summary | \"& selectedYear & \" | \"& selectedMonth",
+      "depends_on": []
+    },
+    {
+      "name": "Title_ChannelPerformance",
+      "table": "_Measure",
+      "display_folder": "Dynamic Titles",
+      "format": "",
+      "description": "",
+      "expression": "VAR selectedYear = SELECTEDVALUE(Dim_Date[Year],\"All Years\")\nVAR selectedMonth = SELECTEDVALUE(Dim_Date[MonthName],\"All Months\")\nRETURN\n    \"Channel Performance | \"& selectedYear & \" | \"& selectedMonth",
+      "depends_on": []
+    },
+    {
+      "name": "Title_ProductAnalysis",
+      "table": "_Measure",
+      "display_folder": "Dynamic Titles",
+      "format": "",
+      "description": "",
+      "expression": "VAR selectedYear = SELECTEDVALUE(Dim_Date[Year],\"All Years\")\nVAR selectedMonth = SELECTEDVALUE(Dim_Date[MonthName],\"All Months\")\nRETURN\n    \"Product Analysis | \"& selectedYear & \" | \"& selectedMonth",
+      "depends_on": []
+    },
+    {
+      "name": "Title_CustomerAnalysis",
+      "table": "_Measure",
+      "display_folder": "Dynamic Titles",
+      "format": "",
+      "description": "",
+      "expression": "VAR selectedYear = SELECTEDVALUE(Dim_Date[Year],\"All Years\")\nVAR selectedMonth = SELECTEDVALUE(Dim_Date[MonthName],\"All Months\")\nRETURN\n    \"Customer Analysis | \"& selectedYear & \" | \"& selectedMonth",
+      "depends_on": []
+    },
+    {
+      "name": "Title_RepPerformance",
+      "table": "_Measure",
+      "display_folder": "Dynamic Titles",
+      "format": "",
+      "description": "",
+      "expression": "VAR selectedYear = SELECTEDVALUE(Dim_Date[Year],\"All Years\")\nVAR selectedMonth = SELECTEDVALUE(Dim_Date[MonthName],\"All Months\")\nRETURN\n    \"Rep Performance | \"& selectedYear & \" | \"& selectedMonth",
+      "depends_on": []
+    },
+    {
+      "name": "Title_TrendAnalysis",
+      "table": "_Measure",
+      "display_folder": "Dynamic Titles",
+      "format": "",
+      "description": "",
+      "expression": "VAR selectedYear = SELECTEDVALUE(Dim_Date[Year],\"All Years\")\nVAR selectedMonth = SELECTEDVALUE(Dim_Date[MonthName],\"All Months\")\nRETURN\n    \"Trend Analysis | \"& selectedYear & \" | \"& selectedMonth",
+      "depends_on": []
+    },
+    {
+      "name": "Selected Metric",
+      "table": "_Measure",
+      "display_folder": "Metric Selector",
+      "format": "",
+      "description": "",
+      "expression": "VAR selection = SELECTEDVALUE(Metric_Selector[Metric],\"Revenue\")\nRETURN\n    SWITCH(\n        selection,\n        \"Revenue\", [Gross Revenue],\n        \"Units Sold\", [Unit Sold],\n        \"Gross Profit\", [Gross Profit],\n        \"Margin %\", [Gross Profit %],\n        \"Transactions\", [Total Transactions]\n    )",
+      "depends_on": [
+        "Gross Revenue",
+        "Unit Sold",
+        "Gross Profit",
+        "Gross Profit %",
+        "Total Transactions"
+      ]
+    },
+    {
+      "name": "HTML_ExecutiveSummary",
+      "table": "_Measure",
+      "display_folder": "HTML Cards",
+      "format": "",
+      "description": "",
+      "expression": "VAR YOY = [Revenue YOY %]\nVAR BudgetGap = [Revenue vs Budget BPS]\nVAR NetCustGrowth = [Net Customer Growth]\nVAR TopChannel = [Top Channel Name]\nVAR TopChannelRev = [Top Channel Revenue]\nVAR LastDates = [Last Data Date]\n\n-- Block 1 VARs: Revenue Health\nVAR Block1Color =\n    SWITCH(TRUE(),\n        NOT HASONEVALUE(Dim_Date[Year]), \"#707070\",\n        ISBLANK(YOY), \"#707070\",\n        YOY > 0 && BudgetGap > 0, \"#1A7A4A\",\n        YOY > 0 && BudgetGap <= 0, \"#B7770D\",\n        \"#C0392B\"\n    )\n\nVAR Block1Icon =\n    SWITCH(TRUE(),\n        NOT HASONEVALUE(Dim_Date[Year]), \"◆\",\n        ISBLANK(YOY), \"◆\",\n        YOY > 0 && BudgetGap > 0, \"▲\",\n        YOY > 0 && BudgetGap <= 0, \"◆\",\n        \"▼\"\n    )\n\nVAR Block1Label =\n    SWITCH(TRUE(),\n        NOT HASONEVALUE(Dim_Date[Year]), \"REVENUE SIGNAL\",\n        ISBLANK(YOY), \"REVENUE SIGNAL\",\n        YOY > 0 && BudgetGap > 0, \"REVENUE HEALTHY\",\n        YOY > 0 && BudgetGap <= 0, \"MONITOR BUDGET\",\n        \"REVENUE ALERT\"\n    )\n\nVAR Block1Message =\n    SWITCH(TRUE(),\n        NOT HASONEVALUE(Dim_Date[Year]), \"Select a single year to view YOY comparison.\",\n        ISBLANK(YOY), \"No prior year data available for comparison.\",\n        YOY > 0 && BudgetGap > 0, \"Growing and ahead of budget.\",\n        YOY > 0 && BudgetGap <= 0, \"Growing but below budget target.\",\n        \"Declining. Immediate review recommended.\"\n    )\n\nVAR Block1Values =\n    IF(\n        NOT HASONEVALUE(Dim_Date[Year]) || ISBLANK(YOY), \"\",\n        \"YOY: \" & FORMAT(ABS(YOY), \"0.0%\") &\n        \"  |  Budget Var: \" & FORMAT(ABS(BudgetGap), \"#,0\") & \" BPS\"\n    )\n\n-- Block 2 VARs: Top Channel\nVAR Block2Color = \"#0B6477\"\n\nVAR Block2RevFormatted =\n    IF(ISBLANK(TopChannelRev), \"—\",\n        IF(TopChannelRev >= 1000000,\n            FORMAT(TopChannelRev / 1000000, \"0.0\") & \"M\",\n            FORMAT(TopChannelRev / 1000, \"0.0\") & \"K\"\n        )\n    )\n\nVAR Block2ChannelDisplay =\n    IF(ISBLANK(TopChannel), \"No data\", TopChannel)\n\n-- Block 3 VARs: Customer Signal\nVAR Block3Color =\n    IF(ISBLANK(NetCustGrowth), \"#707070\",\n        IF(NetCustGrowth >= 0, \"#1A7A4A\", \"#C0392B\"))\n\nVAR Block3Icon =\n    IF(ISBLANK(NetCustGrowth), \"◆\",\n        IF(NetCustGrowth >= 0, \"▲\", \"▼\"))\n\nVAR Block3Label =\n    IF(ISBLANK(NetCustGrowth), \"CUSTOMER SIGNAL\",\n        IF(NetCustGrowth >= 0, \"NET CUSTOMER GROWTH\", \"CUSTOMER DECLINE\"))\n\nVAR Block3Message =\n    IF(ISBLANK(NetCustGrowth), \"Select year and month to view.\",\n        IF(NetCustGrowth >= 0,\n            \"New customers outpacing lapsed.\",\n            \"Lapsed customers exceeding new acquisitions.\"))\n\nVAR Block3Value =\n    IF(ISBLANK(NetCustGrowth), \"\",\n        IF(NetCustGrowth >= 0, \"+\", \"\") &\n        FORMAT(NetCustGrowth, \"#,0\") & \" net this period\")\n\n-- Full HTML\nRETURN\n\"<div style='font-family:Segoe UI,sans-serif;padding:12px;background:#E8E8E8;border-radius:10px;height:100%;box-sizing:border-box;'>\" &\n\n    -- Block 1: Revenue Health\n    \"<div style='background:\" & Block1Color & \";border-radius:8px;padding:10px 12px;margin-bottom:8px;'>\" &\n        \"<div style='font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);letter-spacing:1px;'>\" & Block1Icon & \"  \" & Block1Label & \"</div>\" &\n        \"<div style='font-size:12px;color:white;margin:4px 0 2px 0;'>\" & Block1Message & \"</div>\" &\n        \"<div style='font-size:11px;color:rgba(255,255,255,0.75);'>\" & Block1Values & \"</div>\" &\n    \"</div>\" &\n\n    -- Block 2: Top Channel\n    \"<div style='background:\" & Block2Color & \";border-radius:8px;padding:10px 12px;margin-bottom:8px;'>\" &\n        \"<div style='font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);letter-spacing:1px;'>★  TOP CHANNEL</div>\" &\n        \"<div style='font-size:13px;font-weight:600;color:white;margin:4px 0 2px 0;'>\" & Block2ChannelDisplay & \"</div>\" &\n        \"<div style='font-size:11px;color:rgba(255,255,255,0.75);'>Revenue: \" & Block2RevFormatted & \"</div>\" &\n    \"</div>\" &\n\n    -- Block 3: Customer Signal\n    \"<div style='background:\" & Block3Color & \";border-radius:8px;padding:10px 12px;margin-bottom:8px;'>\" &\n        \"<div style='font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);letter-spacing:1px;'>\" & Block3Icon & \"  \" & Block3Label & \"</div>\" &\n        \"<div style='font-size:12px;color:white;margin:4px 0 2px 0;'>\" & Block3Message & \"</div>\" &\n        \"<div style='font-size:11px;color:rgba(255,255,255,0.75);'>\" & Block3Value & \"</div>\" &\n    \"</div>\" &\n\n    -- Block 4: Data Freshness\n    \"<div style='text-align:center;padding:4px 0 2px 0;'>\" &\n        \"<div style='font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:0.5px;'>⟳  Data refreshed: \" & LastDates & \"</div>\" &\n    \"</div>\" &\n\n\"</div>\"",
+      "depends_on": [
+        "Revenue YOY %",
+        "Revenue vs Budget BPS",
+        "Net Customer Growth",
+        "Top Channel Name",
+        "Top Channel Revenue",
+        "Last Data Date"
+      ]
+    },
+    {
+      "name": "Top Channel Name",
+      "table": "_Measure",
+      "display_folder": "",
+      "format": "",
+      "description": "",
+      "expression": "VAR ChannelSummary =\n    ADDCOLUMNS(\n        ALL(gold_sales_summary[ChannelName]),\n        \"ChannelRevenue\", [Gross Revenue]\n    )\nVAR TopChannel = TOPN(1, ChannelSummary, [ChannelRevenue], DESC)\nRETURN MAXX(TopChannel, gold_sales_summary[ChannelName])",
+      "depends_on": [
+        "Gross Revenue"
+      ]
+    },
+    {
+      "name": "Top Channel Revenue",
+      "table": "_Measure",
+      "display_folder": "",
+      "format": "",
+      "description": "",
+      "expression": "VAR ChannelSummary =\n    ADDCOLUMNS(\n        ALL(gold_sales_summary[ChannelName]),\n        \"ChannelRevenue\", [Gross Revenue]\n    )\nVAR TopChannel = TOPN(1, ChannelSummary, [ChannelRevenue], DESC)\nRETURN MAXX(TopChannel, [ChannelRevenue])",
+      "depends_on": [
+        "Gross Revenue"
+      ]
+    },
+    {
+      "name": "Net Customer Growth",
+      "table": "_Measure",
+      "display_folder": "",
+      "format": "0",
+      "description": "",
+      "expression": "[New Customers] - [Lapsed Customers]",
+      "depends_on": [
+        "New Customers",
+        "Lapsed Customers"
+      ]
+    },
+    {
+      "name": "Last Data Date",
+      "table": "_Measure",
+      "display_folder": "",
+      "format": "",
+      "description": "",
+      "expression": "FORMAT(MAX(gold_sales_summary[FullDate]), \"DD MMM YYYY\")",
+      "depends_on": []
+    },
+    {
+      "name": "Returns Rate",
+      "table": "_Measure",
+      "display_folder": "Base",
+      "format": "",
+      "description": "",
+      "expression": "DIVIDE([Sale Returns], [Gross Revenue], BLANK())",
+      "depends_on": [
+        "Sale Returns",
+        "Gross Revenue"
+      ]
+    },
+    {
+      "name": "Revenue QTD",
+      "table": "_Measure",
+      "display_folder": "",
+      "format": "",
+      "description": "",
+      "expression": "TOTALQTD([Gross Revenue], Dim_Date[Date])",
+      "depends_on": [
+        "Gross Revenue"
+      ]
+    },
+    {
+      "name": "Title_RepDetail",
+      "table": "_Measure",
+      "display_folder": "Dynamic Titles",
+      "format": "",
+      "description": "",
+      "expression": "\"Rep Detail | \" & SELECTEDVALUE(gold_sales_summary[RepName], \"All Reps\")",
+      "depends_on": []
+    }
+  ],
+  "rls": [],
+  "pages": [
+    {
+      "index": 0,
+      "display_name": "Executive Summary",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 21,
+      "visual_types": {
+        "actionButton": 8,
+        "cardVisual": 6,
+        "clusteredBarChart": 1,
+        "custom-visual": 1,
+        "lineChart": 1,
+        "shape": 1,
+        "slicer": 2,
+        "textbox": 1
+      }
+    },
+    {
+      "index": 1,
+      "display_name": "Channel Performance",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 23,
+      "visual_types": {
+        "actionButton": 8,
+        "cardVisual": 5,
+        "clusteredBarChart": 2,
+        "clusteredColumnChart": 1,
+        "lineChart": 1,
+        "shape": 1,
+        "slicer": 4,
+        "textbox": 1
+      }
+    },
+    {
+      "index": 2,
+      "display_name": "Product Analysis",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 25,
+      "visual_types": {
+        "actionButton": 10,
+        "barChart": 1,
+        "cardVisual": 5,
+        "lineChart": 1,
+        "scatterChart": 1,
+        "shape": 1,
+        "slicer": 5,
+        "textbox": 1
+      }
+    },
+    {
+      "index": 3,
+      "display_name": "Customer Analysis",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 21,
+      "visual_types": {
+        "actionButton": 8,
+        "barChart": 2,
+        "cardVisual": 5,
+        "clusteredColumnChart": 1,
+        "lineChart": 1,
+        "shape": 1,
+        "slicer": 2,
+        "textbox": 1
+      }
+    },
+    {
+      "index": 4,
+      "display_name": "Rep Performance",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 22,
+      "visual_types": {
+        "actionButton": 8,
+        "barChart": 1,
+        "cardVisual": 5,
+        "clusteredColumnChart": 1,
+        "lineChart": 1,
+        "shape": 1,
+        "slicer": 3,
+        "tableEx": 1,
+        "textbox": 1
+      }
+    },
+    {
+      "index": 5,
+      "display_name": "Trend Analysis",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 25,
+      "visual_types": {
+        "actionButton": 12,
+        "cardVisual": 5,
+        "clusteredColumnChart": 1,
+        "lineChart": 2,
+        "shape": 1,
+        "slicer": 2,
+        "textbox": 1,
+        "waterfallChart": 1
+      }
+    },
+    {
+      "index": 6,
+      "display_name": "Rep Detail",
+      "hidden": true,
+      "tooltip": false,
+      "drillthrough": true,
+      "visual_count": 20,
+      "visual_types": {
+        "actionButton": 9,
+        "barChart": 2,
+        "cardVisual": 5,
+        "clusteredColumnChart": 1,
+        "lineChart": 1,
+        "shape": 1,
+        "textbox": 1
+      }
+    }
+  ],
+  "techniques": [
+    "VAR",
+    "SELECTEDVALUE",
+    "SWITCH",
+    "time-intelligence",
+    "TOPN",
+    "dynamic-TY/PY",
+    "disconnected-table",
+    "directlake",
+    "calculated-tables"
+  ],
+  "stats": {
+    "tables": 7,
+    "measures": 37,
+    "relationships": 3,
+    "pages": 7
+  },
+  "reports": [
+    {
+      "slug": "manufacturing-sales-analytics",
+      "title": "Manufacturing Sales Analytics",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/manufacturing-sales-analytics.pages.json"
+    }
+  ]
+}

@@ -1,0 +1,253 @@
+{
+  "slug": "sample-statement-suite",
+  "public_title": "Sample: Statement Suite (illustrative)",
+  "source_kind": "pbip",
+  "storage_mode": "import",
+  "tables": [
+    {
+      "name": "Fact_Ledger",
+      "role": "fact",
+      "columns": 10,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Fact_Invoices",
+      "role": "fact",
+      "columns": 8,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Date",
+      "role": "date",
+      "columns": 9,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Account",
+      "role": "dimension",
+      "columns": 5,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Region",
+      "role": "dimension",
+      "columns": 4,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "P&L Template",
+      "role": "disconnected",
+      "columns": 5,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Aged Bands",
+      "role": "dimension",
+      "columns": 4,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "_Measures",
+      "role": "measure-table",
+      "columns": 0,
+      "measures": 7,
+      "hidden": true
+    }
+  ],
+  "relationships": [
+    {
+      "from": "Fact_Ledger[DateKey]",
+      "to": "Dim_Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Ledger[AccountKey]",
+      "to": "Dim_Account[AccountKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Invoices[InvoiceDateKey]",
+      "to": "Dim_Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    },
+    {
+      "from": "Fact_Invoices[DueDateKey]",
+      "to": "Dim_Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    },
+    {
+      "from": "Fact_Invoices[RegionKey]",
+      "to": "Dim_Region[RegionKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    }
+  ],
+  "measures": [
+    {
+      "name": "Amount",
+      "table": "_Measures",
+      "display_folder": "Base",
+      "format": "#,0",
+      "description": "Ledger amount.",
+      "expression": "SUM(Fact_Ledger[Amount])",
+      "depends_on": []
+    },
+    {
+      "name": "Statement Line",
+      "table": "_Measures",
+      "display_folder": "Statement",
+      "format": "#,0",
+      "description": "Evaluates the current template line.",
+      "expression": "VAR Line = SELECTEDVALUE('P&L Template'[Line])\nRETURN\n    SWITCH(\n        Line,\n        \"Revenue\", [Amount],\n        \"Gross margin %\", DIVIDE([Amount], [Amount]),\n        [Amount]\n    )",
+      "depends_on": [
+        "Amount"
+      ]
+    },
+    {
+      "name": "Amount PY",
+      "table": "_Measures",
+      "display_folder": "Year over year",
+      "format": "#,0",
+      "description": "Prior year amount.",
+      "expression": "CALCULATE([Amount], SAMEPERIODLASTYEAR(Dim_Date[Date]))",
+      "depends_on": [
+        "Amount"
+      ]
+    },
+    {
+      "name": "Selected Date",
+      "table": "_Measures",
+      "display_folder": "Aged receivables",
+      "format": "d mmm yyyy",
+      "description": "As-of date from the date slicer.",
+      "expression": "MIN(Dim_Date[Date])",
+      "depends_on": []
+    },
+    {
+      "name": "Days Left",
+      "table": "_Measures",
+      "display_folder": "Aged receivables",
+      "format": "0",
+      "description": "Days until due on the as-of date; blank when not open.",
+      "expression": "VAR AsOf = [Selected Date]\nRETURN\n    IF(MIN(Fact_Invoices[InvoiceDate]) < AsOf && MIN(Fact_Invoices[DueDate]) > AsOf,\n        DATEDIFF(AsOf, MIN(Fact_Invoices[DueDate]), DAY))",
+      "depends_on": [
+        "Selected Date"
+      ]
+    },
+    {
+      "name": "Receivables",
+      "table": "_Measures",
+      "display_folder": "Aged receivables",
+      "format": "#,0",
+      "description": "Open invoice value on the as-of date.",
+      "expression": "IF(ISBLANK([Days Left]), BLANK(), SUM(Fact_Invoices[Value]))",
+      "depends_on": [
+        "Days Left"
+      ]
+    },
+    {
+      "name": "Receivables per Band",
+      "table": "_Measures",
+      "display_folder": "Aged receivables",
+      "format": "#,0",
+      "description": "Open value inside the selected ageing band.",
+      "expression": "CALCULATE([Receivables], FILTER(Fact_Invoices, [Days Left] >= MIN('Aged Bands'[MinDays]) && [Days Left] <= MAX('Aged Bands'[MaxDays])))",
+      "depends_on": [
+        "Receivables",
+        "Days Left"
+      ]
+    }
+  ],
+  "rls": [
+    {
+      "role": "Region_North",
+      "filters": [
+        {
+          "table": "Dim_Region",
+          "expression": "[Territory] = \"North\""
+        }
+      ]
+    },
+    {
+      "role": "Region_South",
+      "filters": [
+        {
+          "table": "Dim_Region",
+          "expression": "[Territory] = \"South\""
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "index": 0,
+      "display_name": "Navigation",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 24,
+      "visual_types": {
+        "actionButton": 8,
+        "textbox": 10
+      }
+    },
+    {
+      "index": 1,
+      "display_name": "P&L Statement",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 7,
+      "visual_types": {
+        "pivotTable": 1,
+        "card": 3
+      }
+    },
+    {
+      "index": 2,
+      "display_name": "Aged Receivables",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 14,
+      "visual_types": {
+        "clusteredColumnChart": 2,
+        "tableEx": 1,
+        "slicer": 3
+      }
+    }
+  ],
+  "techniques": [
+    "VAR",
+    "SELECTEDVALUE",
+    "SWITCH",
+    "time-intelligence",
+    "dynamic-TY/PY",
+    "disconnected-table",
+    "RLS",
+    "incremental-refresh",
+    "inactive-relationships"
+  ],
+  "stats": {
+    "tables": 8,
+    "measures": 7,
+    "relationships": 5,
+    "pages": 3
+  }
+}

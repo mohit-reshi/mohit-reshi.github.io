@@ -1,0 +1,66 @@
+---
+import Base from '../layouts/Base.astro';
+import Marquee from '../components/Marquee.astro';
+import Explorer from '../components/Explorer.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { siteConfig } from '../config';
+import { getProjects, loadModelDoc } from '../lib/projects';
+import { withBase } from '../lib/url';
+import { personJsonLd } from '../lib/jsonld';
+import { emptyWork } from '../lib/microcopy';
+
+const projects = await getProjects();
+const featured = projects.filter((p) => p.data.featured && p.data.kind !== 'app').slice(0, 6);
+const shown = featured.length ? featured : projects.filter((p) => p.data.kind !== 'app').slice(0, 3);
+const reports = projects.filter((p) => p.data.kind !== 'app');
+const measures = projects.reduce((n, p) => n + (loadModelDoc(p)?.stats.measures ?? 0), 0);
+const bars = Array.from({ length: 22 }, (_, i) => ({ h: 22 + ((i * 37) % 61), d: `${-((i * 0.37) % 5).toFixed(2)}s` }));
+const stats = [
+  reports.length ? { n: String(reports.length), l: 'reports & pipelines' } : null,
+  measures ? { n: String(measures), l: 'DAX measures documented' } : null,
+  { n: 'RLS', l: 'effective identity, in production' },
+].filter(Boolean) as Array<{ n: string; l: string }>;
+---
+<Base current="home" jsonLd={personJsonLd(Astro.site?.href ?? '')}>
+  <Explorer />
+  <div data-layout-view="classic">
+  <section class="hero" data-hero>
+    <div class="hero__canvas" data-hero3d aria-hidden="true">
+      <div class="hero__fallback">{bars.map((b) => <i style={`--h:${b.h}%;--d:${b.d}`}></i>)}</div>
+    </div>
+    <div class="container hero__inner">
+      <p class="eyebrow">{siteConfig.location} · Power BI & Microsoft Fabric</p>
+      <h1 class="hero__title" data-hero-title>Real <em>embedded analytics</em> you can explore and learn from</h1>
+      <p class="hero__lede">Everything here is something I built. Open a project to see how it works, try the report live, and read the code behind each click.</p>
+      <div class="hero__cta">
+        <a class="btn btn--primary" href={withBase('work/')} data-cursor="link">See my work <span aria-hidden="true">→</span></a>
+        <span class="hero__hint">or press <kbd>Ctrl</kbd> <kbd>K</kbd> to jump anywhere</span>
+      </div>
+      {stats.length > 0 && <ul class="hero__stats" aria-label="At a glance">{stats.map((s) => <li><b>{s.n}</b><span>{s.l}</span></li>)}</ul>}
+    </div>
+  </section>
+  <Marquee />
+  <section class="section" aria-labelledby="featured-h">
+    <div class="container">
+      <div class="section__head">
+        <div><p class="eyebrow">Selected work</p><h2 id="featured-h">Reports that earn their keep</h2></div>
+        <a class="btn btn--ghost" href={withBase('work/')}>All work →</a>
+      </div>
+      {shown.length
+        ? <div class="grid stack" data-stack>{shown.map((p, i) => <ProjectCard project={p} eager={i < 2} />)}</div>
+        : <div class="empty"><strong>{emptyWork.title}</strong><p>{emptyWork.text}</p></div>}
+    </div>
+  </section>
+  {siteConfig.liveLab.enabled && (
+    <section class="section" aria-labelledby="lab-h">
+      <div class="container">
+        <div class="note reveal" style="padding:var(--s-6);display:grid;gap:var(--s-3)">
+          <h2 id="lab-h" style="margin:0">Poke at a real embed</h2>
+          <p style="margin:0;max-width:56ch">The Live Lab runs actual Power BI reports through a tiny token broker: switch persona to see row-level security change the numbers, then read the code that did it.</p>
+          <p style="margin:0"><a class="btn btn--primary" href={withBase('live-lab/')}>Open the Live Lab →</a></p>
+        </div>
+      </div>
+    </section>
+  )}
+  </div>
+</Base>

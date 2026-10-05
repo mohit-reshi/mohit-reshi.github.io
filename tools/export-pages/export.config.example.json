@@ -1,0 +1,24 @@
+{
+  "outDir": "out",
+  "concurrency": 2,
+  "reports": [
+    {
+      "slug": "example-report",
+      "workspaceId": "00000000-0000-0000-0000-000000000000",
+      "reportId": "00000000-0000-0000-0000-000000000001",
+      "kind": "interactive",
+      "identities": {
+        "employer": { "username": "demo.user@example.com", "roles": ["EmployerPortalRole"], "datasets": ["00000000-0000-0000-0000-000000000002"] }
+      }
+    },
+    {
+      "slug": "example-paginated",
+      "workspaceId": "00000000-0000-0000-0000-000000000000",
+      "reportId": "00000000-0000-0000-0000-000000000003",
+      "kind": "paginated",
+      "parameterSets": [
+        { "name": "default", "parameters": [ { "name": "InvoiceMonth", "value": "2025-12-01" } ] }
+      ]
+    }
+  ]
+}

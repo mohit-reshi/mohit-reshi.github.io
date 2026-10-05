@@ -1,0 +1,22 @@
+{
+  "name": "media-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Media pipeline for the portfolio: compress recordings, convert screenshots, place files per SPEC 6.3, check sizes.",
+  "bin": {
+    "compress-video": "src/compress-video.mjs",
+    "process-images": "src/process-images.mjs",
+    "place": "src/place.mjs",
+    "check-sizes": "src/check-sizes.mjs"
+  },
+  "scripts": {
+    "compress-video": "node src/compress-video.mjs",
+    "process-images": "node src/process-images.mjs",
+    "place": "node src/place.mjs",
+    "check-sizes": "node src/check-sizes.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": { "sharp": "^0.33.5" },
+  "engines": { "node": ">=20" }
+}

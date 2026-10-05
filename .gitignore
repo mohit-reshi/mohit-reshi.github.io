@@ -1,0 +1,7 @@
+.env*
+!.env.example
+out/
+private-out/
+blocklist.local.txt
+node_modules/
+*.bak

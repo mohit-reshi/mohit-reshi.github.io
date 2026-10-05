@@ -1,0 +1,1328 @@
+{
+  "slug": "service-reliability",
+  "public_title": "Service Reliability Model",
+  "source_kind": "pbip",
+  "storage_mode": "import",
+  "tables": [
+    {
+      "name": "Dim_Application",
+      "role": "dimension",
+      "columns": 6,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Date",
+      "role": "date",
+      "columns": 11,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_OutageEvent",
+      "role": "dimension",
+      "columns": 7,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Team",
+      "role": "dimension",
+      "columns": 3,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Fact_Incident",
+      "role": "fact",
+      "columns": 9,
+      "measures": 20,
+      "hidden": false
+    },
+    {
+      "name": "Fact_OnCallRoster",
+      "role": "fact",
+      "columns": 6,
+      "measures": 5,
+      "hidden": false
+    },
+    {
+      "name": "Fact_Uptime",
+      "role": "fact",
+      "columns": 5,
+      "measures": 9,
+      "hidden": false
+    },
+    {
+      "name": "Security_UserServiceLine",
+      "role": "dimension",
+      "columns": 2,
+      "measures": 0,
+      "hidden": true
+    },
+    {
+      "name": "_Measures",
+      "role": "measure-table",
+      "columns": 0,
+      "measures": 70,
+      "hidden": false
+    }
+  ],
+  "relationships": [
+    {
+      "from": "Fact_Incident[ApplicationKey]",
+      "to": "Dim_Application[ApplicationKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Incident[OpenedDate]",
+      "to": "Dim_Date[Date]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Uptime[ApplicationKey]",
+      "to": "Dim_Application[ApplicationKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Uptime[Date]",
+      "to": "Dim_Date[Date]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Uptime[OutageEventKey]",
+      "to": "Dim_OutageEvent[OutageEventKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    },
+    {
+      "from": "Dim_OutageEvent[ApplicationKey]",
+      "to": "Dim_Application[ApplicationKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Dim_Application[OwningTeamKey]",
+      "to": "Dim_Team[TeamKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_OnCallRoster[TeamKey]",
+      "to": "Dim_Team[TeamKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_OnCallRoster[Date]",
+      "to": "Dim_Date[Date]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    }
+  ],
+  "measures": [
+    {
+      "name": "MTTA",
+      "table": "Fact_Incident",
+      "display_folder": "Response Measures",
+      "format": "#,0.0",
+      "description": "",
+      "expression": "VAR AckMinutesTable =\n    ADDCOLUMNS(\n        Fact_Incident,\n        \"@AckMin\", DATEDIFF(Fact_Incident[OpenedDateTime], Fact_Incident[AcknowledgedDateTime], MINUTE)\n    )\nRETURN\n    AVERAGEX(AckMinutesTable, [@AckMin])",
+      "depends_on": []
+    },
+    {
+      "name": "MTTR",
+      "table": "Fact_Incident",
+      "display_folder": "Response Measures",
+      "format": "#,0.0",
+      "description": "",
+      "expression": "VAR ResolveMinutesTable =\n    ADDCOLUMNS(\n        Fact_Incident,\n        \"@ResolveMin\", DATEDIFF(Fact_Incident[OpenedDateTime], Fact_Incident[ResolvedDateTime], MINUTE)\n    )\nRETURN\n    AVERAGEX(ResolveMinutesTable, [@ResolveMin])",
+      "depends_on": []
+    },
+    {
+      "name": "Incident Count",
+      "table": "Fact_Incident",
+      "display_folder": "Volume Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "COUNTROWS(Fact_Incident)",
+      "depends_on": []
+    },
+    {
+      "name": "SLA Breach Count",
+      "table": "Fact_Incident",
+      "display_folder": "Breach Measures",
+      "format": "#,0",
+      "description": "Incidents that breached their acknowledge or resolve SLA (BreachFlag = 1) in the selected period. Renamed from \"Open Breach Count\" in Phase 5: it has always counted every breached incident, open or resolved.",
+      "expression": "CALCULATE(\n    COUNTROWS(Fact_Incident),\n    Fact_Incident[BreachFlag] = 1\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Breach Rate %",
+      "table": "Fact_Incident",
+      "display_folder": "Breach Measures",
+      "format": "0.0%",
+      "description": "",
+      "expression": "VAR TotalIncidents = [Incident Count]\nVAR BreachedIncidents = [SLA Breach Count]\nRETURN\n    DIVIDE(BreachedIncidents, TotalIncidents)",
+      "depends_on": [
+        "Incident Count",
+        "SLA Breach Count"
+      ]
+    },
+    {
+      "name": "Escalation Count",
+      "table": "Fact_Incident",
+      "display_folder": "Escalation Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE(\n    COUNTROWS(Fact_Incident),\n    Fact_Incident[EscalatedFlag] = 1\n)",
+      "depends_on": []
+    },
+    {
+      "name": "After-Hours Incident Share %",
+      "table": "Fact_Incident",
+      "display_folder": "Escalation Measures",
+      "format": "0.0%",
+      "description": "",
+      "expression": "VAR TotalIncidents = [Incident Count]\nVAR AfterHoursIncidents =\n    CALCULATE(\n        COUNTROWS(Fact_Incident),\n        HOUR(Fact_Incident[OpenedDateTime]) >= 19\n            || HOUR(Fact_Incident[OpenedDateTime]) < 7\n    )\nRETURN\n    DIVIDE(AfterHoursIncidents, TotalIncidents)",
+      "depends_on": [
+        "Incident Count"
+      ]
+    },
+    {
+      "name": "Breach Age Days",
+      "table": "Fact_Incident",
+      "display_folder": "Breach Measures",
+      "format": "#,0.0",
+      "description": "Ageing bucket measures for currently-open SLA breaches, bucketed by days since open (0-1 / 1-3 / 3-7 / 7+).",
+      "expression": "AVERAGEX(\n    FILTER(Fact_Incident, Fact_Incident[BreachFlag] = 1),\n    DATEDIFF(Fact_Incident[OpenedDateTime], Fact_Incident[ResolvedDateTime], DAY)\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Breaches 0-1 Day",
+      "table": "Fact_Incident",
+      "display_folder": "Breach Ageing",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR BreachAgeTable =\n    ADDCOLUMNS(\n        FILTER(Fact_Incident, Fact_Incident[BreachFlag] = 1),\n        \"@AgeDays\", DATEDIFF(Fact_Incident[OpenedDateTime], Fact_Incident[ResolvedDateTime], DAY)\n    )\nRETURN\n    COUNTROWS(FILTER(BreachAgeTable, [@AgeDays] >= 0 && [@AgeDays] <= 1))",
+      "depends_on": []
+    },
+    {
+      "name": "Breaches 1-3 Days",
+      "table": "Fact_Incident",
+      "display_folder": "Breach Ageing",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR BreachAgeTable =\n    ADDCOLUMNS(\n        FILTER(Fact_Incident, Fact_Incident[BreachFlag] = 1),\n        \"@AgeDays\", DATEDIFF(Fact_Incident[OpenedDateTime], Fact_Incident[ResolvedDateTime], DAY)\n    )\nRETURN\n    COUNTROWS(FILTER(BreachAgeTable, [@AgeDays] > 1 && [@AgeDays] <= 3))",
+      "depends_on": []
+    },
+    {
+      "name": "Breaches 3-7 Days",
+      "table": "Fact_Incident",
+      "display_folder": "Breach Ageing",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR BreachAgeTable =\n    ADDCOLUMNS(\n        FILTER(Fact_Incident, Fact_Incident[BreachFlag] = 1),\n        \"@AgeDays\", DATEDIFF(Fact_Incident[OpenedDateTime], Fact_Incident[ResolvedDateTime], DAY)\n    )\nRETURN\n    COUNTROWS(FILTER(BreachAgeTable, [@AgeDays] > 3 && [@AgeDays] <= 7))",
+      "depends_on": []
+    },
+    {
+      "name": "Breaches 7+ Days",
+      "table": "Fact_Incident",
+      "display_folder": "Breach Ageing",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR BreachAgeTable =\n    ADDCOLUMNS(\n        FILTER(Fact_Incident, Fact_Incident[BreachFlag] = 1),\n        \"@AgeDays\", DATEDIFF(Fact_Incident[OpenedDateTime], Fact_Incident[ResolvedDateTime], DAY)\n    )\nRETURN\n    COUNTROWS(FILTER(BreachAgeTable, [@AgeDays] > 7))",
+      "depends_on": []
+    },
+    {
+      "name": "Ack Target Minutes",
+      "table": "Fact_Incident",
+      "display_folder": "SLA Targets",
+      "format": "#,0.0",
+      "description": "Acknowledge SLA in minutes by severity (Sev1 15 / Sev2 30 / Sev3 60 / Sev4 120 - see \"Assumptions\"), averaged over the incidents in context, so at portfolio level it is the target weighted by the actual severity mix and directly comparable to [MTTA].",
+      "expression": "AVERAGEX(Fact_Incident, SWITCH(Fact_Incident[Severity], \"Sev1\", 15, \"Sev2\", 30, \"Sev3\", 60, 120))",
+      "depends_on": []
+    },
+    {
+      "name": "Resolve Target Hours",
+      "table": "Fact_Incident",
+      "display_folder": "SLA Targets",
+      "format": "#,0.0",
+      "description": "Resolve SLA in hours by severity (4 / 8 / 24 / 72h), averaged over the incidents in context - comparable to [MTTR Hours].",
+      "expression": "DIVIDE(AVERAGEX(Fact_Incident, SWITCH(Fact_Incident[Severity], \"Sev1\", 240, \"Sev2\", 480, \"Sev3\", 1440, 4320)), 60)",
+      "depends_on": []
+    },
+    {
+      "name": "MTTR Hours",
+      "table": "Fact_Incident",
+      "display_folder": "Response Measures",
+      "format": "#,0.0",
+      "description": "",
+      "expression": "DIVIDE([MTTR], 60)",
+      "depends_on": [
+        "MTTR"
+      ]
+    },
+    {
+      "name": "Acknowledged Within SLA %",
+      "table": "Fact_Incident",
+      "display_folder": "Response Measures",
+      "format": "0.0%",
+      "description": "Share of incidents acknowledged within their own severity's acknowledge SLA.",
+      "expression": "VAR IncidentTargets =\n    ADDCOLUMNS(\n        Fact_Incident,\n        \"@AckMin\", DATEDIFF(Fact_Incident[OpenedDateTime], Fact_Incident[AcknowledgedDateTime], MINUTE),\n        \"@TargetMin\", SWITCH(Fact_Incident[Severity], \"Sev1\", 15, \"Sev2\", 30, \"Sev3\", 60, 120)\n    )\nRETURN\n    DIVIDE(COUNTROWS(FILTER(IncidentTargets, [@AckMin] <= [@TargetMin])), COUNTROWS(IncidentTargets))",
+      "depends_on": []
+    },
+    {
+      "name": "Resolved Within SLA %",
+      "table": "Fact_Incident",
+      "display_folder": "Response Measures",
+      "format": "0.0%",
+      "description": "Share of incidents resolved within their own severity's resolve SLA.",
+      "expression": "VAR IncidentTargets =\n    ADDCOLUMNS(\n        Fact_Incident,\n        \"@ResolveMin\", DATEDIFF(Fact_Incident[OpenedDateTime], Fact_Incident[ResolvedDateTime], MINUTE),\n        \"@TargetMin\", SWITCH(Fact_Incident[Severity], \"Sev1\", 240, \"Sev2\", 480, \"Sev3\", 1440, 4320)\n    )\nRETURN\n    DIVIDE(COUNTROWS(FILTER(IncidentTargets, [@ResolveMin] <= [@TargetMin])), COUNTROWS(IncidentTargets))",
+      "depends_on": []
+    },
+    {
+      "name": "Escalation Rate %",
+      "table": "Fact_Incident",
+      "display_folder": "Escalation Measures",
+      "format": "0.0%",
+      "description": "",
+      "expression": "DIVIDE([Escalation Count], [Incident Count])",
+      "depends_on": [
+        "Escalation Count",
+        "Incident Count"
+      ]
+    },
+    {
+      "name": "Breach Rate % - Prior Period",
+      "table": "Fact_Incident",
+      "display_folder": "Breach Measures",
+      "format": "0.0%",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([Breach Rate %], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "Breach Rate %"
+      ]
+    },
+    {
+      "name": "Acknowledged Within SLA % - Prior Period",
+      "table": "Fact_Incident",
+      "display_folder": "Response Measures",
+      "format": "0.0%",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([Acknowledged Within SLA %], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "Acknowledged Within SLA %"
+      ]
+    },
+    {
+      "name": "Shifts Required",
+      "table": "Fact_OnCallRoster",
+      "display_folder": "Coverage Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "COUNTROWS(Fact_OnCallRoster)",
+      "depends_on": []
+    },
+    {
+      "name": "Shifts Covered",
+      "table": "Fact_OnCallRoster",
+      "display_folder": "Coverage Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE(\n    COUNTROWS(Fact_OnCallRoster),\n    Fact_OnCallRoster[CoveredFlag] = 1\n)",
+      "depends_on": []
+    },
+    {
+      "name": "On-Call Coverage %",
+      "table": "Fact_OnCallRoster",
+      "display_folder": "Coverage Measures",
+      "format": "0.0%",
+      "description": "",
+      "expression": "VAR RequiredShifts = [Shifts Required]\nVAR CoveredShifts = [Shifts Covered]\nRETURN\n    DIVIDE(CoveredShifts, RequiredShifts)",
+      "depends_on": [
+        "Shifts Required",
+        "Shifts Covered"
+      ]
+    },
+    {
+      "name": "Coverage Gap Count",
+      "table": "Fact_OnCallRoster",
+      "display_folder": "Coverage Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR RequiredShifts = [Shifts Required]\nVAR CoveredShifts = [Shifts Covered]\nRETURN\n    RequiredShifts - CoveredShifts",
+      "depends_on": [
+        "Shifts Required",
+        "Shifts Covered"
+      ]
+    },
+    {
+      "name": "After-Hours Shift Share %",
+      "table": "Fact_OnCallRoster",
+      "display_folder": "Coverage Measures",
+      "format": "0.0%",
+      "description": "",
+      "expression": "VAR TotalShifts = [Shifts Required]\nVAR AfterHoursShifts =\n    CALCULATE(\n        COUNTROWS(Fact_OnCallRoster),\n        Fact_OnCallRoster[AfterHoursFlag] = 1\n    )\nRETURN\n    DIVIDE(AfterHoursShifts, TotalShifts)",
+      "depends_on": [
+        "Shifts Required"
+      ]
+    },
+    {
+      "name": "Total Uptime Minutes",
+      "table": "Fact_Uptime",
+      "display_folder": "Availability Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "SUM(Fact_Uptime[UptimeMinutes])",
+      "depends_on": []
+    },
+    {
+      "name": "Total Downtime Minutes",
+      "table": "Fact_Uptime",
+      "display_folder": "Availability Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "SUM(Fact_Uptime[DowntimeMinutes])",
+      "depends_on": []
+    },
+    {
+      "name": "Availability %",
+      "table": "Fact_Uptime",
+      "display_folder": "Availability Measures",
+      "format": "0.00%",
+      "description": "Availability % = uptime minutes / total elapsed minutes across all in-context application-days.",
+      "expression": "VAR UptimeMin = [Total Uptime Minutes]\nVAR DowntimeMin = [Total Downtime Minutes]\nVAR TotalMin = UptimeMin + DowntimeMin\nRETURN\n    DIVIDE(UptimeMin, TotalMin)",
+      "depends_on": [
+        "Total Uptime Minutes",
+        "Total Downtime Minutes"
+      ]
+    },
+    {
+      "name": "Uptime Attainment vs Target %",
+      "table": "Fact_Uptime",
+      "display_folder": "Availability Measures",
+      "format": "0.00%",
+      "description": "",
+      "expression": "VAR ActualAvailability = [Availability %]\nVAR TargetAvailability = AVERAGE(Dim_Application[CommittedUptimeTarget])\nRETURN\n    DIVIDE(ActualAvailability, TargetAvailability)",
+      "depends_on": [
+        "Availability %"
+      ]
+    },
+    {
+      "name": "Uptime RAG Status",
+      "table": "Fact_Uptime",
+      "display_folder": "Availability Measures",
+      "format": "General",
+      "description": "RAG status vs committed uptime target: Green at or above target, Amber within 0.10pp, Red below.",
+      "expression": "VAR ActualAvailability = [Availability %]\nVAR TargetAvailability = AVERAGE(Dim_Application[CommittedUptimeTarget])\nVAR Gap = ActualAvailability - TargetAvailability\nRETURN\n    SWITCH(\n        TRUE(),\n        ISBLANK(ActualAvailability), \"No Data\",\n        Gap >= 0, \"Green\",\n        Gap >= -0.001, \"Amber\",\n        \"Red\"\n    )",
+      "depends_on": [
+        "Availability %"
+      ]
+    },
+    {
+      "name": "MTBF",
+      "table": "Fact_Uptime",
+      "display_folder": "Availability Measures",
+      "format": "#,0",
+      "description": "MTBF in hours = total uptime hours in period / number of distinct outage events in period.",
+      "expression": "VAR UptimeHours = [Total Uptime Minutes] / 60\nVAR OutageEvents = DISTINCTCOUNT(Fact_Uptime[OutageEventKey])\nRETURN\n    DIVIDE(UptimeHours, OutageEvents)",
+      "depends_on": [
+        "Total Uptime Minutes"
+      ]
+    },
+    {
+      "name": "Outage Event Count",
+      "table": "Fact_Uptime",
+      "display_folder": "Availability Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "DISTINCTCOUNT(Fact_Uptime[OutageEventKey])",
+      "depends_on": []
+    },
+    {
+      "name": "Availability % - Prior Period",
+      "table": "Fact_Uptime",
+      "display_folder": "Trend Measures",
+      "format": "0.00%",
+      "description": "Availability over the equal-length window immediately before the selected period. (Previously DATEADD -1 MONTH, which for a full-year selection compared against an 11-of-12-months-overlapping window.)",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([Availability %], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "Availability %"
+      ]
+    },
+    {
+      "name": "Availability % Change vs Prior Period",
+      "table": "Fact_Uptime",
+      "display_folder": "Trend Measures",
+      "format": "0.00%;-0.00%",
+      "description": "",
+      "expression": "VAR CurrentPeriodAvailability = [Availability %]\nVAR PriorPeriodAvailability = [Availability % - Prior Period]\nRETURN\n    CurrentPeriodAvailability - PriorPeriodAvailability",
+      "depends_on": [
+        "Availability %",
+        "Availability % - Prior Period"
+      ]
+    },
+    {
+      "name": "Data as of",
+      "table": "_Measures",
+      "display_folder": "",
+      "format": "General",
+      "description": "Header text: last date with loaded uptime data (data currency, ignores slicers) plus the selected reporting period.",
+      "expression": "VAR LastLoadedDate = CALCULATE(MAX(Fact_Uptime[Date]), REMOVEFILTERS())\nVAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nRETURN\n    \"Data as of \" & FORMAT(LastLoadedDate, \"mmm d, yyyy\")\n        & \"  ·  Period \" & FORMAT(PeriodStart, \"mmm d, yyyy\") & \" – \" & FORMAT(PeriodEnd, \"mmm d, yyyy\")",
+      "depends_on": []
+    },
+    {
+      "name": "Open Incident Count",
+      "table": "_Measures",
+      "display_folder": "",
+      "format": "#,0",
+      "description": "Incidents still unresolved at the END of the selected period (backlog at period close). Measured against the period end rather than NOW(), which sits after the synthetic data and always returned blank.",
+      "expression": "VAR PeriodEnd = MAX(Dim_Date[Date])\nRETURN\n    CALCULATE(\n        [Incident Count],\n        REMOVEFILTERS(Dim_Date),\n        Fact_Incident[OpenedDate] <= PeriodEnd,\n        Fact_Incident[ResolvedDateTime] >= PeriodEnd + 1\n            || ISBLANK(Fact_Incident[ResolvedDateTime])\n    )",
+      "depends_on": [
+        "Incident Count"
+      ]
+    },
+    {
+      "name": "Open Sev1-2 Incidents",
+      "table": "_Measures",
+      "display_folder": "Reliability KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE([Open Incident Count], Fact_Incident[Severity] IN {\"Sev1\", \"Sev2\"})",
+      "depends_on": [
+        "Open Incident Count"
+      ]
+    },
+    {
+      "name": "Committed Uptime Target %",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0.00%",
+      "description": "Average committed uptime SLA of the applications in context - the same target basis [Uptime RAG Status] uses.",
+      "expression": "AVERAGE(Dim_Application[CommittedUptimeTarget])",
+      "depends_on": []
+    },
+    {
+      "name": "Availability Gap vs Target (pp)",
+      "table": "_Measures",
+      "display_folder": "Reliability KPIs",
+      "format": "+0.00;-0.00;0.00",
+      "description": "Actual availability minus committed target, in percentage points (negative = below SLA).",
+      "expression": "VAR ActualAvailability = [Availability %]\nVAR TargetAvailability = [Committed Uptime Target %]\nRETURN\n    IF(NOT ISBLANK(ActualAvailability), (ActualAvailability - TargetAvailability) * 100)",
+      "depends_on": [
+        "Availability %",
+        "Committed Uptime Target %"
+      ]
+    },
+    {
+      "name": "Downtime Hours",
+      "table": "_Measures",
+      "display_folder": "Reliability KPIs",
+      "format": "#,0.0",
+      "description": "",
+      "expression": "DIVIDE([Total Downtime Minutes], 60)",
+      "depends_on": [
+        "Total Downtime Minutes"
+      ]
+    },
+    {
+      "name": "Applications in Scope",
+      "table": "_Measures",
+      "display_folder": "Reliability KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "COUNTROWS(FILTER(VALUES(Dim_Application[ApplicationKey]), NOT ISBLANK([Availability %])))",
+      "depends_on": [
+        "Availability %"
+      ]
+    },
+    {
+      "name": "Applications Meeting SLA",
+      "table": "_Measures",
+      "display_folder": "Reliability KPIs",
+      "format": "#,0",
+      "description": "Applications whose own availability met their own committed target (evaluated per application, not on the portfolio average).",
+      "expression": "COUNTROWS(\n    FILTER(\n        VALUES(Dim_Application[ApplicationKey]),\n        NOT ISBLANK([Availability %]) && [Availability %] >= [Committed Uptime Target %]\n    )\n)",
+      "depends_on": [
+        "Availability %",
+        "Committed Uptime Target %"
+      ]
+    },
+    {
+      "name": "Applications Below SLA",
+      "table": "_Measures",
+      "display_folder": "Reliability KPIs",
+      "format": "#,0",
+      "description": "Applications more than 0.10pp below their committed target (Red on [Uptime RAG Status]).",
+      "expression": "COUNTROWS(\n    FILTER(\n        VALUES(Dim_Application[ApplicationKey]),\n        [Uptime RAG Status] = \"Red\"\n    )\n)",
+      "depends_on": [
+        "Uptime RAG Status"
+      ]
+    },
+    {
+      "name": "SLA Compliance Label",
+      "table": "_Measures",
+      "display_folder": "Reliability KPIs",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Meeting = [Applications Meeting SLA]\nVAR InScope = [Applications in Scope]\nRETURN\n    IF(InScope > 0, FORMAT(Meeting + 0, \"0\") & \" of \" & FORMAT(InScope, \"0\"))",
+      "depends_on": [
+        "Applications Meeting SLA",
+        "Applications in Scope"
+      ]
+    },
+    {
+      "name": "Customer-Impacting Outages",
+      "table": "_Measures",
+      "display_folder": "Reliability KPIs",
+      "format": "#,0",
+      "description": "Outage events flagged customer-impacting whose OutageDate falls in the selected period. Dim_OutageEvent has no date relationship, so the period is applied virtually with TREATAS.",
+      "expression": "CALCULATE(\n    COUNTROWS(Dim_OutageEvent),\n    Dim_OutageEvent[CustomerImpacting] = 1,\n    TREATAS(VALUES(Dim_Date[Date]), Dim_OutageEvent[OutageDate])\n)",
+      "depends_on": []
+    },
+    {
+      "name": "MTBF - Prior Period",
+      "table": "_Measures",
+      "display_folder": "Trend Measures",
+      "format": "#,0",
+      "description": "MTBF over the equal-length window immediately before the selected period (e.g. 2024 when 2025 is selected).",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([MTBF], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "MTBF"
+      ]
+    },
+    {
+      "name": "Outage Event Count - Prior Period",
+      "table": "_Measures",
+      "display_folder": "Trend Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([Outage Event Count], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "Outage Event Count"
+      ]
+    },
+    {
+      "name": "Availability Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "KPI status line: icon + word + gap to SLA. Thresholds identical to [Uptime RAG Status].",
+      "expression": "VAR Gap = [Availability Gap vs Target (pp)]\nVAR Target = [Committed Uptime Target %]\nVAR Label =\n    SWITCH(\n        TRUE(),\n        Gap >= 0, \"✓ On target\",\n        Gap >= -0.10, \"⚠ At risk\",\n        \"✕ Below SLA\"\n    )\nRETURN\n    IF(ISBLANK(Gap), \"– No data\", Label & \"  ·  \" & FORMAT(Gap, \"+0.00;-0.00;0.00\") & \" pp vs \" & FORMAT(Target, \"0.00%\") & \" SLA\")",
+      "depends_on": [
+        "Availability Gap vs Target (pp)",
+        "Committed Uptime Target %"
+      ]
+    },
+    {
+      "name": "Availability Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Gap = [Availability Gap vs Target (pp)]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Gap), \"#5A6775\", Gap >= 0, \"#1E7B3C\", Gap >= -0.10, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Availability Gap vs Target (pp)"
+      ]
+    },
+    {
+      "name": "Uptime Status Label",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Row-level status for tables/matrices: icon + word derived from [Uptime RAG Status].",
+      "expression": "SWITCH(\n    [Uptime RAG Status],\n    \"Green\", \"✓ On target\",\n    \"Amber\", \"⚠ At risk\",\n    \"Red\", \"✕ Below SLA\",\n    \"– No data\"\n)",
+      "depends_on": [
+        "Uptime RAG Status"
+      ]
+    },
+    {
+      "name": "Uptime Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Text colour for [Uptime Status Label] / gap columns (AA contrast on white).",
+      "expression": "SWITCH([Uptime RAG Status], \"Green\", \"#1E7B3C\", \"Amber\", \"#8A5A00\", \"Red\", \"#B42318\", \"#5A6775\")",
+      "depends_on": [
+        "Uptime RAG Status"
+      ]
+    },
+    {
+      "name": "Uptime Status Fill",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Bar/gauge fill colour for the same RAG status.",
+      "expression": "SWITCH([Uptime RAG Status], \"Green\", \"#2E7D46\", \"Amber\", \"#C07F12\", \"Red\", \"#B42318\", \"#B8C2CC\")",
+      "depends_on": [
+        "Uptime RAG Status"
+      ]
+    },
+    {
+      "name": "SLA Compliance Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Below = [Applications Below SLA] + 0\nVAR AtRisk = [Applications in Scope] - [Applications Meeting SLA] - Below\nRETURN\n    SWITCH(\n        TRUE(),\n        ISBLANK([Applications in Scope]), \"– No data\",\n        Below > 0, \"✕ \" & Below & \" below SLA  ·  \" & AtRisk & \" at risk\",\n        AtRisk > 0, \"⚠ \" & AtRisk & \" at risk (within 0.10 pp)\",\n        \"✓ All applications meet SLA\"\n    )",
+      "depends_on": [
+        "Applications Below SLA",
+        "Applications in Scope",
+        "Applications Meeting SLA"
+      ]
+    },
+    {
+      "name": "SLA Compliance Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Below = [Applications Below SLA] + 0\nVAR Missing = [Applications in Scope] - [Applications Meeting SLA]\nRETURN\n    SWITCH(TRUE(), ISBLANK([Applications in Scope]), \"#5A6775\", Below > 0, \"#B42318\", Missing > 0, \"#8A5A00\", \"#1E7B3C\")",
+      "depends_on": [
+        "Applications Below SLA",
+        "Applications in Scope",
+        "Applications Meeting SLA"
+      ]
+    },
+    {
+      "name": "MTBF Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR CurrentPeriodMTBF = [MTBF]\nVAR PriorPeriodMTBF = [MTBF - Prior Period]\nVAR Change = DIVIDE(CurrentPeriodMTBF - PriorPeriodMTBF, PriorPeriodMTBF)\nRETURN\n    IF(\n        ISBLANK(PriorPeriodMTBF) || ISBLANK(CurrentPeriodMTBF),\n        \"– No prior period in data\",\n        SWITCH(TRUE(), Change >= 0, \"✓ ▲ \", Change >= -0.10, \"⚠ ▼ \", \"✕ ▼ \")\n            & FORMAT(Change, \"+0.0%;-0.0%\") & \" vs prior period (higher is better)\"\n    )",
+      "depends_on": [
+        "MTBF",
+        "MTBF - Prior Period"
+      ]
+    },
+    {
+      "name": "MTBF Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR PriorPeriodMTBF = [MTBF - Prior Period]\nVAR Change = DIVIDE([MTBF] - PriorPeriodMTBF, PriorPeriodMTBF)\nRETURN\n    SWITCH(TRUE(), ISBLANK(PriorPeriodMTBF), \"#5A6775\", Change >= 0, \"#1E7B3C\", Change >= -0.10, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "MTBF - Prior Period",
+        "MTBF"
+      ]
+    },
+    {
+      "name": "Outage Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Outage volume vs the prior equal-length period (lower is better) plus the customer-impacting count.",
+      "expression": "VAR CurrentPeriodOutages = [Outage Event Count] + 0\nVAR PriorPeriodOutages = [Outage Event Count - Prior Period]\nVAR Change = DIVIDE(CurrentPeriodOutages - PriorPeriodOutages, PriorPeriodOutages)\nVAR Impacting = [Customer-Impacting Outages] + 0\nRETURN\n    IF(\n        ISBLANK(PriorPeriodOutages),\n        Impacting & \" customer-impacting\",\n        SWITCH(TRUE(), Change <= 0, \"✓ ▼ \", Change <= 0.10, \"⚠ ▲ \", \"✕ ▲ \")\n            & FORMAT(Change, \"+0%;-0%\") & \" vs prior  ·  \" & Impacting & \" customer-impacting\"\n    )",
+      "depends_on": [
+        "Outage Event Count",
+        "Outage Event Count - Prior Period",
+        "Customer-Impacting Outages"
+      ]
+    },
+    {
+      "name": "Outage Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR PriorPeriodOutages = [Outage Event Count - Prior Period]\nVAR Change = DIVIDE([Outage Event Count] - PriorPeriodOutages, PriorPeriodOutages)\nRETURN\n    SWITCH(TRUE(), ISBLANK(PriorPeriodOutages), \"#5A6775\", Change <= 0, \"#1E7B3C\", Change <= 0.10, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Outage Event Count - Prior Period",
+        "Outage Event Count"
+      ]
+    },
+    {
+      "name": "Open Incident Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR HighSeverityOpen = [Open Sev1-2 Incidents] + 0\nVAR AllOpen = [Open Incident Count] + 0\nRETURN\n    SWITCH(\n        TRUE(),\n        HighSeverityOpen > 0, \"✕ \" & HighSeverityOpen & \" Sev1/Sev2 still open at period end\",\n        AllOpen > 0, \"⚠ No Sev1/Sev2 open  ·  \" & AllOpen & \" lower-severity open\",\n        \"✓ No incidents open at period end\"\n    )",
+      "depends_on": [
+        "Open Sev1-2 Incidents",
+        "Open Incident Count"
+      ]
+    },
+    {
+      "name": "Open Incident Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "SWITCH(TRUE(), [Open Sev1-2 Incidents] + 0 > 0, \"#B42318\", [Open Incident Count] + 0 > 0, \"#8A5A00\", \"#1E7B3C\")",
+      "depends_on": [
+        "Open Sev1-2 Incidents",
+        "Open Incident Count"
+      ]
+    },
+    {
+      "name": "Ack SLA Target %",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0%",
+      "description": "Service target: 90% of incidents acknowledged within their severity SLA (assumed - not disclosed in the case study).",
+      "expression": "0.90",
+      "depends_on": []
+    },
+    {
+      "name": "Breach Rate Target %",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0%",
+      "description": "Service target: no more than 20% of incidents breaching an SLA (assumed).",
+      "expression": "0.20",
+      "depends_on": []
+    },
+    {
+      "name": "Escalation Rate Target %",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0%",
+      "description": "Service target: no more than 5% of incidents escalated (assumed).",
+      "expression": "0.05",
+      "depends_on": []
+    },
+    {
+      "name": "MTTA Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "MTTA against the severity-mix-weighted acknowledge target: within = on target, up to 25% over = at risk.",
+      "expression": "VAR Actual = [MTTA]\nVAR Target = [Ack Target Minutes]\nVAR Ratio = DIVIDE(Actual, Target)\nRETURN\n    IF(\n        ISBLANK(Actual),\n        \"– No data\",\n        SWITCH(TRUE(), Ratio <= 1, \"✓ Within target\", Ratio <= 1.25, \"⚠ Over target\", \"✕ Well over target\")\n            & \"  ·  \" & FORMAT(Actual, \"0\") & \" vs \" & FORMAT(Target, \"0\") & \" min mix-weighted SLA\"\n    )",
+      "depends_on": [
+        "MTTA",
+        "Ack Target Minutes"
+      ]
+    },
+    {
+      "name": "MTTA Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Ratio = DIVIDE([MTTA], [Ack Target Minutes])\nRETURN\n    SWITCH(TRUE(), ISBLANK(Ratio), \"#5A6775\", Ratio <= 1, \"#1E7B3C\", Ratio <= 1.25, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "MTTA",
+        "Ack Target Minutes"
+      ]
+    },
+    {
+      "name": "MTTA Fill",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Ratio = DIVIDE([MTTA], [Ack Target Minutes])\nRETURN\n    SWITCH(TRUE(), ISBLANK(Ratio), \"#B8C2CC\", Ratio <= 1, \"#2E7D46\", Ratio <= 1.25, \"#C07F12\", \"#B42318\")",
+      "depends_on": [
+        "MTTA",
+        "Ack Target Minutes"
+      ]
+    },
+    {
+      "name": "MTTR Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Actual = [MTTR Hours]\nVAR Target = [Resolve Target Hours]\nVAR Ratio = DIVIDE(Actual, Target)\nRETURN\n    IF(\n        ISBLANK(Actual),\n        \"– No data\",\n        SWITCH(TRUE(), Ratio <= 1, \"✓ Within target\", Ratio <= 1.25, \"⚠ Over target\", \"✕ Well over target\")\n            & \"  ·  \" & FORMAT(Actual, \"0.0\") & \" vs \" & FORMAT(Target, \"0.0\") & \" h mix-weighted SLA\"\n    )",
+      "depends_on": [
+        "MTTR Hours",
+        "Resolve Target Hours"
+      ]
+    },
+    {
+      "name": "MTTR Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Ratio = DIVIDE([MTTR Hours], [Resolve Target Hours])\nRETURN\n    SWITCH(TRUE(), ISBLANK(Ratio), \"#5A6775\", Ratio <= 1, \"#1E7B3C\", Ratio <= 1.25, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "MTTR Hours",
+        "Resolve Target Hours"
+      ]
+    },
+    {
+      "name": "Ack SLA Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Actual = [Acknowledged Within SLA %]\nVAR Target = [Ack SLA Target %]\nVAR Prior = [Acknowledged Within SLA % - Prior Period]\nVAR Trend =\n    IF(NOT ISBLANK(Prior), \"  ·  \" & IF(Actual >= Prior, \"▲ \", \"▼ \") & FORMAT((Actual - Prior) * 100, \"+0.0;-0.0\") & \" pts vs prior\")\nRETURN\n    IF(\n        ISBLANK(Actual),\n        \"– No data\",\n        SWITCH(TRUE(), Actual >= Target, \"✓ Meets \", Actual >= Target - 0.05, \"⚠ Below \", \"✕ Below \")\n            & FORMAT(Target, \"0%\") & \" target\" & Trend\n    )",
+      "depends_on": [
+        "Acknowledged Within SLA %",
+        "Ack SLA Target %",
+        "Acknowledged Within SLA % - Prior Period"
+      ]
+    },
+    {
+      "name": "Ack SLA Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Also used row-by-row (severity scorecard, application league table): >= 90% green, 85-90% amber, < 85% red.",
+      "expression": "VAR Actual = [Acknowledged Within SLA %]\nVAR Target = [Ack SLA Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Actual), \"#5A6775\", Actual >= Target, \"#1E7B3C\", Actual >= Target - 0.05, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Acknowledged Within SLA %",
+        "Ack SLA Target %"
+      ]
+    },
+    {
+      "name": "Breach Rate Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Breach rate vs the 20% ceiling (lower is better): <= 20% green, 20-30% amber, > 30% red.",
+      "expression": "VAR Actual = [Breach Rate %]\nVAR Target = [Breach Rate Target %]\nVAR Prior = [Breach Rate % - Prior Period]\nVAR Trend =\n    IF(NOT ISBLANK(Prior), \"  ·  \" & IF(Actual <= Prior, \"▼ \", \"▲ \") & FORMAT((Actual - Prior) * 100, \"+0.0;-0.0\") & \" pts vs prior\")\nRETURN\n    IF(\n        ISBLANK(Actual),\n        \"– No data\",\n        SWITCH(TRUE(), Actual <= Target, \"✓ Within \", Actual <= Target + 0.10, \"⚠ Above \", \"✕ Above \")\n            & FORMAT(Target, \"0%\") & \" target\" & Trend\n    )",
+      "depends_on": [
+        "Breach Rate %",
+        "Breach Rate Target %",
+        "Breach Rate % - Prior Period"
+      ]
+    },
+    {
+      "name": "Breach Rate Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Actual = [Breach Rate %]\nVAR Target = [Breach Rate Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Actual), \"#5A6775\", Actual <= Target, \"#1E7B3C\", Actual <= Target + 0.10, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Breach Rate %",
+        "Breach Rate Target %"
+      ]
+    },
+    {
+      "name": "Escalation Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Rate = [Escalation Rate %]\nVAR Target = [Escalation Rate Target %]\nRETURN\n    IF(\n        ISBLANK(Rate),\n        \"– No data\",\n        SWITCH(TRUE(), Rate <= Target, \"✓ \", Rate <= Target + 0.03, \"⚠ \", \"✕ \")\n            & FORMAT(Rate, \"0.0%\") & \" of incidents  ·  target ≤ \" & FORMAT(Target, \"0%\")\n    )",
+      "depends_on": [
+        "Escalation Rate %",
+        "Escalation Rate Target %"
+      ]
+    },
+    {
+      "name": "Escalation Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "<= 5% green, 5-8% amber, > 8% red.",
+      "expression": "VAR Rate = [Escalation Rate %]\nVAR Target = [Escalation Rate Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Rate), \"#5A6775\", Rate <= Target, \"#1E7B3C\", Rate <= Target + 0.03, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Escalation Rate %",
+        "Escalation Rate Target %"
+      ]
+    },
+    {
+      "name": "Resolve SLA Target %",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0%",
+      "description": "Service target: 85% of incidents resolved within their severity resolve SLA (assumed).",
+      "expression": "0.85",
+      "depends_on": []
+    },
+    {
+      "name": "Resolve SLA Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": ">= 85% green, 80-85% amber, < 80% red.",
+      "expression": "VAR Actual = [Resolved Within SLA %]\nVAR Target = [Resolve SLA Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Actual), \"#5A6775\", Actual >= Target, \"#1E7B3C\", Actual >= Target - 0.05, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Resolved Within SLA %",
+        "Resolve SLA Target %"
+      ]
+    },
+    {
+      "name": "Outage Events in Period",
+      "table": "_Measures",
+      "display_folder": "Outage Measures",
+      "format": "#,0",
+      "description": "Outage events (Dim_OutageEvent rows) whose OutageDate is in the selected period - the period is applied with TREATAS because Dim_OutageEvent deliberately has no active date relationship. Used by the outage register so rows outside the period drop out.",
+      "expression": "CALCULATE(COUNTROWS(Dim_OutageEvent), TREATAS(VALUES(Dim_Date[Date]), Dim_OutageEvent[OutageDate]))",
+      "depends_on": []
+    },
+    {
+      "name": "Outage Minutes",
+      "table": "_Measures",
+      "display_folder": "Outage Measures",
+      "format": "#,0.0",
+      "description": "Total outage duration (minutes) of outage events in the selected period.",
+      "expression": "CALCULATE(SUM(Dim_OutageEvent[DurationMinutes]), TREATAS(VALUES(Dim_Date[Date]), Dim_OutageEvent[OutageDate]))",
+      "depends_on": []
+    },
+    {
+      "name": "Outage Impact Label",
+      "table": "_Measures",
+      "display_folder": "Outage Measures",
+      "format": "General",
+      "description": "Row-level impact label for the outage register (icon + words; blank outside the period).",
+      "expression": "VAR Events = [Outage Events in Period]\nVAR ImpactingEvents = CALCULATE([Outage Events in Period], Dim_OutageEvent[CustomerImpacting] = 1)\nRETURN\n    SWITCH(\n        TRUE(),\n        ISBLANK(Events), BLANK(),\n        ImpactingEvents = Events, \"✕ Customer-impacting\",\n        ImpactingEvents > 0, \"⚠ \" & ImpactingEvents & \" of \" & Events & \" customer-impacting\",\n        \"– Internal only\"\n    )",
+      "depends_on": [
+        "Outage Events in Period"
+      ]
+    },
+    {
+      "name": "Outage Impact Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Events = [Outage Events in Period]\nVAR ImpactingEvents = CALCULATE([Outage Events in Period], Dim_OutageEvent[CustomerImpacting] = 1)\nRETURN\n    SWITCH(TRUE(), ISBLANK(Events), \"#5A6775\", ImpactingEvents = Events, \"#B42318\", ImpactingEvents > 0, \"#8A5A00\", \"#5A6775\")",
+      "depends_on": [
+        "Outage Events in Period"
+      ]
+    },
+    {
+      "name": "Selected Application Label",
+      "table": "_Measures",
+      "display_folder": "Reliability KPIs",
+      "format": "General",
+      "description": "Drillthrough page context line: which application (and its service line, tier and SLA) the page is showing.",
+      "expression": "VAR SelectedApp = SELECTEDVALUE(Dim_Application[ApplicationName])\nRETURN\n    IF(\n        ISBLANK(SelectedApp),\n        \"Multiple applications selected - drill through from a single application\",\n        SelectedApp & \"  ·  \" & SELECTEDVALUE(Dim_Application[ServiceLine]) & \"  ·  \"\n            & SELECTEDVALUE(Dim_Application[CriticalityTier]) & \"  ·  committed SLA \"\n            & FORMAT([Committed Uptime Target %], \"0.00%\")\n    )",
+      "depends_on": [
+        "Committed Uptime Target %"
+      ]
+    },
+    {
+      "name": "Downtime Hours - Prior Period",
+      "table": "_Measures",
+      "display_folder": "Trend Measures",
+      "format": "#,0.0",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([Downtime Hours], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "Downtime Hours"
+      ]
+    },
+    {
+      "name": "Downtime Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR CurrentPeriodHours = [Downtime Hours] + 0\nVAR PriorPeriodHours = [Downtime Hours - Prior Period]\nVAR Change = DIVIDE(CurrentPeriodHours - PriorPeriodHours, PriorPeriodHours)\nRETURN\n    IF(\n        ISBLANK(PriorPeriodHours),\n        \"– No prior period in data\",\n        SWITCH(TRUE(), Change <= 0, \"✓ ▼ \", Change <= 0.10, \"⚠ ▲ \", \"✕ ▲ \")\n            & FORMAT(Change, \"+0%;-0%\") & \" vs prior period (lower is better)\"\n    )",
+      "depends_on": [
+        "Downtime Hours",
+        "Downtime Hours - Prior Period"
+      ]
+    },
+    {
+      "name": "Downtime Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR PriorPeriodHours = [Downtime Hours - Prior Period]\nVAR Change = DIVIDE([Downtime Hours] - PriorPeriodHours, PriorPeriodHours)\nRETURN\n    SWITCH(TRUE(), ISBLANK(PriorPeriodHours), \"#5A6775\", Change <= 0, \"#1E7B3C\", Change <= 0.10, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Downtime Hours - Prior Period",
+        "Downtime Hours"
+      ]
+    },
+    {
+      "name": "Customer Impact Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Customer-impacting share of outage events: none = green, under half = amber, half or more = red.",
+      "expression": "VAR Impacting = [Customer-Impacting Outages] + 0\nVAR Events = [Outage Events in Period] + 0\nRETURN\n    SWITCH(\n        TRUE(),\n        Events = 0, \"✓ No outages in period\",\n        Impacting = 0, \"✓ None of \" & Events & \" outages reached customers\",\n        DIVIDE(Impacting, Events) < 0.5, \"⚠ \" & FORMAT(DIVIDE(Impacting, Events), \"0%\") & \" of \" & Events & \" outages\",\n        \"✕ \" & FORMAT(DIVIDE(Impacting, Events), \"0%\") & \" of \" & Events & \" outages\"\n    )",
+      "depends_on": [
+        "Customer-Impacting Outages",
+        "Outage Events in Period"
+      ]
+    },
+    {
+      "name": "Customer Impact Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Impacting = [Customer-Impacting Outages] + 0\nVAR Events = [Outage Events in Period] + 0\nRETURN\n    SWITCH(TRUE(), Impacting = 0, \"#1E7B3C\", DIVIDE(Impacting, Events) < 0.5, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Customer-Impacting Outages",
+        "Outage Events in Period"
+      ]
+    },
+    {
+      "name": "Availability Gauge Min",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0.0%",
+      "description": "Gauge scale floor. The SLA band that matters is 99.5-100% (the lowest committed target is 99.5%); on a 0-100% arc every application would look identical.",
+      "expression": "0.995",
+      "depends_on": []
+    },
+    {
+      "name": "Availability Gauge Max",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0.0%",
+      "description": "",
+      "expression": "1",
+      "depends_on": []
+    },
+    {
+      "name": "Coverage Target %",
+      "table": "_Measures",
+      "display_folder": "Targets",
+      "format": "0.0%",
+      "description": "Service target: 97% of required on-call shifts staffed (assumed). Amber tolerance 0.5pp.",
+      "expression": "0.97",
+      "depends_on": []
+    },
+    {
+      "name": "Coverage Gap vs Target (pp)",
+      "table": "_Measures",
+      "display_folder": "Coverage KPIs",
+      "format": "+0.00;-0.00;0.00",
+      "description": "Coverage minus the 97% target in percentage points (negative = below target).",
+      "expression": "VAR Coverage = [On-Call Coverage %]\nRETURN\n    IF(NOT ISBLANK(Coverage), (Coverage - [Coverage Target %]) * 100)",
+      "depends_on": [
+        "On-Call Coverage %",
+        "Coverage Target %"
+      ]
+    },
+    {
+      "name": "After-Hours Coverage %",
+      "table": "_Measures",
+      "display_folder": "Coverage KPIs",
+      "format": "0.0%",
+      "description": "Coverage of after-hours (night) shifts only - the shifts where an unstaffed rota most directly delays acknowledgement.",
+      "expression": "CALCULATE([On-Call Coverage %], Fact_OnCallRoster[AfterHoursFlag] = 1)",
+      "depends_on": [
+        "On-Call Coverage %"
+      ]
+    },
+    {
+      "name": "After-Hours Coverage Gaps",
+      "table": "_Measures",
+      "display_folder": "Coverage KPIs",
+      "format": "#,0",
+      "description": "",
+      "expression": "CALCULATE([Coverage Gap Count], Fact_OnCallRoster[AfterHoursFlag] = 1)",
+      "depends_on": [
+        "Coverage Gap Count"
+      ]
+    },
+    {
+      "name": "Coverage Gap Count - Prior Period",
+      "table": "_Measures",
+      "display_folder": "Trend Measures",
+      "format": "#,0",
+      "description": "",
+      "expression": "VAR PeriodStart = MIN(Dim_Date[Date])\nVAR PeriodEnd = MAX(Dim_Date[Date])\nVAR PeriodDays = INT(PeriodEnd - PeriodStart) + 1\nRETURN\n    CALCULATE([Coverage Gap Count], REMOVEFILTERS(Dim_Date), DATESBETWEEN(Dim_Date[Date], PeriodStart - PeriodDays, PeriodStart - 1))",
+      "depends_on": [
+        "Coverage Gap Count"
+      ]
+    },
+    {
+      "name": "Coverage Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Gap = [Coverage Gap vs Target (pp)]\nRETURN\n    IF(\n        ISBLANK(Gap),\n        \"– No data\",\n        SWITCH(TRUE(), Gap >= 0, \"✓ Meets\", Gap >= -0.5, \"⚠ Below\", \"✕ Below\")\n            & \" \" & FORMAT([Coverage Target %], \"0%\") & \" target  ·  \" & FORMAT(Gap, \"+0.00;-0.00;0.00\") & \" pp\"\n    )",
+      "depends_on": [
+        "Coverage Gap vs Target (pp)",
+        "Coverage Target %"
+      ]
+    },
+    {
+      "name": "Coverage Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Text colour for coverage vs the 97% target: >= 97% green, 96.5-97% amber, < 96.5% red. Also used row-by-row.",
+      "expression": "VAR Coverage = [On-Call Coverage %]\nVAR Target = [Coverage Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Coverage), \"#5A6775\", Coverage >= Target, \"#1E7B3C\", Coverage >= Target - 0.005, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "On-Call Coverage %",
+        "Coverage Target %"
+      ]
+    },
+    {
+      "name": "Coverage Fill",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Bar fill for the same coverage RAG.",
+      "expression": "VAR Coverage = [On-Call Coverage %]\nVAR Target = [Coverage Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Coverage), \"#B8C2CC\", Coverage >= Target, \"#2E7D46\", Coverage >= Target - 0.005, \"#C07F12\", \"#B42318\")",
+      "depends_on": [
+        "On-Call Coverage %",
+        "Coverage Target %"
+      ]
+    },
+    {
+      "name": "Coverage Heat Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Light background tints for the team x shift coverage heatmap (dark text stays readable on all three).",
+      "expression": "VAR Coverage = [On-Call Coverage %]\nVAR Target = [Coverage Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Coverage), \"#FFFFFF\", Coverage >= Target, \"#DDEFE2\", Coverage >= Target - 0.005, \"#FBEBCB\", \"#F6D5D1\")",
+      "depends_on": [
+        "On-Call Coverage %",
+        "Coverage Target %"
+      ]
+    },
+    {
+      "name": "Coverage Gap Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Unstaffed shifts vs the prior equal-length period (lower is better) and how many were after-hours.",
+      "expression": "VAR Gaps = [Coverage Gap Count] + 0\nVAR PriorGaps = [Coverage Gap Count - Prior Period]\nVAR Change = DIVIDE(Gaps - PriorGaps, PriorGaps)\nVAR AfterHours = [After-Hours Coverage Gaps] + 0\nRETURN\n    IF(\n        ISBLANK(PriorGaps),\n        AfterHours & \" after-hours  ·  no prior period in data\",\n        SWITCH(TRUE(), Change <= 0, \"✓ ▼ \", Change <= 0.10, \"⚠ ▲ \", \"✕ ▲ \")\n            & FORMAT(Change, \"+0%;-0%\") & \" vs prior  ·  \" & AfterHours & \" after-hours\"\n    )",
+      "depends_on": [
+        "Coverage Gap Count",
+        "Coverage Gap Count - Prior Period",
+        "After-Hours Coverage Gaps"
+      ]
+    },
+    {
+      "name": "Coverage Gap Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR PriorGaps = [Coverage Gap Count - Prior Period]\nVAR Change = DIVIDE([Coverage Gap Count] - PriorGaps, PriorGaps)\nRETURN\n    SWITCH(TRUE(), ISBLANK(PriorGaps), \"#5A6775\", Change <= 0, \"#1E7B3C\", Change <= 0.10, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "Coverage Gap Count - Prior Period",
+        "Coverage Gap Count"
+      ]
+    },
+    {
+      "name": "After-Hours Coverage Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Coverage = [After-Hours Coverage %]\nVAR Target = [Coverage Target %]\nRETURN\n    IF(\n        ISBLANK(Coverage),\n        \"– No data\",\n        SWITCH(TRUE(), Coverage >= Target, \"✓ Meets\", Coverage >= Target - 0.005, \"⚠ Below\", \"✕ Below\")\n            & \" \" & FORMAT(Target, \"0%\") & \" target  ·  \" & [After-Hours Coverage Gaps] + 0 & \" unstaffed\"\n    )",
+      "depends_on": [
+        "After-Hours Coverage %",
+        "Coverage Target %",
+        "After-Hours Coverage Gaps"
+      ]
+    },
+    {
+      "name": "After-Hours Coverage Status Color",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Coverage = [After-Hours Coverage %]\nVAR Target = [Coverage Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Coverage), \"#5A6775\", Coverage >= Target, \"#1E7B3C\", Coverage >= Target - 0.005, \"#8A5A00\", \"#B42318\")",
+      "depends_on": [
+        "After-Hours Coverage %",
+        "Coverage Target %"
+      ]
+    },
+    {
+      "name": "After-Hours Load Status",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "Context, not a pass/fail KPI: after-hours share of incident load next to after-hours share of rostered shifts.",
+      "expression": "VAR IncidentShare = [After-Hours Incident Share %]\nVAR ShiftShare = [After-Hours Shift Share %]\nRETURN\n    IF(\n        ISBLANK(IncidentShare),\n        \"– No data\",\n        \"ⓘ \" & FORMAT(IncidentShare, \"0%\") & \" of incidents (7pm-7am) vs \" & FORMAT(ShiftShare, \"0%\") & \" of shifts\"\n    )",
+      "depends_on": [
+        "After-Hours Incident Share %",
+        "After-Hours Shift Share %"
+      ]
+    },
+    {
+      "name": "Escalation Fill",
+      "table": "_Measures",
+      "display_folder": "Status Indicators",
+      "format": "General",
+      "description": "",
+      "expression": "VAR Rate = [Escalation Rate %]\nVAR Target = [Escalation Rate Target %]\nRETURN\n    SWITCH(TRUE(), ISBLANK(Rate), \"#B8C2CC\", Rate <= Target, \"#2E7D46\", Rate <= Target + 0.03, \"#C07F12\", \"#B42318\")",
+      "depends_on": [
+        "Escalation Rate %",
+        "Escalation Rate Target %"
+      ]
+    },
+    {
+      "name": "Shift Type Label",
+      "table": "_Measures",
+      "display_folder": "Coverage KPIs",
+      "format": "General",
+      "description": "Row label for the unstaffed-shift register (symbol + words).",
+      "expression": "VAR AfterHoursShifts = CALCULATE([Shifts Required], Fact_OnCallRoster[AfterHoursFlag] = 1)\nRETURN\n    IF([Shifts Required] > 0, IF(AfterHoursShifts > 0, \"☾ After-hours\", \"☀ Business hours\"))",
+      "depends_on": [
+        "Shifts Required"
+      ]
+    }
+  ],
+  "rls": [
+    {
+      "role": "ServiceLineScope",
+      "filters": [
+        {
+          "table": "Dim_Application",
+          "expression": "VAR CurrentUserServiceLines =\n    CALCULATETABLE(\n        VALUES(Security_UserServiceLine[ServiceLine]),\n        Security_UserServiceLine[UserPrincipalName] = USERNAME()\n    )\nVAR IsExecutiveViewer =\n    CALCULATE(\n        COUNTROWS(Security_UserServiceLine),\n        Security_UserServiceLine[UserPrincipalName] = USERNAME(),\n        Security_UserServiceLine[ServiceLine] = \"ALL\"\n    ) > 0\nRETURN\n    IsExecutiveViewer || Dim_Application[ServiceLine] IN CurrentUserServiceLines"
+        }
+      ]
+    }
+  ],
+  "pages": [],
+  "techniques": [
+    "VAR",
+    "SELECTEDVALUE",
+    "SWITCH",
+    "time-intelligence",
+    "TREATAS",
+    "RLS",
+    "dynamic-RLS",
+    "inactive-relationships",
+    "measure-driven-formatting",
+    "calculated-tables"
+  ],
+  "stats": {
+    "tables": 9,
+    "measures": 104,
+    "relationships": 9,
+    "pages": 9
+  },
+  "reports": [
+    {
+      "slug": "app-uptime-scorecard",
+      "title": "Application Uptime Scorecard",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/app-uptime-scorecard.pages.json"
+    },
+    {
+      "slug": "incident-response-sla",
+      "title": "Incident Acknowledgement & Response",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/incident-response-sla.pages.json"
+    },
+    {
+      "slug": "oncall-coverage-escalation",
+      "title": "On-Call Coverage & Escalation Analysis",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/oncall-coverage-escalation.pages.json"
+    },
+    {
+      "slug": "service-reliability-overview",
+      "title": "Service Reliability Overview",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/service-reliability-overview.pages.json"
+    }
+  ]
+}

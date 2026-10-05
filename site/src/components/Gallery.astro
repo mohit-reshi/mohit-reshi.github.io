@@ -1,0 +1,22 @@
+---
+import Placeholder from './Placeholder.astro';
+interface Item { src: string; thumb: string | null; title: string; caption: string; w: number; h: number; tw: number }
+interface Props { items: Item[]; title: string; slug: string; placeholders?: number }
+const { items, title, slug, placeholders = 3 } = Astro.props;
+const fallback = items.length === 0 ? Array.from({ length: placeholders }, (_, i) => ({ title: `Page ${i + 1}`, i })) : [];
+---
+<ul class="gallery" data-gallery>
+  {items.map((it, i) => (
+    <li><button type="button" data-lightbox-index={i} data-full={it.src} data-title={it.title} data-caption={it.caption} data-cursor="view" aria-label={`Open ${it.title || `screenshot ${i + 1}`} larger`}>
+      <img src={it.thumb ?? it.src} width={it.tw || it.w} height={Math.round((it.tw || it.w) * (it.h / (it.w || 1))) || undefined} alt={it.title || `${title}, screenshot ${i + 1}`} loading="lazy" decoding="async" />
+    </button></li>
+  ))}
+  {fallback.map((f) => <li><div class="gallery__ph" style="aspect-ratio:16/10;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden"><Placeholder title={`${title} · ${f.title}`} seed={`${slug}-${f.i}`} label="Screenshot placeholder" /></div></li>)}
+</ul>
+<dialog class="lightbox" data-lightbox aria-label="Screenshot viewer">
+  <div class="lightbox__inner">
+    <div class="lightbox__bar"><span data-lightbox-count class="mono"></span><button class="btn btn--ghost" type="button" data-lightbox-close>Close <kbd>Esc</kbd></button></div>
+    <figure><img data-lightbox-img alt="" /><figcaption data-lightbox-caption></figcaption></figure>
+    <div class="lightbox__nav"><button class="btn" type="button" data-lightbox-prev aria-label="Previous screenshot">← Prev</button><button class="btn" type="button" data-lightbox-next aria-label="Next screenshot">Next →</button></div>
+  </div>
+</dialog>

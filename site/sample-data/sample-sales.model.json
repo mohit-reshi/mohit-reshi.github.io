@@ -1,0 +1,256 @@
+{
+  "slug": "sample-sales-analytics",
+  "public_title": "Sample: Sales Analytics (illustrative)",
+  "source_kind": "pbip",
+  "storage_mode": "directlake",
+  "tables": [
+    {
+      "name": "Fact_Sales",
+      "role": "fact",
+      "columns": 9,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Date",
+      "role": "date",
+      "columns": 8,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Product",
+      "role": "dimension",
+      "columns": 6,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Customer",
+      "role": "dimension",
+      "columns": 5,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Rep",
+      "role": "dimension",
+      "columns": 4,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Budget",
+      "role": "fact",
+      "columns": 5,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Metric_Selector",
+      "role": "disconnected",
+      "columns": 2,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "_Measures",
+      "role": "measure-table",
+      "columns": 0,
+      "measures": 8,
+      "hidden": true
+    }
+  ],
+  "relationships": [
+    {
+      "from": "Fact_Sales[DateKey]",
+      "to": "Dim_Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Sales[ProductKey]",
+      "to": "Dim_Product[ProductKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Sales[CustomerKey]",
+      "to": "Dim_Customer[CustomerKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Sales[RepKey]",
+      "to": "Dim_Rep[RepKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Budget[DateKey]",
+      "to": "Dim_Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_Sales[ShipDateKey]",
+      "to": "Dim_Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    }
+  ],
+  "measures": [
+    {
+      "name": "Revenue",
+      "table": "_Measures",
+      "display_folder": "Base",
+      "format": "#,0",
+      "description": "Net revenue after returns.",
+      "expression": "SUMX(Fact_Sales, Fact_Sales[Quantity] * Fact_Sales[UnitPrice] - Fact_Sales[Returns])",
+      "depends_on": []
+    },
+    {
+      "name": "Revenue LY",
+      "table": "_Measures",
+      "display_folder": "Time Intelligence",
+      "format": "#,0",
+      "description": "Same period last year.",
+      "expression": "CALCULATE([Revenue], SAMEPERIODLASTYEAR(Dim_Date[Date]))",
+      "depends_on": [
+        "Revenue"
+      ]
+    },
+    {
+      "name": "Revenue YoY %",
+      "table": "_Measures",
+      "display_folder": "Time Intelligence",
+      "format": "0.0%",
+      "description": "Growth against last year.",
+      "expression": "VAR Prior = [Revenue LY]\nRETURN\n    DIVIDE([Revenue] - Prior, Prior)",
+      "depends_on": [
+        "Revenue",
+        "Revenue LY"
+      ]
+    },
+    {
+      "name": "Revenue by Ship Date",
+      "table": "_Measures",
+      "display_folder": "Alternate dates",
+      "format": "#,0",
+      "description": "Revenue dated by shipment (inactive relationship).",
+      "expression": "CALCULATE([Revenue], USERELATIONSHIP(Fact_Sales[ShipDateKey], Dim_Date[DateKey]))",
+      "depends_on": [
+        "Revenue"
+      ]
+    },
+    {
+      "name": "Selected Metric",
+      "table": "_Measures",
+      "display_folder": "Metric Selector",
+      "format": "#,0",
+      "description": "Switches the headline metric from a disconnected table.",
+      "expression": "SWITCH(\n    SELECTEDVALUE(Metric_Selector[Metric], \"Revenue\"),\n    \"Revenue\", [Revenue],\n    \"YoY %\", [Revenue YoY %],\n    [Revenue]\n)",
+      "depends_on": [
+        "Revenue",
+        "Revenue YoY %"
+      ]
+    },
+    {
+      "name": "Budget Revenue",
+      "table": "_Measures",
+      "display_folder": "Budget",
+      "format": "#,0",
+      "description": "Planned revenue.",
+      "expression": "SUM(Budget[Amount])",
+      "depends_on": []
+    },
+    {
+      "name": "Revenue vs Budget (bps)",
+      "table": "_Measures",
+      "display_folder": "Budget",
+      "format": "0",
+      "description": "Variance in basis points.",
+      "expression": "DIVIDE([Revenue] - [Budget Revenue], [Budget Revenue]) * 10000",
+      "depends_on": [
+        "Revenue",
+        "Budget Revenue"
+      ]
+    },
+    {
+      "name": "Title: Executive",
+      "table": "_Measures",
+      "display_folder": "Dynamic Titles",
+      "format": "@",
+      "description": "Headline that follows the selection.",
+      "expression": "\"Revenue \" & FORMAT([Revenue], \"#,0\") & \" (\" & FORMAT([Revenue YoY %], \"+0.0%;-0.0%\") & \" YoY)\"",
+      "depends_on": [
+        "Revenue",
+        "Revenue YoY %"
+      ]
+    }
+  ],
+  "rls": [],
+  "pages": [
+    {
+      "index": 0,
+      "display_name": "Executive Summary",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 21,
+      "visual_types": {
+        "card": 6,
+        "lineChart": 2,
+        "slicer": 3,
+        "textbox": 4
+      }
+    },
+    {
+      "index": 1,
+      "display_name": "Product Analysis",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 23,
+      "visual_types": {
+        "clusteredBarChart": 4,
+        "tableEx": 1,
+        "slicer": 3
+      }
+    },
+    {
+      "index": 2,
+      "display_name": "Rep Detail",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": true,
+      "visual_count": 20,
+      "visual_types": {
+        "tableEx": 2,
+        "card": 4
+      }
+    }
+  ],
+  "techniques": [
+    "VAR",
+    "SELECTEDVALUE",
+    "SWITCH",
+    "time-intelligence",
+    "dynamic-TY/PY",
+    "USERELATIONSHIP",
+    "disconnected-table",
+    "directlake"
+  ],
+  "stats": {
+    "tables": 8,
+    "measures": 8,
+    "relationships": 6,
+    "pages": 3
+  }
+}

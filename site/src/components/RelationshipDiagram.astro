@@ -1,0 +1,44 @@
+---
+import { layoutGraph } from '../lib/graph';
+import type { ModelDoc } from '../lib/projects';
+interface Props { doc: Pick<ModelDoc, 'tables' | 'relationships'>; title: string }
+const { doc, title } = Astro.props;
+const g = layoutGraph(doc);
+const pad = 18;
+const hasInactive = g.edges.some((e) => !e.active), hasBoth = g.edges.some((e) => e.both);
+const label = (s: string) => (s.length > 22 ? s.slice(0, 21) + '…' : s);
+const off = (p: [number, number], q: [number, number], d = 13): [number, number] => { const dx = q[0] - p[0], dy = q[1] - p[1], l = Math.hypot(dx, dy) || 1; return [p[0] + (dx / l) * d, p[1] + (dy / l) * d]; };
+---
+{g.nodes.length > 0 && (
+  <figure class="diagram">
+    <svg viewBox={`${-pad} ${-pad} ${g.width + pad * 2} ${g.height + pad * 2}`} role="img" aria-label={`Relationship diagram for ${title}: ${g.nodes.length} tables and ${g.edges.length} relationships`}>
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="var(--viz-4)" /></marker>
+      </defs>
+      {g.edges.map((e) => {
+        const a = off(e.fromPt, e.toPt), b = off(e.toPt, e.fromPt);
+        return (
+          <g>
+            <line class={`edge${e.active ? '' : ' edge--inactive'}${e.both ? ' edge--both' : ''}`} x1={e.fromPt[0]} y1={e.fromPt[1]} x2={e.toPt[0]} y2={e.toPt[1]} marker-end={e.both ? 'url(#arrow)' : undefined} marker-start={e.both ? 'url(#arrow)' : undefined} />
+            <text class="card-label" x={a[0]} y={a[1]} text-anchor="middle" dominant-baseline="middle">{e.fromCard}</text>
+            <text class="card-label" x={b[0]} y={b[1]} text-anchor="middle" dominant-baseline="middle">{e.toCard}</text>
+          </g>
+        );
+      })}
+      {g.nodes.map((n) => (
+        <g class={`node node--${n.role}`} transform={`translate(${n.x} ${n.y})`}>
+          <title>{n.id}: {n.sub}</title>
+          <rect width={n.w} height={n.h} rx="8" />
+          <text x={n.w / 2} y="21" text-anchor="middle" font-size="13" font-weight="700">{label(n.label)}</text>
+          <text class="sub" x={n.w / 2} y="38" text-anchor="middle">{n.sub.length > 30 ? n.sub.slice(0, 29) + '…' : n.sub}</text>
+        </g>
+      ))}
+    </svg>
+    <figcaption class="diagram-legend">
+      <span>1 = one side, * = many side</span>
+      {hasInactive && <span>Dashed line = inactive relationship</span>}
+      {hasBoth && <span>Arrows both ways = bi-directional filter</span>}
+      <span>Solid border: fact (amber), dimension (blue), date (teal); dashed border: disconnected or calculated</span>
+    </figcaption>
+  </figure>
+)}

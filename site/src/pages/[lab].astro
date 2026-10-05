@@ -1,0 +1,57 @@
+---
+import Base from '../layouts/Base.astro';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { siteConfig } from '../config';
+import { SAMPLES_ENABLED } from '../lib/projects';
+import { withBase } from '../lib/url';
+import livelab from '../generated/livelab.json';
+
+// One dynamic route for the optional pages: /live-lab (only when siteConfig.liveLab.enabled) and /design (dev and sample builds only).
+export function getStaticPaths() {
+  const out: Array<{ params: { lab: string } }> = [];
+  if (siteConfig.liveLab.enabled) out.push({ params: { lab: 'live-lab' } });
+  if (SAMPLES_ENABLED) out.push({ params: { lab: 'design' } });
+  return out;
+}
+const { lab } = Astro.params;
+let config: unknown = { reports: [] };
+try { config = JSON.parse(readFileSync(resolve(process.cwd(), '../live-lab/reports.config.json'), 'utf8')); } catch { /* stub mode */ }
+---
+{lab === 'live-lab' && (
+  <Base title="Live Lab" description="Live, embedded Power BI reports with row-level security personas, an event log and the code behind every action." current="live-lab">
+    <div class="container">
+      <header class="page-head">
+        <p class="eyebrow">Live Lab</p>
+        <h1>Real reports, real embeds, real code.</h1>
+        <p>Pick a report, switch persona to watch row-level security change the numbers, and open the Code tab to see what each click runs. <span data-live-status>Checking the live capacity…</span></p>
+      </header>
+      <div class="livelab-host" id="livelab-host" data-livelab data-available={String(livelab.available)} data-base={withBase('')} data-broker={siteConfig.liveLab.brokerUrl}>
+        <div class="livelab-stub"><strong>Live Lab is coming online</strong><p>The interactive module loads here. If you see this message with JavaScript on, the module has not been built yet.</p></div>
+      </div>
+      <script type="application/json" id="livelab-config" set:html={JSON.stringify(config)}></script>
+    </div>
+  </Base>
+)}
+{lab === 'design' && (
+  <Base title="Design tokens" description="Design tokens and components (internal)." noindex current="">
+    <div class="container">
+      <header class="page-head"><p class="eyebrow">Internal</p><h1>Design tokens</h1><p>Colour, type, space and components used by this site. Not linked from the navigation and not in the production sitemap.</p></header>
+      <section class="section"><h2>Colour</h2>
+        <div class="grid" style="--min:10rem">
+          {['bg', 'bg-elev', 'bg-sunken', 'fg', 'fg-muted', 'fg-faint', 'line', 'line-strong', 'accent', 'accent-text', 'accent-ink', 'viz-1', 'viz-2', 'viz-3', 'viz-4', 'viz-5'].map((t) => (
+            <div style="border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden"><div style={`height:4.5rem;background:var(--${t})`}></div><p class="mono" style="margin:0;padding:var(--s-2) var(--s-3);font-size:var(--step--1)">--{t}</p></div>
+          ))}
+        </div>
+      </section>
+      <section class="section"><h2>Type</h2>
+        <p class="eyebrow">Display: Bricolage Grotesque · Body: Inter · Data: JetBrains Mono</p>
+        <h1 style="font-size:var(--step-5);margin:0">Embedded analytics</h1><h2>Section heading</h2><h3>Card heading</h3>
+        <p>Body copy in Inter at a comfortable measure. <a href="#">A link</a>, <code>inline code</code>, <kbd>Ctrl</kbd> + <kbd>K</kbd>.</p>
+      </section>
+      <section class="section"><h2>Controls</h2>
+        <p style="display:flex;gap:var(--s-3);flex-wrap:wrap;align-items:center"><a class="btn btn--primary" href="#">Primary</a><a class="btn" href="#">Secondary</a><a class="btn btn--ghost" href="#">Ghost</a><button class="chip" type="button" aria-pressed="false"><i></i>Chip</button><button class="chip" type="button" aria-pressed="true"><i></i>Selected</button><span class="status">Open to roles</span></p>
+      </section>
+    </div>
+  </Base>
+)}

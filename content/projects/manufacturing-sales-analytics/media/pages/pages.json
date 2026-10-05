@@ -1,0 +1,32 @@
+[
+  {
+    "file": "01-manufacturing-sales-analytics.webp",
+    "title": "Executive Summary",
+    "caption": "Headline revenue and profit tiles above a monthly revenue trend against last year, with the top products ranked below."
+  },
+  {
+    "file": "02-manufacturing-sales-analytics.webp",
+    "title": "Channel Performance",
+    "caption": "Revenue by sales channel compared with budget, with a metric selector and a monthly trend."
+  },
+  {
+    "file": "03-manufacturing-sales-analytics.webp",
+    "title": "Product Analysis",
+    "caption": "Top products by the selected metric, with a scatter of margin against revenue by category."
+  },
+  {
+    "file": "04-manufacturing-sales-analytics.webp",
+    "title": "Rep Performance",
+    "caption": "Sales representatives ranked by revenue against budget, with a detail table."
+  },
+  {
+    "file": "05-manufacturing-sales-analytics.webp",
+    "title": "Trend Analysis",
+    "caption": "Rolling twelve-month revenue, year-on-year change and gross profit margin across the full date range."
+  },
+  {
+    "file": "06-manufacturing-sales-analytics.webp",
+    "title": "Rep Detail",
+    "caption": "Drill-through page showing one representative's revenue by month, product, channel and year."
+  }
+]

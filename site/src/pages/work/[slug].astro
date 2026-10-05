@@ -1,0 +1,116 @@
+---
+import Base from '../../layouts/Base.astro';
+import Placeholder from '../../components/Placeholder.astro';
+import TagChips from '../../components/TagChips.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import BeforeAfter from '../../components/BeforeAfter.astro';
+import Gallery from '../../components/Gallery.astro';
+import UnderTheHood from '../../components/UnderTheHood.astro';
+import { siteConfig } from '../../config';
+import { getProjects, getMedia, isApp, loadModelDoc, prevNext, related, tagsOf, type Project } from '../../lib/projects';
+import { splitChapters } from '../../lib/markdown';
+import { withBase, absoluteUrl } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const all = await getProjects();
+  return all.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+const { project: p } = Astro.props as { project: Project };
+const all = await getProjects();
+const media = getMedia(p);
+const doc = loadModelDoc(p);
+const { intro, chapters } = splitChapters(p.body);
+const { prev, next } = prevNext(p, all);
+const rel = related(p, all);
+const app = isApp(p);
+const d = p.data;
+const kindLabel: Record<string, string> = { report: 'Report', paginated: 'Paginated report', app: 'App', pipeline: 'Pipeline' };
+const labOn = siteConfig.liveLab.enabled && d.live_lab.enabled && d.live_lab.report_key;
+const appUrl = d.appKind === 'static' ? withBase(`apps-hosted/${p.slug}/`) : d.url;
+const hasReportExtras = !!(media.beforeAfter || media.pages.length || media.video || labOn || app);
+const hasHood = !!doc || (app && (d.stack.length || d.howBuilt));
+const show = (name: string, html: string) => !!html.trim() || (name === 'Report' && hasReportExtras) || (name === 'Under the hood' && hasHood);
+const visible = chapters.filter((c) => show(c.name, c.html));
+const og = absoluteUrl(`og/${p.slug}.png`, Astro.site);
+const meta: Array<[string, string]> = [['Type', kindLabel[d.kind]], ['Role', d.role || '—'], ['Year', String(d.year)]];
+if (d.client_label) meta.push(['Context', d.client_label]);
+if (d.tools.length) meta.push(['Tools', d.tools.join(', ')]);
+if (app) meta.push(['AI-built', d.ai_built ? 'Yes' : 'No']);
+---
+<Base title={d.title} description={d.summary} image={og} type="article" current={app ? 'apps' : 'work'}>
+  <div class="progress" aria-hidden="true"><i data-progress></i></div>
+  <article>
+    <div class="container cs-head">
+      <p class="crumbs"><a href={withBase(app ? 'apps/' : 'work/')}>{app ? 'Apps' : 'Work'}</a> / {d.title}</p>
+      {d.sample && <p class="note" style="max-width:52ch;margin-bottom:var(--s-5)"><strong>Sample content.</strong> This page shows how a case study looks; it is not one of my real projects and is hidden from production builds.</p>}
+      <h1>{d.title}</h1>
+      <p class="cs-head__summary">{d.summary}</p>
+      <dl class="meta">{meta.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+      <TagChips tags={tagsOf(p)} />
+      <div class="cs-links" style="margin-top:var(--s-5)">
+        {labOn && <a class="btn btn--primary" href={`${withBase('live-lab/')}?report=${d.live_lab.report_key}`}>Try it in the Live Lab →</a>}
+        {app && appUrl && <a class="btn btn--primary" href={appUrl} rel="noopener">Open app ↗</a>}
+        {d.links.repo && <a class="btn" href={d.links.repo} rel="noopener">Source</a>}
+        {d.repo && <a class="btn" href={d.repo} rel="noopener">Repository</a>}
+        {d.links.pbip && <a class="btn" href={d.links.pbip} rel="noopener">PBIP project</a>}
+        {d.links.live && <a class="btn" href={d.links.live} rel="noopener">Live</a>}
+        {d.links.external && <a class="btn" href={d.links.external} rel="noopener">Read more</a>}
+      </div>
+      <nav class="cs-nav" aria-label="Case study sections">{visible.map((c) => <a class="chip" href={`#${c.id}`}>{c.name}</a>)}</nav>
+    </div>
+    <div class="container">
+      <div class="cs-hero-media" data-cursor={media.video ? 'play' : undefined}>
+        {media.video
+          ? <video controls preload="none" playsinline poster={media.poster?.src ?? media.cover?.src} src={media.video} aria-label={`${d.title}: recorded walkthrough`}></video>
+          : media.cover ? <img src={media.cover.src} width={media.cover.w || 1280} height={media.cover.h || 720} alt={`${d.title}: cover`} fetchpriority="high" />
+          : <Placeholder title={d.title} seed={p.slug} label={kindLabel[d.kind]} />}
+      </div>
+      {intro.trim() && <div class="prose" style="margin-top:var(--s-6)" set:html={intro} />}
+      {visible.map((c, i) => (
+        <section class="chapter" id={c.id} data-chapter aria-labelledby={`${c.id}-h`}>
+          <div class="chapter__rail"><div><span class="chapter__num">{String(i + 1).padStart(2, '0')} / {String(visible.length).padStart(2, '0')}</span><h2 class="chapter__title" id={`${c.id}-h`}>{c.name}</h2></div></div>
+          <div class="chapter__body reveal">
+            {c.html.trim() && <div class="prose" set:html={c.html} />}
+            {c.name === 'Report' && (
+              <>
+                {media.beforeAfter && <BeforeAfter before={media.beforeAfter.before} after={media.beforeAfter.after} caption={media.beforeAfter.caption} title={d.title} />}
+                {!app && <Gallery items={media.pages} title={d.title} slug={p.slug} />}
+                {app && media.pages.length > 0 && <Gallery items={media.pages} title={d.title} slug={p.slug} />}
+                {app && (d.appKind === 'static' || d.appKind === 'external') && appUrl && (
+                  <div data-app-embed data-url={appUrl} data-kind={d.appKind}>
+                    <div class="app-frame"><div style="padding:var(--s-5);display:grid;gap:var(--s-3)">
+                      <p style="margin:0">{d.appKind === 'external' ? 'This app is hosted elsewhere on a free tier, so the first load can take a while (it may be asleep).' : 'This app is served from this site.'}</p>
+                      {d.needs_api_key && <p class="note" style="margin:0">Needs <strong>your own API key</strong>. Keys are typed into the app, never stored here.</p>}
+                      <p style="margin:0;display:flex;gap:var(--s-3);flex-wrap:wrap"><button class="btn" type="button" data-app-load>Load inline preview</button><a class="btn btn--ghost" href={appUrl} target="_blank" rel="noopener">Open in a new tab ↗</a></p>
+                    </div><div data-app-slot></div></div>
+                  </div>
+                )}
+                {app && d.appKind === 'repo-only' && d.repo && <p class="note">This one lives in a repository: screenshots above, code <a href={d.repo} rel="noopener">on GitHub</a>.</p>}
+                {labOn && <p class="note">This report is also available as a live embed: <a href={`${withBase('live-lab/')}?report=${d.live_lab.report_key}`}>open it in the Live Lab</a>. When the live capacity is off, the Live Lab shows recorded walkthroughs.</p>}
+              </>
+            )}
+            {c.name === 'Under the hood' && (
+              <>
+                {doc && <UnderTheHood doc={doc} featured={d.featured_measures} title={d.title} />}
+                {app && (d.stack.length > 0 || d.howBuilt) && (
+                  <div class="roles">
+                    {d.stack.length > 0 && <div class="role"><h4>Stack</h4><ul class="chips">{d.stack.map((s) => <li class="chip"><i></i>{s}</li>)}</ul></div>}
+                    {d.howBuilt && <div class="role"><h4>How it was built</h4><p style="margin:0">{d.howBuilt}</p></div>}
+                    {d.needs_api_key && <p class="note" style="margin:0">Needs your own API key (shown in the app, never stored).</p>}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+      ))}
+      <nav class="pager" aria-label="More projects">
+        {prev ? <a href={prev.href} rel="prev"><small>← Previous</small>{prev.data.title}</a> : <span></span>}
+        {next ? <a href={next.href} rel="next"><small>Next →</small>{next.data.title}</a> : <span></span>}
+      </nav>
+      {rel.length > 0 && (
+        <section class="section" aria-labelledby="rel-h"><h2 id="rel-h" style="font-size:var(--step-2)">Related work</h2><div class="grid">{rel.map((r) => <ProjectCard project={r} />)}</div></section>
+      )}
+    </div>
+  </article>
+</Base>

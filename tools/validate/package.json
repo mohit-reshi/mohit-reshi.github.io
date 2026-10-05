@@ -1,0 +1,10 @@
+{
+  "name": "validate-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Content validation, leak check and contrast check for the portfolio site.",
+  "scripts": { "validate": "node validate.mjs", "leak-check": "node leak-check.mjs", "contrast": "node contrast.mjs", "test": "node --test test/*.test.mjs" },
+  "dependencies": { "yaml": "^2.6.0", "zod": "^4.0.0" },
+  "engines": { "node": ">=20" }
+}

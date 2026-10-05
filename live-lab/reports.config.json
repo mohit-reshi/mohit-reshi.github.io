@@ -1,0 +1,100 @@
+{
+  "reports": [
+    {
+      "key": "service-governance-interactive",
+      "title": "Service Reliability Overview",
+      "group": "Enterprise service governance",
+      "kind": "interactive",
+      "projectSlug": "service-reliability-overview",
+      "fallbackMedia": { "video": "/media/live-lab/service-governance-interactive.mp4", "poster": "/media/live-lab/service-governance-interactive.webp", "caption": "Recorded walkthrough of the live report." },
+      "controls": {
+        "filter": { "label": "Service line", "table": "Dim_Application", "column": "ServiceLine", "values": ["Claims Management"] },
+        "slicer": { "label": "Service line", "visualName": "hdrSlicerServiceLine", "table": "Dim_Application", "column": "ServiceLine", "values": ["Policy Administration"] },
+        "bookmarks": [
+          { "name": "Bookmark045906160b5473a4c469", "label": "Tier 1 critical apps" },
+          { "name": "Bookmarke589392220856f078fc0", "label": "Reset view" }
+        ],
+        "tour": [
+          { "label": "Start from the overview", "action": "reset", "delayMs": 1200 },
+          { "label": "Focus on one service line", "action": "filter", "delayMs": 1800 },
+          { "label": "Jump to a saved view", "action": "bookmark", "arg": "Bookmark045906160b5473a4c469", "delayMs": 1800 },
+          { "label": "Back to everything", "action": "reset", "delayMs": 1200 }
+        ]
+      }
+    },
+    {
+      "key": "service-governance-paginated",
+      "title": "Control Compliance Register (paginated)",
+      "group": "Enterprise service governance",
+      "kind": "paginated",
+      "projectSlug": "control-compliance-register",
+      "exportEnabled": true,
+      "fallbackMedia": { "poster": "/media/live-lab/service-governance-paginated.webp", "caption": "Recorded walkthrough of the paginated report." }
+    },
+    {
+      "key": "insurance-employer",
+      "title": "Employer Portal: Claims Status",
+      "group": "Group insurance portal analytics",
+      "kind": "interactive",
+      "projectSlug": "employer-claims-status",
+      "personas": [
+        { "key": "employer", "label": "Employer", "description": "Sees only the claims of their own employer account." },
+        { "key": "member", "label": "Member", "description": "Sees only the rows tied to a single member account." },
+        { "key": "producer", "label": "Producer", "description": "Sees only the book of business of one producer." }
+      ],
+      "fallbackMedia": { "video": "/media/live-lab/insurance-employer.mp4", "poster": "/media/live-lab/insurance-employer.webp" },
+      "controls": {
+        "filter": { "label": "Denied claims", "table": "Fact_Claim", "column": "Status", "values": ["Denied"] },
+        "bookmarks": [
+          { "name": "Bookmark3121653eeacf5f80371b", "label": "Denied claims only" },
+          { "name": "Bookmark0aaa77bdda474586f7a4", "label": "Reset view" }
+        ],
+        "tour": [
+          { "label": "Start with the full portal view", "action": "reset", "delayMs": 1200 },
+          { "label": "Filter to denied claims", "action": "filter", "delayMs": 1800 },
+          { "label": "Reset", "action": "reset", "delayMs": 1200 }
+        ]
+      }
+    },
+    {
+      "key": "insurance-member",
+      "title": "Member Portal: Claim History",
+      "group": "Group insurance portal analytics",
+      "kind": "interactive",
+      "projectSlug": "member-claim-history",
+      "personas": [
+        { "key": "member", "label": "Member", "description": "Sees only their own claims." },
+        { "key": "employer", "label": "Employer", "description": "Sees only the rows tied to one employer account." },
+        { "key": "producer", "label": "Producer", "description": "Sees only the book of business of one producer." }
+      ],
+      "fallbackMedia": { "video": "/media/live-lab/insurance-member.mp4", "poster": "/media/live-lab/insurance-member.webp" },
+      "controls": {
+        "filter": { "label": "Paid claims", "table": "Fact_Claim", "column": "Status", "values": ["Paid"] },
+        "bookmarks": [
+          { "name": "Bookmarkfb62c169ce029f6fe1d1", "label": "Paid claims only" },
+          { "name": "Bookmark2f594c143fc320a6f52b", "label": "Reset view" }
+        ]
+      }
+    },
+    {
+      "key": "insurance-producer",
+      "title": "Producer Portal: Book of Business",
+      "group": "Group insurance portal analytics",
+      "kind": "interactive",
+      "projectSlug": "producer-book-of-business",
+      "personas": [
+        { "key": "producer", "label": "Producer", "description": "Sees only the policies of their own clients." },
+        { "key": "employer", "label": "Employer", "description": "Sees only the rows tied to one employer account." },
+        { "key": "member", "label": "Member", "description": "Sees only the rows tied to a single member account." }
+      ],
+      "fallbackMedia": { "video": "/media/live-lab/insurance-producer.mp4", "poster": "/media/live-lab/insurance-producer.webp" },
+      "controls": {
+        "filter": { "label": "Active policies", "table": "Dim_Policy", "column": "Status", "values": ["Active"] },
+        "bookmarks": [
+          { "name": "Bookmark70f93924b54fb66a3076", "label": "Active policies only" },
+          { "name": "Bookmark44b4e354d418a5d1166a", "label": "Reset view" }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+---
+// Top strip: pick how the whole portfolio is laid out. 0 is the original site; 1 and 2 are alternative ways to explore the same work.
+const options = [
+  { key: 'classic', n: '0', label: 'Classic', hint: 'The original layout' },
+  { key: 'index', n: '1', label: 'Index', hint: 'A big typographic list of projects' },
+  { key: 'model', n: '2', label: 'Model', hint: 'Projects as tables in a relationship diagram' },
+];
+---
+<div class="layout-bar">
+  <div class="container layout-bar__row">
+    <span class="layout-bar__label" id="layout-label">Layout</span>
+    <div class="layout-switch" role="radiogroup" aria-labelledby="layout-label" data-layout-switch>
+      {options.map((o) => (
+        <button type="button" role="radio" aria-checked={o.key === 'classic' ? 'true' : 'false'} tabindex={o.key === 'classic' ? 0 : -1} data-layout-set={o.key} title={o.hint}>
+          <b aria-hidden="true">{o.n}</b><span>{o.label}</span>
+        </button>
+      ))}
+    </div>
+    <span class="layout-bar__hint">Same work, three ways to explore it.</span>
+  </div>
+</div>

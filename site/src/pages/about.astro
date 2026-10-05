@@ -1,0 +1,32 @@
+---
+import { resumeUrl } from '../lib/resume';
+import Base from '../layouts/Base.astro';
+import { siteConfig } from '../config';
+import { personJsonLd } from '../lib/jsonld';
+---
+<Base title="About" description={siteConfig.description} current="about" jsonLd={personJsonLd(Astro.site?.href ?? '')}>
+  <div class="container">
+    <header class="page-head">
+      <p class="eyebrow">About</p>
+      <h1>{siteConfig.name}</h1>
+      <p>{siteConfig.headline}. Based in {siteConfig.location}.</p>
+    </header>
+    <div class="prose">
+      {siteConfig.bio.map((b) => <p>{b}</p>)}
+      <h2 style="font-size:var(--step-2)">What I bring</h2>
+      <ul>
+        <li>Embedded Power BI with row-level security and effective identity, in production.</li>
+        <li>End-to-end Microsoft Fabric: medallion Lakehouse, DirectLake, incremental refresh, Git-based dev, UAT and main.</li>
+        <li>Deep DAX, paginated reports, and enterprise delivery practice.</li>
+      </ul>
+      <h2 style="font-size:var(--step-2)">Get in touch</h2>
+      <p class="muted">Links only: no form, no tracking.</p>
+      <ul class="link-list" style="list-style:none;padding:0">
+        {siteConfig.links.email && <li><a href={`mailto:${siteConfig.links.email}`}>Email <span>{siteConfig.links.email}</span></a></li>}
+        {siteConfig.links.linkedin && <li><a href={siteConfig.links.linkedin} rel="me noopener">LinkedIn <span>↗</span></a></li>}
+        {siteConfig.links.github && <li><a href={siteConfig.links.github} rel="me noopener">GitHub <span>↗</span></a></li>}
+      </ul>
+      {resumeUrl() && <p><a class="btn btn--primary" href={resumeUrl()} download>Download résumé</a></p>}
+    </div>
+  </div>
+</Base>

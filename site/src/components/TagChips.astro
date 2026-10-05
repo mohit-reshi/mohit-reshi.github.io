@@ -1,0 +1,6 @@
+---
+import type { Tag } from '../lib/taxonomy';
+interface Props { tags: Tag[]; limit?: number }
+const { tags, limit = 99 } = Astro.props;
+---
+<ul class="card__tags">{tags.slice(0, limit).map((t) => <li><span class="chip" style={`--chip:${t.color}`}><i></i>{t.label}</span></li>)}</ul>

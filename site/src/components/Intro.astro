@@ -1,0 +1,11 @@
+---
+const bars = [34, 58, 41, 76, 52, 88, 63, 96, 47, 71, 59, 82];
+---
+<div class="intro" data-intro-overlay role="status" aria-label="Loading intro" aria-live="polite">
+  <div class="intro__inner">
+    <div class="intro__bars" aria-hidden="true">{bars.map((h) => <i style={`--h:${h}%`}></i>)}</div>
+    <p class="intro__log" data-intro-log>Loading data…</p>
+    <div class="intro__meter" aria-hidden="true"><i data-intro-meter></i></div>
+    <button class="btn btn--ghost intro__skip" type="button" data-intro-skip>Skip intro <kbd>Esc</kbd></button>
+  </div>
+</div>

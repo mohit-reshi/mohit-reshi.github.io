@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Live Lab demo</title>
+  <style>
+    body{margin:0;padding:16px;font-family:system-ui,sans-serif;background:#f3f4f6;color:#111}
+    body[data-theme=dark]{background:#010409;color:#e6edf3}
+    .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font-size:14px}
+    .bar input{width:22em;max-width:100%}
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <strong>Live Lab demo</strong>
+    <label>Broker URL <input id="broker" value="mock:" aria-describedby="hint"></label>
+    <button id="remount" type="button">Mount</button>
+    <button id="theme" type="button">Toggle theme</button>
+    <span id="hint">"mock:" = fully offline demo. Use http://localhost:8787 for the Worker (mock or real). Add ?report=insurance-member to preselect a report.</span>
+  </div>
+  <div id="app"></div>
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

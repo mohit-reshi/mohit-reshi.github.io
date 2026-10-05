@@ -1,0 +1,5 @@
+#!/bin/sh
+root=$(git rev-parse --show-toplevel)
+cd "$root" || exit 1
+[ -z "$BLOCKLIST" ] && [ ! -f blocklist.local.txt ] && exit 0
+node tools/validate/leak-check.mjs --message "$1" --require || exit 1

@@ -1,0 +1,39 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import Explorer from '../../components/Explorer.astro';
+import { getProjects, tagCounts } from '../../lib/projects';
+import { emptyWork, emptyFilter } from '../../lib/microcopy';
+import { TAG_GROUP_LABEL } from '../../lib/taxonomy';
+
+const all = (await getProjects()).filter((p) => p.data.kind !== 'app');
+const tags = tagCounts(all);
+const groups = (['platform', 'skill', 'domain'] as const).map((g) => ({ g, label: TAG_GROUP_LABEL[g], tags: tags.filter((t) => t.group === g) })).filter((x) => x.tags.length);
+---
+<Base title="Work" description="Power BI and Fabric projects: reports, paginated reports and pipelines, with case studies you can filter by skill, platform and domain." current="work">
+  <Explorer />
+  <div class="container" data-layout-view="classic">
+    <header class="page-head">
+      <p class="eyebrow">Work</p>
+      <h1>Everything I've built, filterable.</h1>
+      <p>Pick a chip to narrow the grid. Hover a card to preview, open it for the full case study.</p>
+    </header>
+    {all.length === 0
+      ? <div class="empty"><strong>{emptyWork.title}</strong><p>{emptyWork.text}</p></div>
+      : (
+        <>
+          <div class="filters" data-filters role="group" aria-label="Filter projects by tag">
+            <button class="chip" type="button" data-filter-all aria-pressed="true">All <small>{all.length}</small></button>
+            {groups.map((g) => (
+              <div class="filters__group"><span class="filters__label">{g.label}</span>
+                {g.tags.map((t) => <button class="chip" type="button" data-filter={t.key} aria-pressed="false" style={`--chip:${t.color}`}><i></i>{t.label} <small>{t.count}</small></button>)}
+              </div>
+            ))}
+          </div>
+          <p class="filters__status" data-filter-status role="status" aria-live="polite"></p>
+          <div class="grid stack" data-grid data-stack>{all.map((p, i) => <ProjectCard project={p} eager={i < 3} />)}</div>
+          <div class="empty" data-filter-empty hidden><strong>{emptyFilter.title}</strong><p>{emptyFilter.text}</p></div>
+        </>
+      )}
+  </div>
+</Base>

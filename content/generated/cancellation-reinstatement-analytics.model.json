@@ -1,0 +1,790 @@
+{
+  "slug": "cancellation-reinstatement-analytics",
+  "public_title": "Cancellation & Reinstatement Analytics",
+  "source_kind": "pbip",
+  "storage_mode": "directlake",
+  "tables": [
+    {
+      "name": "Calendar Axis",
+      "role": "disconnected",
+      "columns": 3,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "_Key Measures",
+      "role": "measure-table",
+      "columns": 1,
+      "measures": 45,
+      "hidden": false
+    },
+    {
+      "name": "gold_broker_user_map",
+      "role": "dimension",
+      "columns": 3,
+      "measures": 0,
+      "hidden": true
+    },
+    {
+      "name": "gold_dim_case_tenure",
+      "role": "dimension",
+      "columns": 3,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "gold_dim_date",
+      "role": "date",
+      "columns": 17,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "gold_fact_cancel_reinstatement",
+      "role": "fact",
+      "columns": 70,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "gold_param_calendar_view",
+      "role": "disconnected",
+      "columns": 3,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "gold_param_count_mode",
+      "role": "disconnected",
+      "columns": 3,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "gold_param_date_basis",
+      "role": "disconnected",
+      "columns": 3,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "gold_param_metric",
+      "role": "disconnected",
+      "columns": 3,
+      "measures": 0,
+      "hidden": false
+    }
+  ],
+  "relationships": [
+    {
+      "from": "gold_fact_cancel_reinstatement[case_tenure_processed_key]",
+      "to": "gold_dim_case_tenure[case_tenure_key]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "gold_fact_cancel_reinstatement[case_tenure_termination_key]",
+      "to": "gold_dim_case_tenure[case_tenure_key]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    },
+    {
+      "from": "gold_fact_cancel_reinstatement[broker_key]",
+      "to": "gold_broker_user_map[brokerkey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "gold_fact_cancel_reinstatement[history_date_key]",
+      "to": "gold_dim_date[date_key]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "gold_fact_cancel_reinstatement[termination_date_key]",
+      "to": "gold_dim_date[date_key]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    }
+  ],
+  "measures": [
+    {
+      "name": "Base Cases All",
+      "table": "_Key Measures",
+      "display_folder": "_base",
+      "format": "0",
+      "description": "",
+      "expression": "COUNTROWS ( gold_fact_cancel_reinstatement )",
+      "depends_on": []
+    },
+    {
+      "name": "Base Cases Unique",
+      "table": "_Key Measures",
+      "display_folder": "_base",
+      "format": "0",
+      "description": "",
+      "expression": "DISTINCTCOUNT ( gold_fact_cancel_reinstatement[dimpolicykey] )",
+      "depends_on": []
+    },
+    {
+      "name": "Base Lives All",
+      "table": "_Key Measures",
+      "display_folder": "_base",
+      "format": "0",
+      "description": "",
+      "expression": "SUM ( gold_fact_cancel_reinstatement[livecount_clean] )",
+      "depends_on": []
+    },
+    {
+      "name": "Base Lives Unique",
+      "table": "_Key Measures",
+      "display_folder": "_base",
+      "format": "0",
+      "description": "",
+      "expression": "SUMX (\n    VALUES ( gold_fact_cancel_reinstatement[dimpolicykey] ),\n    CALCULATE ( MAX ( gold_fact_cancel_reinstatement[livecount_clean] ) )\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Base Premium All",
+      "table": "_Key Measures",
+      "display_folder": "_base",
+      "format": "",
+      "description": "",
+      "expression": "SUM ( gold_fact_cancel_reinstatement[est_annual_premium] )",
+      "depends_on": []
+    },
+    {
+      "name": "Base Premium Unique",
+      "table": "_Key Measures",
+      "display_folder": "_base",
+      "format": "",
+      "description": "",
+      "expression": "SUMX (\n    VALUES ( gold_fact_cancel_reinstatement[dimpolicykey] ),\n    CALCULATE ( MAX ( gold_fact_cancel_reinstatement[est_annual_premium] ) )\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Cases",
+      "table": "_Key Measures",
+      "display_folder": "_toggle",
+      "format": "0",
+      "description": "",
+      "expression": "VAR CountMode = SELECTEDVALUE ( gold_param_count_mode[mode_key], 1 )\nRETURN\n    SWITCH (\n        CountMode,\n        1, [Base Cases All],\n        2, [Base Cases Unique],\n        [Base Cases All]\n    )",
+      "depends_on": [
+        "Base Cases All",
+        "Base Cases Unique"
+      ]
+    },
+    {
+      "name": "Lives",
+      "table": "_Key Measures",
+      "display_folder": "_toggle",
+      "format": "0",
+      "description": "",
+      "expression": "VAR CountMode = SELECTEDVALUE ( gold_param_count_mode[mode_key], 1 )\nRETURN\n    SWITCH (\n        CountMode,\n        1, [Base Lives All],\n        2, [Base Lives Unique],\n        [Base Lives All]\n    )",
+      "depends_on": [
+        "Base Lives All",
+        "Base Lives Unique"
+      ]
+    },
+    {
+      "name": "Premium",
+      "table": "_Key Measures",
+      "display_folder": "_toggle",
+      "format": "",
+      "description": "",
+      "expression": "VAR CountMode = SELECTEDVALUE ( gold_param_count_mode[mode_key], 1 )\nRETURN\n    SWITCH (\n        CountMode,\n        1, [Base Premium All],\n        2, [Base Premium Unique],\n        [Base Premium All]\n    )",
+      "depends_on": [
+        "Base Premium All",
+        "Base Premium Unique"
+      ]
+    },
+    {
+      "name": "Selected Metric",
+      "table": "_Key Measures",
+      "display_folder": "_toggle",
+      "format": "",
+      "description": "",
+      "expression": "VAR MetricChoice = SELECTEDVALUE ( gold_param_metric[metric_key], 1 )\nRETURN\n    SWITCH (\n        MetricChoice,\n        1, [Cases],\n        2, [Lives],\n        3, [Premium],\n        [Cases]\n    )",
+      "depends_on": [
+        "Cases",
+        "Lives",
+        "Premium"
+      ]
+    },
+    {
+      "name": "Selected Metric Label",
+      "table": "_Key Measures",
+      "display_folder": "_labels",
+      "format": "",
+      "description": "",
+      "expression": "SELECTEDVALUE ( gold_param_metric[metric_name], \"Cases\" )",
+      "depends_on": []
+    },
+    {
+      "name": "Selected Mode Label",
+      "table": "_Key Measures",
+      "display_folder": "_labels",
+      "format": "",
+      "description": "",
+      "expression": "SELECTEDVALUE ( gold_param_count_mode[mode_name], \"All Events\" )",
+      "depends_on": []
+    },
+    {
+      "name": "Metric By Date Basis",
+      "table": "_Key Measures",
+      "display_folder": "_toggle",
+      "format": "",
+      "description": "",
+      "expression": "VAR DateBasis = SELECTEDVALUE ( gold_param_date_basis[basis_key], 1 )\nRETURN\n    SWITCH (\n        DateBasis,\n        1, [Selected Metric],\n        2, CALCULATE (\n               [Selected Metric],\n               USERELATIONSHIP (\n                   gold_fact_cancel_reinstatement[termination_date_key],\n                   gold_dim_date[date_key]\n               ),\n               USERELATIONSHIP (\n                   gold_fact_cancel_reinstatement[case_tenure_termination_key],\n                   gold_dim_case_tenure[case_tenure_key]\n               )\n           ),\n        [Selected Metric]\n    )",
+      "depends_on": [
+        "Selected Metric"
+      ]
+    },
+    {
+      "name": "Selected Date Basis Label",
+      "table": "_Key Measures",
+      "display_folder": "_labels",
+      "format": "",
+      "description": "",
+      "expression": "SELECTEDVALUE ( gold_param_date_basis[basis_name], \"Processed Date\" )",
+      "depends_on": []
+    },
+    {
+      "name": "Data Boundary Date",
+      "table": "_Key Measures",
+      "display_folder": "_period",
+      "format": "General Date",
+      "description": "",
+      "expression": "VAR DateBasis = SELECTEDVALUE ( gold_param_date_basis[basis_key], 1 )\nRETURN\n    SWITCH (\n        DateBasis,\n        1, CALCULATE (\n               MAX ( gold_fact_cancel_reinstatement[histdate] ),\n               REMOVEFILTERS ( gold_dim_date )\n           ),\n        2, CALCULATE (\n               MAX ( gold_fact_cancel_reinstatement[histtermdt] ),\n               REMOVEFILTERS ( gold_dim_date )\n           ),\n        CALCULATE (\n            MAX ( gold_fact_cancel_reinstatement[histdate] ),\n            REMOVEFILTERS ( gold_dim_date )\n        )\n    )",
+      "depends_on": []
+    },
+    {
+      "name": "Is Period Complete",
+      "table": "_Key Measures",
+      "display_folder": "_period",
+      "format": "TRUE\"\";\"\"TRUE\"\";\"\"FALSE",
+      "description": "",
+      "expression": "VAR Boundary     = [Data Boundary Date]\nVAR PeriodEnd    = MAX ( gold_dim_date[date] )\nRETURN\n    IF ( ISBLANK ( Boundary ) || ISBLANK ( PeriodEnd ), TRUE(), PeriodEnd <= Boundary )",
+      "depends_on": [
+        "Data Boundary Date"
+      ]
+    },
+    {
+      "name": "Period Completeness Note",
+      "table": "_Key Measures",
+      "display_folder": "_labels",
+      "format": "",
+      "description": "",
+      "expression": "IF (\n    [Is Period Complete],\n    BLANK(),\n    \"Partial period — data through \" & FORMAT ( [Data Boundary Date], \"d MMM yyyy\" )\n)",
+      "depends_on": [
+        "Is Period Complete",
+        "Data Boundary Date"
+      ]
+    },
+    {
+      "name": "Metric Prior Year",
+      "table": "_Key Measures",
+      "display_folder": "_period",
+      "format": "",
+      "description": "",
+      "expression": "VAR CalendarView =\n    COALESCE (\n        SELECTEDVALUE ( 'Calendar Axis'[Calendar Axis Order] ),\n        SELECTEDVALUE ( gold_param_calendar_view[view_key] ),\n        2\n    )VAR Boundary      = [Data Boundary Date]\nVAR PeriodStart   = MIN ( gold_dim_date[date] )\nVAR PeriodEnd     = MAX ( gold_dim_date[date] )\nVAR PriorStart    = IF ( CalendarView = 1, PeriodStart - 364, EDATE ( PeriodStart, -12 ) )\nVAR PriorEndRaw   = IF ( CalendarView = 1, PeriodEnd - 364,   EDATE ( PeriodEnd, -12 ) )\nVAR PriorBoundary = IF ( CalendarView = 1, Boundary - 364,    EDATE ( Boundary, -12 ) )\nVAR PriorEnd      = MIN ( PriorEndRaw, PriorBoundary )\nRETURN\n    CALCULATE (\n        [Metric By Date Basis],\n        REMOVEFILTERS ( gold_dim_date ),\n        gold_dim_date[date] >= PriorStart,\n        gold_dim_date[date] <= PriorEnd\n    )",
+      "depends_on": [
+        "Data Boundary Date",
+        "Metric By Date Basis"
+      ]
+    },
+    {
+      "name": "Metric YoY Change",
+      "table": "_Key Measures",
+      "display_folder": "_period",
+      "format": "",
+      "description": "",
+      "expression": "VAR CurrentY = [Metric By Date Basis]\nVAR PriorY   = [Metric Prior Year]\nRETURN\n    IF ( ISBLANK ( PriorY ) || PriorY = 0, BLANK(), CurrentY - PriorY )",
+      "depends_on": [
+        "Metric By Date Basis",
+        "Metric Prior Year"
+      ]
+    },
+    {
+      "name": "Metric YoY %",
+      "table": "_Key Measures",
+      "display_folder": "_period",
+      "format": "0.0%;-0.0%;0.0%",
+      "description": "",
+      "expression": "IF (\n    ISFILTERED ( gold_dim_date[year] ),\n    DIVIDE ( [Metric By Date Basis] - [Metric Prior Year], [Metric Prior Year] )\n)",
+      "depends_on": [
+        "Metric By Date Basis",
+        "Metric Prior Year"
+      ]
+    },
+    {
+      "name": "Period Label",
+      "table": "_Key Measures",
+      "display_folder": "_labels",
+      "format": "",
+      "description": "",
+      "expression": "VAR CalendarView =\n    COALESCE (\n        SELECTEDVALUE ( 'Calendar Axis'[Calendar Axis Order] ),\n        SELECTEDVALUE ( gold_param_calendar_view[view_key] ),\n        2\n    )\nVAR YearSel = SELECTEDVALUE ( gold_dim_date[year] )\nRETURN\n    SWITCH (\n        CalendarView,\n        1, COALESCE ( SELECTEDVALUE ( gold_dim_date[year_week] ),    \"Year \" & YearSel, \"All periods\" ),\n        2, COALESCE ( SELECTEDVALUE ( gold_dim_date[year_month] ),   \"Year \" & YearSel, \"All periods\" ),\n        3, COALESCE ( SELECTEDVALUE ( gold_dim_date[year_quarter] ), \"Year \" & YearSel, \"All periods\" ),\n        4, COALESCE ( SELECTEDVALUE ( gold_dim_date[year] ),         \"All periods\" ),\n        COALESCE ( SELECTEDVALUE ( gold_dim_date[year_month] ), \"Year \" & YearSel, \"All periods\" )\n    )",
+      "depends_on": []
+    },
+    {
+      "name": "Cancellations",
+      "table": "_Key Measures",
+      "display_folder": "_class",
+      "format": "",
+      "description": "",
+      "expression": "CALCULATE (\n    [Metric By Date Basis],\n    gold_fact_cancel_reinstatement[histclass] = \"C\"\n)",
+      "depends_on": [
+        "Metric By Date Basis"
+      ]
+    },
+    {
+      "name": "Reinstatements",
+      "table": "_Key Measures",
+      "display_folder": "_class",
+      "format": "",
+      "description": "",
+      "expression": "CALCULATE (\n    [Metric By Date Basis],\n    gold_fact_cancel_reinstatement[histclass] = \"R\"\n)",
+      "depends_on": [
+        "Metric By Date Basis"
+      ]
+    },
+    {
+      "name": "% Cases Reinstated",
+      "table": "_Key Measures",
+      "display_folder": "_class",
+      "format": "0.0%;-0.0%;0.0%",
+      "description": "",
+      "expression": "VAR Cancels  = [Cancellations]\nVAR Reinsts  = [Reinstatements]\nRETURN\n    DIVIDE ( Reinsts, Cancels )",
+      "depends_on": [
+        "Cancellations",
+        "Reinstatements"
+      ]
+    },
+    {
+      "name": "Last Refresh Date",
+      "table": "_Key Measures",
+      "display_folder": "_labels",
+      "format": "",
+      "description": "",
+      "expression": "FORMAT ( MAX ( gold_fact_cancel_reinstatement[_processed_at] ), \"dd MMM yyyy\" )",
+      "depends_on": []
+    },
+    {
+      "name": "KPI Card Title",
+      "table": "_Key Measures",
+      "display_folder": "_labels",
+      "format": "",
+      "description": "",
+      "expression": "\"Cancellations — \" & [Selected Metric Label] & \" (\" & [Selected Mode Label] & \")\"",
+      "depends_on": [
+        "Selected Metric Label",
+        "Selected Mode Label"
+      ]
+    },
+    {
+      "name": "NY Concentration",
+      "table": "_Key Measures",
+      "display_folder": "_period",
+      "format": "0.00%;-0.00%;0.00%",
+      "description": "",
+      "expression": "VAR NYValue = CALCULATE ( [Metric By Date Basis], gold_fact_cancel_reinstatement[statewritten] = \"NY\" )\nVAR Total   = CALCULATE ( [Metric By Date Basis], REMOVEFILTERS ( gold_fact_cancel_reinstatement[statewritten] ) )\nRETURN DIVIDE ( NYValue, Total )",
+      "depends_on": [
+        "Metric By Date Basis"
+      ]
+    },
+    {
+      "name": "Share Of Total",
+      "table": "_Key Measures",
+      "display_folder": "_labels",
+      "format": "0.0%;-0.0%;0.0%",
+      "description": "",
+      "expression": "DIVIDE (\n    [Metric By Date Basis],\n    CALCULATE ( [Metric By Date Basis], REMOVEFILTERS ( gold_fact_cancel_reinstatement ) )\n)",
+      "depends_on": [
+        "Metric By Date Basis"
+      ]
+    },
+    {
+      "name": "KPI Card Title Recovery",
+      "table": "_Key Measures",
+      "display_folder": "_labels",
+      "format": "",
+      "description": "",
+      "expression": "\"Reinstatements — \" & [Selected Metric Label] & \" (\" & [Selected Mode Label] & \")\"",
+      "depends_on": [
+        "Selected Metric Label",
+        "Selected Mode Label"
+      ]
+    },
+    {
+      "name": "Recovery Rate",
+      "table": "_Key Measures",
+      "display_folder": "_class",
+      "format": "0.0%;-0.0%;0.0%",
+      "description": "",
+      "expression": "VAR Reinsts = CALCULATE ( [Metric By Date Basis], gold_fact_cancel_reinstatement[histclass] = \"R\" )\nVAR Cancels = CALCULATE ( [Metric By Date Basis], gold_fact_cancel_reinstatement[histclass] = \"C\" )\nRETURN DIVIDE ( Reinsts, Cancels )",
+      "depends_on": [
+        "Metric By Date Basis"
+      ]
+    },
+    {
+      "name": "Drillthrough Context",
+      "table": "_Key Measures",
+      "display_folder": "_labels",
+      "format": "",
+      "description": "",
+      "expression": "VAR Product = SELECTEDVALUE ( gold_fact_cancel_reinstatement[policytype_display], \"All products\" )\nVAR Reason  = SELECTEDVALUE ( gold_fact_cancel_reinstatement[termination_reason], \"All reasons\" )\nVAR Size    = SELECTEDVALUE ( gold_fact_cancel_reinstatement[case_size], \"All case sizes\" )\nVAR Tenure  = SELECTEDVALUE ( gold_dim_case_tenure[case_tenure_band], \"All tenures\" )\nRETURN\n    Product & \"  ·  \" & Reason & \"  ·  \" & Size & \"  ·  \" & Tenure",
+      "depends_on": []
+    },
+    {
+      "name": "Alt Context",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "\"Showing \" & LOWER ( [Selected Metric Label] )\n    & \", counted as \" & LOWER ( [Selected Mode Label] )\n    & \", by \" & LOWER ( [Selected Date Basis Label] )\n    & \", for \" & [Period Label] & \". \"",
+      "depends_on": [
+        "Selected Metric Label",
+        "Selected Mode Label",
+        "Selected Date Basis Label",
+        "Period Label"
+      ]
+    },
+    {
+      "name": "Alt Partial Note",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "IF (\n    [Is Period Complete],\n    \"\",\n    \"Note: the latest period is incomplete, with data through \"\n        & FORMAT ( [Data Boundary Date], \"d MMMM yyyy\" ) & \". \"\n)",
+      "depends_on": [
+        "Is Period Complete",
+        "Data Boundary Date"
+      ]
+    },
+    {
+      "name": "Alt Bar By Product",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "VAR Ctx = [Alt Context]\nVAR Total = CALCULATE ( [Metric By Date Basis], REMOVEFILTERS ( gold_fact_cancel_reinstatement[policytype_display] ) )\nVAR Ranked =\n    TOPN (\n        3,\n        SUMMARIZE (\n            gold_fact_cancel_reinstatement,\n            gold_fact_cancel_reinstatement[policytype_display],\n            \"@val\", [Metric By Date Basis]\n        ),\n        [@val], DESC\n    )\nVAR Described =\n    CONCATENATEX (\n        Ranked,\n        gold_fact_cancel_reinstatement[policytype_display]\n            & \" at \" & FORMAT ( [@val], \"#,0\" )\n            & \" (\" & FORMAT ( DIVIDE ( [@val], Total ), \"0.0%\" ) & \")\",\n        \", \", [@val], DESC\n    )\nVAR CatCount = CALCULATE ( DISTINCTCOUNT ( gold_fact_cancel_reinstatement[policytype_display] ) )\nRETURN\n    Ctx & \"Bar chart of \" & CatCount & \" products. The largest are \"\n        & Described & \". \" & [Alt Partial Note]",
+      "depends_on": [
+        "Alt Context",
+        "Metric By Date Basis",
+        "Alt Partial Note"
+      ]
+    },
+    {
+      "name": "Alt Bar By Reason",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "VAR Ctx = [Alt Context]\nVAR Total = CALCULATE ( [Metric By Date Basis], REMOVEFILTERS ( gold_fact_cancel_reinstatement[termination_reason] ) )\nVAR Ranked =\n    TOPN (\n        3,\n        SUMMARIZE (\n            gold_fact_cancel_reinstatement,\n            gold_fact_cancel_reinstatement[termination_reason],\n            \"@val\", [Metric By Date Basis]\n        ),\n        [@val], DESC\n    )\nVAR Described =\n    CONCATENATEX (\n        Ranked,\n        gold_fact_cancel_reinstatement[termination_reason]\n            & \" at \" & FORMAT ( [@val], \"#,0\" )\n            & \" (\" & FORMAT ( DIVIDE ( [@val], Total ), \"0.0%\" ) & \")\",\n        \", \", [@val], DESC\n    )\nVAR CatCount = CALCULATE ( DISTINCTCOUNT ( gold_fact_cancel_reinstatement[termination_reason] ) )\nRETURN\n    Ctx & \"Bar chart of \" & CatCount & \" products. The largest are \"\n        & Described & \". \" & [Alt Partial Note]",
+      "depends_on": [
+        "Alt Context",
+        "Metric By Date Basis",
+        "Alt Partial Note"
+      ]
+    },
+    {
+      "name": "Alt Bar By Case Size",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "VAR Ctx = [Alt Context]\nVAR Total = CALCULATE ( [Metric By Date Basis], REMOVEFILTERS ( gold_fact_cancel_reinstatement[case_size] ) )\nVAR Ranked =\n    TOPN (\n        3,\n        SUMMARIZE (\n            gold_fact_cancel_reinstatement,\n            gold_fact_cancel_reinstatement[case_size],\n            \"@val\", [Metric By Date Basis]\n        ),\n        [@val], DESC\n    )\nVAR Described =\n    CONCATENATEX (\n        Ranked,\n        gold_fact_cancel_reinstatement[case_size]\n            & \" at \" & FORMAT ( [@val], \"#,0\" )\n            & \" (\" & FORMAT ( DIVIDE ( [@val], Total ), \"0.0%\" ) & \")\",\n        \", \", [@val], DESC\n    )\nVAR CatCount = CALCULATE ( DISTINCTCOUNT ( gold_fact_cancel_reinstatement[case_size] ) )\nRETURN\n    Ctx & \"Bar chart of \" & CatCount & \" products. The largest are \"\n        & Described & \". \" & [Alt Partial Note]",
+      "depends_on": [
+        "Alt Context",
+        "Metric By Date Basis",
+        "Alt Partial Note"
+      ]
+    },
+    {
+      "name": "Alt Bar By State",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "VAR Ctx = [Alt Context]\nVAR Total = CALCULATE ( [Metric By Date Basis], REMOVEFILTERS ( gold_fact_cancel_reinstatement[statewritten] ) )\nVAR Ranked =\n    TOPN (\n        3,\n        SUMMARIZE (\n            gold_fact_cancel_reinstatement,\n            gold_fact_cancel_reinstatement[statewritten],\n            \"@val\", [Metric By Date Basis]\n        ),\n        [@val], DESC\n    )\nVAR Described =\n    CONCATENATEX (\n        Ranked,\n        gold_fact_cancel_reinstatement[statewritten]\n            & \" at \" & FORMAT ( [@val], \"#,0\" )\n            & \" (\" & FORMAT ( DIVIDE ( [@val], Total ), \"0.0%\" ) & \")\",\n        \", \", [@val], DESC\n    )\nVAR CatCount = CALCULATE ( DISTINCTCOUNT ( gold_fact_cancel_reinstatement[statewritten] ) )\nRETURN\n    Ctx & \"Bar chart of \" & CatCount & \" products. The largest are \"\n        & Described & \". \" & [Alt Partial Note]",
+      "depends_on": [
+        "Alt Context",
+        "Metric By Date Basis",
+        "Alt Partial Note"
+      ]
+    },
+    {
+      "name": "Alt Bar Recovery By Size",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "VAR Ctx = [Alt Context]\nVAR Total = CALCULATE ( [Metric By Date Basis], REMOVEFILTERS ( gold_fact_cancel_reinstatement[case_size] ) )\nVAR Ranked =\n    TOPN (\n        3,\n        SUMMARIZE (\n            gold_fact_cancel_reinstatement,\n            gold_fact_cancel_reinstatement[case_size],\n            \"@val\", [Metric By Date Basis]\n        ),\n        [@val], DESC\n    )\nVAR Described =\n    CONCATENATEX (\n        Ranked,\n        gold_fact_cancel_reinstatement[case_size]\n            & \" at \" & FORMAT ( [@val], \"#,0\" )\n            & \" (\" & FORMAT ( DIVIDE ( [@val], Total ), \"0.0%\" ) & \")\",\n        \", \", [@val], DESC\n    )\nVAR CatCount = CALCULATE ( DISTINCTCOUNT ( gold_fact_cancel_reinstatement[case_size] ) )\nRETURN\n    Ctx & \"Bar chart of \" & CatCount & \" products. The largest are \"\n        & Described & \". \" & [Alt Partial Note]",
+      "depends_on": [
+        "Alt Context",
+        "Metric By Date Basis",
+        "Alt Partial Note"
+      ]
+    },
+    {
+      "name": "Alt Bar By Tenure",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "VAR Total = CALCULATE ( [Metric By Date Basis], REMOVEFILTERS ( gold_dim_case_tenure ) )\nVAR Described =\n    CONCATENATEX (\n        SUMMARIZE (\n            gold_dim_case_tenure,\n            gold_dim_case_tenure[case_tenure_band],\n            gold_dim_case_tenure[sort_order],\n            \"@val\", [Metric By Date Basis]\n        ),\n        gold_dim_case_tenure[case_tenure_band] & \" \"\n            & FORMAT ( DIVIDE ( [@val], Total ), \"0.0%\" ),\n        \", \", gold_dim_case_tenure[sort_order], ASC\n    )\nRETURN\n    [Alt Context] & \"Bar chart of case tenure bands, in order from newest to oldest: \"\n        & Described & \". \" & [Alt Partial Note]",
+      "depends_on": [
+        "Metric By Date Basis",
+        "Alt Context",
+        "Alt Partial Note"
+      ]
+    },
+    {
+      "name": "Alt Trend Chart",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "VAR Total    = [Metric By Date Basis]\nVAR Prior    = [Metric Prior Year]\nVAR Periods  = CALCULATE ( DISTINCTCOUNT ( gold_dim_date[year_month] ) )\nVAR PeakVal  = MAXX ( VALUES ( gold_dim_date[year_month] ), [Metric By Date Basis] )\nVAR PeakName =\n    MAXX (\n        FILTER ( VALUES ( gold_dim_date[year_month] ), [Metric By Date Basis] = PeakVal ),\n        gold_dim_date[year_month]\n    )\nRETURN\n    [Alt Context]\n        & \"Column chart across \" & Periods & \" periods, with a line showing change against prior year. \"\n        & \"Total is \" & FORMAT ( Total, \"#,0\" )\n        & \" against \" & FORMAT ( Prior, \"#,0\" ) & \" last year. \"\n        & \"The highest period is \" & PeakName & \" at \" & FORMAT ( PeakVal, \"#,0\" ) & \". \"\n        & [Alt Partial Note]",
+      "depends_on": [
+        "Metric By Date Basis",
+        "Metric Prior Year",
+        "Alt Context",
+        "Alt Partial Note"
+      ]
+    },
+    {
+      "name": "Alt NP Chart",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "[Alt Context]\n    & \"Column chart comparing cancellations against reinstatements, with a recovery rate line. \"\n    & FORMAT ( [Cancellations], \"#,0\" ) & \" cancelled for non-payment, \"\n    & FORMAT ( [Reinstatements], \"#,0\" ) & \" reinstated, \"\n    & \"a recovery rate of \" & FORMAT ( [% Cases Reinstated], \"0.0%\" ) & \". \"\n    & [Alt Partial Note]",
+      "depends_on": [
+        "Alt Context",
+        "Cancellations",
+        "Reinstatements",
+        "% Cases Reinstated",
+        "Alt Partial Note"
+      ]
+    },
+    {
+      "name": "Alt Detail Table",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "\"Table of individual policy records. \"\n    & FORMAT ( [Cases], \"#,0\" ) & \" rows shown. \"\n    & \"Filtered to: \" & [Drillthrough Context] & \". \"\n    & \"Columns are policy number, policy name, effective date, termination date, \"\n    & \"processed date, class, reason, product, bill mode, state, lives, premium, \"\n    & \"case size, broker and sales rep.\"",
+      "depends_on": [
+        "Cases",
+        "Drillthrough Context"
+      ]
+    },
+    {
+      "name": "Alt KPI Card",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "[Alt Context]\n    & \"The total is \" & FORMAT ( [Metric By Date Basis], \"#,0\" ) & \". \"\n    & IF (\n        ISBLANK ( [Metric YoY %] ),\n        \"No prior year comparison is available. \",\n        \"That is \" & FORMAT ( ABS ( [Metric YoY %] ), \"0.0%\" )\n            & IF ( [Metric YoY %] < 0, \" lower\", \" higher\" )\n            & \" than the same period last year. \"\n      )\n    & [Alt Partial Note]",
+      "depends_on": [
+        "Alt Context",
+        "Metric By Date Basis",
+        "Metric YoY %",
+        "Alt Partial Note"
+      ]
+    },
+    {
+      "name": "Alt Stacked Mix",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "[Alt Context]\n    & \"Stacked column chart showing how the mix changes across periods. \"\n    & \"The top six categories are shown; smaller categories are excluded. \"\n    & \"Total across all periods is \" & FORMAT ( [Metric By Date Basis], \"#,0\" ) & \". \"\n    & [Alt Partial Note]",
+      "depends_on": [
+        "Alt Context",
+        "Metric By Date Basis",
+        "Alt Partial Note"
+      ]
+    },
+    {
+      "name": "Alt Recovery Bar",
+      "table": "_Key Measures",
+      "display_folder": "_alttext",
+      "format": "",
+      "description": "",
+      "expression": "[Alt Context]\n    & \"Bar chart of recovery rate. Overall recovery rate is \"\n    & FORMAT ( [% Cases Reinstated], \"0.0%\" )\n    & \", from \" & FORMAT ( [Cancellations], \"#,0\" ) & \" cancellations and \"\n    & FORMAT ( [Reinstatements], \"#,0\" ) & \" reinstatements. \"\n    & [Alt Partial Note]",
+      "depends_on": [
+        "Alt Context",
+        "% Cases Reinstated",
+        "Cancellations",
+        "Reinstatements",
+        "Alt Partial Note"
+      ]
+    }
+  ],
+  "rls": [
+    {
+      "role": "Broker",
+      "filters": [
+        {
+          "table": "gold_broker_user_map",
+          "expression": "[user_email] = USERPRINCIPALNAME()"
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "index": 0,
+      "display_name": "Attrition Snapshot",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": true,
+      "visual_count": 32,
+      "visual_types": {
+        "actionButton": 1,
+        "advancedSlicerVisual": 3,
+        "cardVisual": 4,
+        "clusteredBarChart": 5,
+        "image": 1,
+        "shape": 4,
+        "slicer": 6,
+        "textbox": 8
+      }
+    },
+    {
+      "index": 1,
+      "display_name": "Recovery Snapshot",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": true,
+      "visual_count": 33,
+      "visual_types": {
+        "actionButton": 1,
+        "advancedSlicerVisual": 3,
+        "cardVisual": 5,
+        "clusteredBarChart": 5,
+        "image": 1,
+        "shape": 4,
+        "slicer": 6,
+        "textbox": 8
+      }
+    },
+    {
+      "index": 2,
+      "display_name": "Attrition Trend",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": true,
+      "visual_count": 31,
+      "visual_types": {
+        "actionButton": 1,
+        "advancedSlicerVisual": 4,
+        "cardVisual": 5,
+        "columnChart": 2,
+        "image": 1,
+        "lineClusteredColumnComboChart": 1,
+        "shape": 3,
+        "slicer": 6,
+        "textbox": 8
+      }
+    },
+    {
+      "index": 3,
+      "display_name": "Recovery Trend",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": true,
+      "visual_count": 31,
+      "visual_types": {
+        "actionButton": 1,
+        "advancedSlicerVisual": 4,
+        "cardVisual": 5,
+        "columnChart": 2,
+        "image": 1,
+        "lineClusteredColumnComboChart": 1,
+        "shape": 3,
+        "slicer": 6,
+        "textbox": 8
+      }
+    },
+    {
+      "index": 4,
+      "display_name": "Non-Payment Watch",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 30,
+      "visual_types": {
+        "actionButton": 1,
+        "advancedSlicerVisual": 4,
+        "cardVisual": 5,
+        "clusteredBarChart": 2,
+        "image": 1,
+        "lineClusteredColumnComboChart": 1,
+        "shape": 3,
+        "slicer": 5,
+        "textbox": 8
+      }
+    },
+    {
+      "index": 5,
+      "display_name": "Policy Drill-through",
+      "hidden": true,
+      "tooltip": false,
+      "drillthrough": true,
+      "visual_count": 8,
+      "visual_types": {
+        "actionButton": 1,
+        "cardVisual": 3,
+        "image": 1,
+        "tableEx": 1,
+        "textbox": 2
+      }
+    },
+    {
+      "index": 6,
+      "display_name": "TT_Metrics",
+      "hidden": true,
+      "tooltip": true,
+      "drillthrough": false,
+      "visual_count": 3,
+      "visual_types": {
+        "cardVisual": 3
+      }
+    }
+  ],
+  "techniques": [
+    "USERELATIONSHIP",
+    "VAR",
+    "SELECTEDVALUE",
+    "SWITCH",
+    "TOPN",
+    "disconnected-table",
+    "RLS",
+    "dynamic-RLS",
+    "inactive-relationships",
+    "directlake",
+    "calculated-tables"
+  ],
+  "stats": {
+    "tables": 10,
+    "measures": 45,
+    "relationships": 5,
+    "pages": 7
+  },
+  "reports": [
+    {
+      "slug": "cancellation-reinstatement-analytics",
+      "title": "Cancellation & Reinstatement Analytics",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/cancellation-reinstatement-analytics.pages.json"
+    }
+  ]
+}

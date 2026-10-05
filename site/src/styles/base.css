@@ -1,0 +1,49 @@
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: calc(var(--header-h) + 1rem); }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--fg); font: 400 var(--step-0) / 1.65 var(--font-body); font-feature-settings: 'ss01', 'cv11'; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; display: flex; flex-direction: column; }
+main { flex: 1; }
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height: 1.04; letter-spacing: -0.02em; margin: 0 0 var(--s-4); text-wrap: balance; }
+h1 { font-size: var(--step-4); } h2 { font-size: var(--step-3); } h3 { font-size: var(--step-2); } h4 { font-size: var(--step-1); }
+p { margin: 0 0 var(--s-4); text-wrap: pretty; }
+a { color: var(--accent-text); text-decoration-thickness: 0.08em; text-underline-offset: 0.2em; }
+a:hover { text-decoration-thickness: 0.16em; }
+img, svg, video, canvas { max-width: 100%; display: block; }
+img, video { height: auto; }
+code, kbd, pre, samp { font-family: var(--font-mono); font-size: 0.92em; }
+kbd { border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 6px; padding: 0.05em 0.45em; background: var(--bg-elev); color: var(--fg); font-size: 0.8em; }
+hr { border: 0; border-top: 1px solid var(--line); margin: var(--s-6) 0; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+
+.container { width: min(100% - 2 * var(--gutter), var(--max)); margin-inline: auto; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.skip-link { position: fixed; left: var(--s-4); top: -4rem; z-index: 200; background: var(--accent); color: var(--accent-ink); padding: var(--s-3) var(--s-4); border-radius: var(--radius-sm); font-weight: 700; text-decoration: none; transition: top var(--dur-1); }
+.skip-link:focus { top: var(--s-4); }
+.mono { font-family: var(--font-mono); }
+.eyebrow { font: 500 var(--step--1) / 1.2 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-muted); margin: 0 0 var(--s-4); display: flex; gap: var(--s-3); align-items: center; }
+.eyebrow::before { content: ''; width: 1.6rem; height: 2px; background: var(--accent); }
+.muted { color: var(--fg-muted); }
+
+/* buttons */
+.btn { --btn-bg: transparent; --btn-fg: var(--fg); --btn-bd: var(--line-strong); display: inline-flex; align-items: center; gap: var(--s-2); min-height: 2.75rem; padding: 0.55rem 1.1rem; border: 1.5px solid var(--btn-bd); border-radius: 999px; background: var(--btn-bg); color: var(--btn-fg); font: 600 var(--step-0) / 1 var(--font-body); text-decoration: none; cursor: pointer; transition: transform var(--dur-1) var(--ease), background var(--dur-1), border-color var(--dur-1), box-shadow var(--dur-1); }
+.btn:hover { border-color: var(--accent-line); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn--primary { --btn-bg: var(--accent); --btn-fg: var(--accent-ink); --btn-bd: var(--accent); }
+.btn--primary:hover { box-shadow: 0 8px 24px -8px var(--accent); }
+.btn--ghost { --btn-bd: var(--line); }
+.btn--icon { padding: 0; width: 2.75rem; justify-content: center; }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.btn svg { width: 1.15em; height: 1.15em; }
+
+.chip { display: inline-flex; align-items: center; gap: 0.5em; padding: 0.3em 0.8em; border: 1px solid var(--line); border-radius: 999px; font: 500 var(--step--1) / 1.2 var(--font-body); color: var(--fg-muted); background: transparent; text-decoration: none; }
+.chip i { width: 0.55em; height: 0.55em; border-radius: 50%; background: var(--chip, var(--accent)); flex: none; }
+button.chip { cursor: pointer; min-height: 2.25rem; transition: border-color var(--dur-1), color var(--dur-1), background var(--dur-1); }
+button.chip:hover { border-color: var(--line-strong); color: var(--fg); }
+button.chip[aria-pressed='true'] { border-color: var(--accent-line); color: var(--fg); background: var(--accent-soft); }
+.chip small { color: var(--fg-faint); font-family: var(--font-mono); }
+.no-motion .reveal { opacity: 1 !important; transform: none !important; }

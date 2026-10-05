@@ -1,0 +1,73 @@
+name: Deploy to GitHub Pages
+
+# The build always runs (so a private repo still verifies it). The deploy job only runs once the repository is public,
+# because GitHub Pages cannot publish from a private repository on the free plan.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BLOCKLIST: ${{ secrets.BLOCKLIST }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            site/package-lock.json
+            tools/validate/package-lock.json
+            tools/media/package-lock.json
+            live-lab/package-lock.json
+      - id: pages
+        uses: actions/configure-pages@v5
+      - name: Install
+        run: |
+          npm --prefix tools/validate ci
+          npm --prefix tools/media ci
+          npm --prefix live-lab ci
+          npm --prefix site ci
+      - name: Validate content
+        run: npm --prefix site run validate
+      - name: Build Live Lab module
+        run: npm --prefix live-lab run build
+      - name: Build site
+        run: npm --prefix site run build
+        env:
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+      - name: Leak check (required before anything is published)
+        run: node tools/validate/leak-check.mjs --require
+      - name: Lighthouse CI (report only)
+        uses: treosh/lighthouse-ci-action@v12
+        continue-on-error: true
+        with:
+          configPath: site/lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: false
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site/dist }
+
+  deploy:
+    needs: build
+    if: ${{ github.event.repository.private == false }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

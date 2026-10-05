@@ -1,0 +1,104 @@
+---
+import ClientRouter from 'astro/components/ClientRouter.astro';
+import interUrl from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import displayUrl from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url';
+import monoUrl from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/components.css';
+import '../styles/layouts.css';
+import '../styles/layout-index.css';
+import '../styles/layout-model.css';
+import { siteConfig } from '../config';
+import { withBase, absoluteUrl } from '../lib/url';
+import CasePanel from '../components/CasePanel.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Palette from '../components/Palette.astro';
+import InfoPanel from '../components/InfoPanel.astro';
+import Intro from '../components/Intro.astro';
+
+interface Props { title?: string; description?: string; image?: string; noindex?: boolean; path?: string; type?: 'website' | 'article'; jsonLd?: object | null; current?: string }
+const { title, description = siteConfig.description, image, noindex = false, path = Astro.url.pathname, type = 'website', jsonLd = null, current = '' } = Astro.props;
+const fullTitle = title ? `${title} · ${siteConfig.name}` : siteConfig.title;
+const canonical = new URL(path, Astro.site ?? 'https://example.github.io').href;
+const ogImage = image ?? absoluteUrl('og/default.png', Astro.site);
+const homePath = withBase('');
+const fontCss = `@font-face{font-family:'Inter Variable';font-style:normal;font-display:swap;font-weight:100 900;src:url(${interUrl}) format('woff2-variations')}
+@font-face{font-family:'Bricolage Grotesque Variable';font-style:normal;font-display:swap;font-weight:200 800;src:url(${displayUrl}) format('woff2-variations')}
+@font-face{font-family:'JetBrains Mono Variable';font-style:normal;font-display:swap;font-weight:100 800;src:url(${monoUrl}) format('woff2-variations')}`;
+---
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="theme-color" content="#0b0f14" />
+    <link rel="icon" href={withBase('favicon.svg')} type="image/svg+xml" />
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={siteConfig.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <link rel="preload" href={displayUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={interUrl} as="font" type="font/woff2" crossorigin />
+    <style is:inline set:html={fontCss}></style>
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <script is:inline define:vars={{ homePath }}>
+      // Runs before first paint: theme without a flash, JS flag, and the once-per-session intro (home page only).
+      (function () {
+        function layout() {
+          // layout: ?layout=0|1|2|classic|index|model wins, then the remembered choice, default classic
+          var map = { '0': 'classic', classic: 'classic', '1': 'index', index: 'index', '2': 'model', model: 'model' };
+          var l = 'classic';
+          try { var q = new URLSearchParams(location.search).get('layout'); var fromUrl = q && map[q.toLowerCase()]; l = fromUrl || map[localStorage.getItem('layout') || ''] || 'classic'; if (fromUrl) localStorage.setItem('layout', fromUrl); } catch (e) {}
+          document.documentElement.dataset.layout = l;
+        }
+        layout();
+        document.addEventListener('astro:after-swap', layout);
+        function apply() {
+          var t = 'dark';
+          try { t = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'); } catch (e) {}
+          document.documentElement.dataset.theme = t;
+          document.documentElement.classList.add('js');
+          var m = document.querySelector('meta[name=theme-color]');
+          if (m) m.setAttribute('content', t === 'light' ? '#f7f5ef' : '#0b0f14');
+        }
+        apply();
+        document.addEventListener('astro:after-swap', apply);
+        try {
+          var home = location.pathname.replace(/\/+$/, '') === homePath.replace(/\/+$/, '');
+          if (home && !sessionStorage.getItem('intro') && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.dataset.intro = 'show';
+        } catch (e) {}
+      })();
+    </script>
+    <ClientRouter />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Intro />
+    <Header current={current} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <Palette />
+    <CasePanel />
+    <InfoPanel />
+    <div class="cursor" aria-hidden="true" data-state=""><div class="cursor__ring"></div><div class="cursor__dot"></div></div>
+    <script>
+      import '../scripts/main.ts';
+    </script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.astro/
+public/projects/
+public/live-lab/
+src/generated/
+test-results/
+playwright-report/
+.lighthouseci/
+public/media/live-lab/
+public/apps-hosted/sample-*/

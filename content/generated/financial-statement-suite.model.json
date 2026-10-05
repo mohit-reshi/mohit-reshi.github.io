@@ -1,0 +1,1036 @@
+{
+  "slug": "financial-statement-suite",
+  "public_title": "Financial Statement Reporting Suite",
+  "source_kind": "pbip",
+  "storage_mode": "import",
+  "tables": [
+    {
+      "name": "Aged Debtor Groups",
+      "role": "dimension",
+      "columns": 4,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "BS Template",
+      "role": "disconnected",
+      "columns": 6,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Balance Sheet",
+      "role": "fact",
+      "columns": 8,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Budget",
+      "role": "fact",
+      "columns": 9,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "CF Summary Template",
+      "role": "disconnected",
+      "columns": 2,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "CF Template",
+      "role": "disconnected",
+      "columns": 6,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Cash Flow",
+      "role": "fact",
+      "columns": 7,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Customer",
+      "role": "dimension",
+      "columns": 11,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Date",
+      "role": "date",
+      "columns": 16,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "GL Account",
+      "role": "dimension",
+      "columns": 7,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Income Statement Template",
+      "role": "calculated",
+      "columns": 3,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Invoices",
+      "role": "fact",
+      "columns": 11,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "P&L Template",
+      "role": "disconnected",
+      "columns": 6,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "PL_Template",
+      "role": "calculated",
+      "columns": 4,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Product",
+      "role": "dimension",
+      "columns": 7,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Profit Loss",
+      "role": "fact",
+      "columns": 11,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Ratios Template",
+      "role": "disconnected",
+      "columns": 2,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Region",
+      "role": "dimension",
+      "columns": 5,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Sales",
+      "role": "fact",
+      "columns": 11,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "_Measures",
+      "role": "measure-table",
+      "columns": 0,
+      "measures": 55,
+      "hidden": false
+    }
+  ],
+  "relationships": [
+    {
+      "from": "Sales[DateKey]",
+      "to": "Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Sales[CustomerKey]",
+      "to": "Customer[CustomerKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Sales[ProductKey]",
+      "to": "Product[ProductKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Sales[RegionKey]",
+      "to": "Region[RegionKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Invoices[InvoiceDateKey]",
+      "to": "Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    },
+    {
+      "from": "Invoices[DueDateKey]",
+      "to": "Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": false
+    },
+    {
+      "from": "Invoices[CustomerKey]",
+      "to": "Customer[CustomerKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Profit Loss[DateKey]",
+      "to": "Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Profit Loss[GLAccountKey]",
+      "to": "GL Account[GLAccountKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Balance Sheet[DateKey]",
+      "to": "Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Balance Sheet[GLAccountKey]",
+      "to": "GL Account[GLAccountKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Cash Flow[DateKey]",
+      "to": "Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Budget[DateKey]",
+      "to": "Date[DateKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Budget[GLAccountKey]",
+      "to": "GL Account[GLAccountKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    }
+  ],
+  "measures": [
+    {
+      "name": "Total Revenue",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Profit Loss'[Amount] ),\n    'Profit Loss'[LineType] = \"Revenue\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Total COGS",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Profit Loss'[Amount] ),\n    'Profit Loss'[LineType] = \"COGS\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Gross Profit",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "[Total Revenue] + [Total COGS]\n-- COGS is already negative in the data\n-- Adding a negative number = subtraction",
+      "depends_on": [
+        "Total Revenue",
+        "Total COGS"
+      ]
+    },
+    {
+      "name": "Gross Profit %",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "#,0.00%;-#,0.00%;#,0.00%",
+      "description": "",
+      "expression": "DIVIDE( [Gross Profit], [Total Revenue], 0 )",
+      "depends_on": [
+        "Gross Profit",
+        "Total Revenue"
+      ]
+    },
+    {
+      "name": "Total Expenses",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Profit Loss'[Amount] ),\n    'Profit Loss'[LineType] = \"Expense\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Net Profit",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "[Gross Profit] + [Total Expenses]\n-- Expenses are negative — same sign convention",
+      "depends_on": [
+        "Gross Profit",
+        "Total Expenses"
+      ]
+    },
+    {
+      "name": "Net Profit %",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "0.00%;-0.00%;0.00%",
+      "description": "",
+      "expression": "DIVIDE( [Net Profit], [Total Revenue], 0 )",
+      "depends_on": [
+        "Net Profit",
+        "Total Revenue"
+      ]
+    },
+    {
+      "name": "Total Sales",
+      "table": "_Measures",
+      "display_folder": "Sales Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "SUM( Sales[LineTotal] )",
+      "depends_on": []
+    },
+    {
+      "name": "Total Orders",
+      "table": "_Measures",
+      "display_folder": "Sales Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "DISTINCTCOUNT( Sales[OrderNumber] )",
+      "depends_on": []
+    },
+    {
+      "name": "Avg Order Value",
+      "table": "_Measures",
+      "display_folder": "Sales Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "DIVIDE( [Total Sales], [Total Orders], 0 )",
+      "depends_on": [
+        "Total Sales",
+        "Total Orders"
+      ]
+    },
+    {
+      "name": "Total Gross Profit Sales",
+      "table": "_Measures",
+      "display_folder": "Sales Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "SUM( Sales[GrossProfit] )",
+      "depends_on": []
+    },
+    {
+      "name": "Profit Margin %",
+      "table": "_Measures",
+      "display_folder": "Sales Measures",
+      "format": "0.00%;-0.00%;0.00%",
+      "description": "",
+      "expression": "DIVIDE( [Total Gross Profit Sales], [Total Sales], 0 )",
+      "depends_on": [
+        "Total Gross Profit Sales",
+        "Total Sales"
+      ]
+    },
+    {
+      "name": "Revenue PY",
+      "table": "_Measures",
+      "display_folder": "Year-over-Year Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    [Total Revenue],\n    SAMEPERIODLASTYEAR( 'Date'[FullDate] )\n)",
+      "depends_on": [
+        "Total Revenue"
+      ]
+    },
+    {
+      "name": "Revenue YoY Variance",
+      "table": "_Measures",
+      "display_folder": "Year-over-Year Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "[Total Revenue] - [Revenue PY]",
+      "depends_on": [
+        "Total Revenue",
+        "Revenue PY"
+      ]
+    },
+    {
+      "name": "Revenue YoY %",
+      "table": "_Measures",
+      "display_folder": "Year-over-Year Measures",
+      "format": "0.00%;-0.00%;0.00%",
+      "description": "",
+      "expression": "DIVIDE( [Revenue YoY Variance], [Revenue PY], 0 )",
+      "depends_on": [
+        "Revenue YoY Variance",
+        "Revenue PY"
+      ]
+    },
+    {
+      "name": "Net Profit PY",
+      "table": "_Measures",
+      "display_folder": "Year-over-Year Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    [Net Profit],\n    SAMEPERIODLASTYEAR( 'Date'[FullDate] )\n)",
+      "depends_on": [
+        "Net Profit"
+      ]
+    },
+    {
+      "name": "Net Profit YoY Variance",
+      "table": "_Measures",
+      "display_folder": "Year-over-Year Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "[Net Profit] - [Net Profit PY]",
+      "depends_on": [
+        "Net Profit",
+        "Net Profit PY"
+      ]
+    },
+    {
+      "name": "Total Assets",
+      "table": "_Measures",
+      "display_folder": "Balance Sheet Measures",
+      "format": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Balance Sheet'[Value] ),\n    'Balance Sheet'[AccountType] = \"Asset\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Total Liabilities",
+      "table": "_Measures",
+      "display_folder": "Balance Sheet Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Balance Sheet'[Value] ),\n    'Balance Sheet'[AccountType] = \"Liability\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Total Equity",
+      "table": "_Measures",
+      "display_folder": "Balance Sheet Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Balance Sheet'[Value] ),\n    'Balance Sheet'[AccountType] = \"Equity\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Current Assets",
+      "table": "_Measures",
+      "display_folder": "Balance Sheet Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Balance Sheet'[Value] ),\n    'Balance Sheet'[Category] = \"Current Assets\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Current Liabilities",
+      "table": "_Measures",
+      "display_folder": "Balance Sheet Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Balance Sheet'[Value] ),\n    'Balance Sheet'[Category] = \"Current Liabilities\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Current Ratio",
+      "table": "_Measures",
+      "display_folder": "Balance Sheet Measures",
+      "format": "0.0%;-0.0%;0.0%",
+      "description": "",
+      "expression": "DIVIDE( [Current Assets], [Current Liabilities], 0 )",
+      "depends_on": [
+        "Current Assets",
+        "Current Liabilities"
+      ]
+    },
+    {
+      "name": "Debt Ratio",
+      "table": "_Measures",
+      "display_folder": "Balance Sheet Measures",
+      "format": "0.0%;-0.0%;0.0%",
+      "description": "",
+      "expression": "DIVIDE( [Total Liabilities], [Total Assets], 0 )",
+      "depends_on": [
+        "Total Liabilities",
+        "Total Assets"
+      ]
+    },
+    {
+      "name": "Working Capital",
+      "table": "_Measures",
+      "display_folder": "Balance Sheet Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "[Current Assets] - [Current Liabilities]",
+      "depends_on": [
+        "Current Assets",
+        "Current Liabilities"
+      ]
+    },
+    {
+      "name": "Net CF Operations",
+      "table": "_Measures",
+      "display_folder": "Cash Flow Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Cash Flow'[Value] ),\n    'Cash Flow'[CFCategory] = \"Operating Activities\",\n    'Cash Flow'[CFType] = \"Net\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Net CF Investing",
+      "table": "_Measures",
+      "display_folder": "Cash Flow Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Cash Flow'[Value] ),\n    'Cash Flow'[CFCategory] = \"Investing Activities\",\n    'Cash Flow'[CFType] = \"Net\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Net CF Financing",
+      "table": "_Measures",
+      "display_folder": "Cash Flow Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Cash Flow'[Value] ),\n    'Cash Flow'[CFCategory] = \"Financing Activities\",\n    'Cash Flow'[CFType] = \"Net\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Net Increase In Cash",
+      "table": "_Measures",
+      "display_folder": "Cash Flow Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "[Net CF Operations] + [Net CF Investing] + [Net CF Financing]",
+      "depends_on": [
+        "Net CF Operations",
+        "Net CF Investing",
+        "Net CF Financing"
+      ]
+    },
+    {
+      "name": "Total Budget",
+      "table": "_Measures",
+      "display_folder": "Budget",
+      "format": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+      "description": "",
+      "expression": "SUM( Budget[BudgetAmount] )",
+      "depends_on": []
+    },
+    {
+      "name": "TY vs PY Actuals",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "\\$#,0.0;(\\$#,0.0);\\$#,0.0",
+      "description": "",
+      "expression": "[Selected Year Actuals] - [Previous Year Actuals]",
+      "depends_on": [
+        "Selected Year Actuals",
+        "Previous Year Actuals"
+      ]
+    },
+    {
+      "name": "TY vs PY Actuals %",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "0.0%;-0.0%;0.0%",
+      "description": "",
+      "expression": "VAR CurrentItem =\n    SELECTEDVALUE( 'P&L Template'[ItemsNormalized] )\nRETURN\nSWITCH( TRUE(),\n    -- % rows: show the difference in percentage points, not a ratio\n    CurrentItem = \"Gross Profit %\",\n        [Gross Profit %] -\n        CALCULATE( [Gross Profit %], SAMEPERIODLASTYEAR( 'Date'[FullDate] ) ),\n    CurrentItem = \"Net Profit %\",\n        [Net Profit %] -\n        CALCULATE( [Net Profit %], SAMEPERIODLASTYEAR( 'Date'[FullDate] ) ),\n    -- All other rows: variance as % of previous year value\n    DIVIDE( [TY vs PY Actuals], ABS( [Previous Year Actuals] ), 0 )\n)",
+      "depends_on": [
+        "Gross Profit %",
+        "Net Profit %",
+        "TY vs PY Actuals",
+        "Previous Year Actuals"
+      ]
+    },
+    {
+      "name": "Selected Year Actuals",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "\\$#,0.0;(\\$#,0.0);\\$#,0.0",
+      "description": "",
+      "expression": "VAR CurrentItem =\n    SELECTEDVALUE( 'P&L Template'[ItemsNormalized] )\nRETURN\nSWITCH( TRUE(),\n    -- Summary rows: use pre-calculated measures\n    CurrentItem = \"Total Revenues\",\n        [Total Revenue],\n    CurrentItem = \"Total COGS\",\n        [Total COGS],\n    CurrentItem = \"Total Gross Profit\",\n        [Gross Profit],\n    CurrentItem = \"Gross Profit %\",\n        [Gross Profit %],\n    CurrentItem = \"Total Other Expenses\",\n        [Total Expenses],\n    CurrentItem = \"Total Net Profit\",\n        [Net Profit],\n    CurrentItem = \"Net Profit %\",\n        [Net Profit %],\n    -- Individual line items: fallthrough filter by account name\n    CALCULATE(\n        SUM( 'Profit Loss'[Amount] ),\n        'Profit Loss'[AccountName] = CurrentItem\n    )\n)",
+      "depends_on": [
+        "Total Revenue",
+        "Total COGS",
+        "Gross Profit",
+        "Gross Profit %",
+        "Total Expenses",
+        "Net Profit",
+        "Net Profit %"
+      ]
+    },
+    {
+      "name": "Previous Year Actuals",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "\\$#,0.0;(\\$#,0.0);\\$#,0.0",
+      "description": "",
+      "expression": "VAR CurrentItem =\nSELECTEDVALUE( 'P&L Template'[ItemsNormalized] )\nRETURN\nSWITCH( TRUE(),\n    CurrentItem = \"Total Revenues\",\n        CALCULATE( [Total Revenue], SAMEPERIODLASTYEAR( 'Date'[FullDate] ) ),\n    CurrentItem = \"Total COGS\",\n        CALCULATE( [Total COGS], SAMEPERIODLASTYEAR( 'Date'[FullDate] ) ),\n    CurrentItem = \"Total Gross Profit\",\n        CALCULATE( [Gross Profit], SAMEPERIODLASTYEAR( 'Date'[FullDate] ) ),\n    CurrentItem = \"Gross Profit %\",\n        CALCULATE( [Gross Profit %], SAMEPERIODLASTYEAR( 'Date'[FullDate] ) ),\n    CurrentItem = \"Total Other Expenses\",\n        CALCULATE( [Total Expenses], SAMEPERIODLASTYEAR( 'Date'[FullDate] ) ),\n    CurrentItem = \"Total Net Profit\",\n        CALCULATE( [Net Profit], SAMEPERIODLASTYEAR( 'Date'[FullDate] ) ),\n    CurrentItem = \"Net Profit %\",\n        CALCULATE( [Net Profit %], SAMEPERIODLASTYEAR( 'Date'[FullDate] ) ),\n    -- Fallthrough for individual line items\n    CALCULATE(\n        SUM( 'Profit Loss'[Amount] ),\n        'Profit Loss'[AccountName] = CurrentItem,\n        SAMEPERIODLASTYEAR( 'Date'[FullDate] )\n    )\n)",
+      "depends_on": [
+        "Total Revenue",
+        "Total COGS",
+        "Gross Profit",
+        "Gross Profit %",
+        "Total Expenses",
+        "Net Profit",
+        "Net Profit %"
+      ]
+    },
+    {
+      "name": "BS Selected Year",
+      "table": "_Measures",
+      "display_folder": "Balance Sheet Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "VAR CurrentItem =\n    SELECTEDVALUE( 'BS Template'[ItemsNormalized] )\nRETURN\nSWITCH( TRUE(),\n    -- Spacers and section headers → blank\n    LEFT( CurrentItem, 7 ) = \"section\", BLANK(),\n    LEFT( CurrentItem, 6 ) = \"spacer\",  BLANK(),\n\n    -- Current Assets subtotal\n    CurrentItem = \"Total Current Assets\",\n        CALCULATE(\n            SUM( 'Balance Sheet'[Value] ),\n            'Balance Sheet'[Category] = \"Current Assets\"\n        ),\n\n    -- Fixed Assets subtotal\n    CurrentItem = \"Total Fixed Assets\",\n        CALCULATE(\n            SUM( 'Balance Sheet'[Value] ),\n            'Balance Sheet'[Category] = \"Fixed Assets\"\n        ),\n\n    -- Other Assets subtotal\n    CurrentItem = \"Total Other Assets\",\n        CALCULATE(\n            SUM( 'Balance Sheet'[Value] ),\n            'Balance Sheet'[Category] = \"Other Assets\"\n        ),\n\n    -- Total Assets\n    CurrentItem = \"Total Assets\",\n        [Total Assets],\n\n    -- Current Liabilities subtotal\n    CurrentItem = \"Total Current Liabilities\",\n        CALCULATE(\n            SUM( 'Balance Sheet'[Value] ),\n            'Balance Sheet'[Category] = \"Current Liabilities\"\n        ),\n\n    -- Long-term Liabilities subtotal\n    CurrentItem = \"Total Long-term Liabilities\",\n        CALCULATE(\n            SUM( 'Balance Sheet'[Value] ),\n            'Balance Sheet'[Category] = \"Long-term Liabilities\"\n        ),\n\n    -- Total Liabilities\n    CurrentItem = \"Total Liabilities\",\n        [Total Liabilities],\n\n    -- Total Owners Equity\n    CurrentItem = \"Total Owners Equity\",\n        [Total Equity],\n\n    -- Total Liabilities and Equity\n    CurrentItem = \"Total Liabilities and Equity\",\n        [Total Liabilities] + [Total Equity],\n\n    -- Individual line items fallthrough\n    CALCULATE(\n        SUM( 'Balance Sheet'[Value] ),\n        'Balance Sheet'[ItemName] = CurrentItem\n    )\n)",
+      "depends_on": [
+        "Total Assets",
+        "Total Liabilities",
+        "Total Equity"
+      ]
+    },
+    {
+      "name": "Ratio Value",
+      "table": "_Measures",
+      "display_folder": "Balance Sheet Measures",
+      "format": "",
+      "description": "",
+      "expression": "SWITCH(\n    SELECTEDVALUE( 'Ratios Template'[Ratio] ),\n    \"Debt Ratio\",        [Debt Ratio],\n    \"Current Ratio\",     [Current Ratio],\n    \"Working Capital\",   [Working Capital],\n    \"Total Assets\",      [Total Assets],\n    \"Total Liabilities\", [Total Liabilities],\n    \"Total Equity\",      [Total Equity],\n    BLANK()\n)",
+      "depends_on": [
+        "Debt Ratio",
+        "Current Ratio",
+        "Working Capital",
+        "Total Assets",
+        "Total Liabilities",
+        "Total Equity"
+      ]
+    },
+    {
+      "name": "CF Selected Year",
+      "table": "_Measures",
+      "display_folder": "Cash Flow Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "VAR CurrentItem =\n    SELECTEDVALUE( 'CF Template'[ItemsNormalized] )\nRETURN\nSWITCH( TRUE(),\n    LEFT( CurrentItem, 7 )  = \"section\", BLANK(),\n    LEFT( CurrentItem, 6 )  = \"spacer\",  BLANK(),\n\n    CurrentItem = \"Net Cash Flow From Operations\",\n        [Net CF Operations],\n    CurrentItem = \"Net Cash Flow From Investing\",\n        [Net CF Investing],\n    CurrentItem = \"Net Cash Flow From Financing\",\n        [Net CF Financing],\n    CurrentItem = \"Net Increase In Cash\",\n        [Net Increase In Cash],\n        CurrentItem = \"Cash at Beginning of Year\",\n        [Cash at Beginning of Year],\n    CurrentItem = \"Cash at End of Year\",\n        [Cash at End of Year],\n\n    -- Individual line items fallthrough\n    CALCULATE(\n        SUM( 'Cash Flow'[Value] ),\n        'Cash Flow'[ItemName] = CurrentItem\n    )\n)",
+      "depends_on": [
+        "Net CF Operations",
+        "Net CF Investing",
+        "Net CF Financing",
+        "Net Increase In Cash",
+        "Cash at Beginning of Year",
+        "Cash at End of Year"
+      ]
+    },
+    {
+      "name": "CF Summary Value",
+      "table": "_Measures",
+      "display_folder": "Cash Flow Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "SWITCH(\n    SELECTEDVALUE( 'CF Summary Template'[CFItem] ),\n    \"Net CF From Operations\", [Net CF Operations],\n    \"Net CF From Investing\",  [Net CF Investing],\n    \"Net CF From Financing\",  [Net CF Financing],\n    \"Net Increase In Cash\",   [Net Increase In Cash],\n    BLANK()\n)",
+      "depends_on": [
+        "Net CF Operations",
+        "Net CF Investing",
+        "Net CF Financing",
+        "Net Increase In Cash"
+      ]
+    },
+    {
+      "name": "Selected Date",
+      "table": "_Measures",
+      "display_folder": "Aged AR",
+      "format": "Short Date",
+      "description": "",
+      "expression": "MIN( 'Date'[FullDate] )",
+      "depends_on": []
+    },
+    {
+      "name": "Invoice Due Date",
+      "table": "_Measures",
+      "display_folder": "Aged AR",
+      "format": "Short Date",
+      "description": "",
+      "expression": "MIN( Invoices[DueDate] )",
+      "depends_on": []
+    },
+    {
+      "name": "Invoice Issue Date",
+      "table": "_Measures",
+      "display_folder": "Aged AR",
+      "format": "Short Date",
+      "description": "",
+      "expression": "MIN( Invoices[InvoiceDate] )",
+      "depends_on": []
+    },
+    {
+      "name": "Days Left",
+      "table": "_Measures",
+      "display_folder": "Aged AR",
+      "format": "0",
+      "description": "",
+      "expression": "IF(\n    [Invoice Issue Date] < [Selected Date]\n        && [Invoice Due Date] > [Selected Date],\n    DATEDIFF( [Selected Date], [Invoice Due Date], DAY ),\n    BLANK()\n)",
+      "depends_on": [
+        "Invoice Issue Date",
+        "Selected Date",
+        "Invoice Due Date"
+      ]
+    },
+    {
+      "name": "Invoice Values",
+      "table": "_Measures",
+      "display_folder": "Aged AR",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "IF( ISBLANK( [Days Left] ), BLANK(), SUM( Invoices[InvoiceValue] ) )",
+      "depends_on": [
+        "Days Left"
+      ]
+    },
+    {
+      "name": "Outstanding Invoices",
+      "table": "_Measures",
+      "display_folder": "Aged AR",
+      "format": "0",
+      "description": "",
+      "expression": "COUNTROWS( FILTER( Invoices, [Days Left] > 0 ) )",
+      "depends_on": [
+        "Days Left"
+      ]
+    },
+    {
+      "name": "Receivables Per Group",
+      "table": "_Measures",
+      "display_folder": "Aged AR",
+      "format": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+      "description": "",
+      "expression": "CALCULATE(\n    [Invoice Values],\n    FILTER(\n        Invoices,\n        COUNTROWS(\n            FILTER(\n                'Aged Debtor Groups',\n                [Days Left] >= 'Aged Debtor Groups'[MinDays]\n                    && [Days Left] <= 'Aged Debtor Groups'[MaxDays]\n            )\n        ) > 0\n    )\n)",
+      "depends_on": [
+        "Invoice Values",
+        "Days Left"
+      ]
+    },
+    {
+      "name": "Cash Balance",
+      "table": "_Measures",
+      "display_folder": "Cash Flow Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Balance Sheet'[Value] ),\n    'Balance Sheet'[ItemName] = \"Cash\"\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Cash at Beginning of Year",
+      "table": "_Measures",
+      "display_folder": "Cash Flow Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE( [Cash Balance], SAMEPERIODLASTYEAR( 'Date'[FullDate] ) )",
+      "depends_on": [
+        "Cash Balance"
+      ]
+    },
+    {
+      "name": "Cash at End of Year",
+      "table": "_Measures",
+      "display_folder": "Cash Flow Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "IF(\n    NOT ISBLANK( [Cash at Beginning of Year] ),\n    [Cash at Beginning of Year] + [Net Increase In Cash]\n)",
+      "depends_on": [
+        "Cash at Beginning of Year",
+        "Net Increase In Cash"
+      ]
+    },
+    {
+      "name": "Previous Highest Sale",
+      "table": "_Measures",
+      "display_folder": "Sales Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "MAXX(\n    FILTER(\n        ALLSELECTED( 'Date'[FullDate] ),\n        'Date'[FullDate] <= MAX( 'Date'[FullDate] )\n    ),\n    [Total Sales]\n)",
+      "depends_on": [
+        "Total Sales"
+      ]
+    },
+    {
+      "name": "Rolling Average Sale",
+      "table": "_Measures",
+      "display_folder": "Sales Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "AVERAGEX(\n    DATESINPERIOD(\n        'Date'[FullDate],\n        LASTDATE( 'Date'[FullDate] ),\n        -30,\n        DAY\n    ),\n    [Total Sales]\n)",
+      "depends_on": [
+        "Total Sales"
+      ]
+    },
+    {
+      "name": "Total Profits",
+      "table": "_Measures",
+      "display_folder": "Core Revenue and P&L Measures",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "[Total Gross Profit Sales]",
+      "depends_on": [
+        "Total Gross Profit Sales"
+      ]
+    },
+    {
+      "name": "Profit Margin",
+      "table": "_Measures",
+      "display_folder": "Sales Measures",
+      "format": "0.00%;-0.00%;0.00%",
+      "description": "",
+      "expression": "[Profit Margin %]",
+      "depends_on": [
+        "Profit Margin %"
+      ]
+    },
+    {
+      "name": "Budget Actuals",
+      "table": "_Measures",
+      "display_folder": "Budget",
+      "format": "\\$#,0.###############;(\\$#,0.###############);\\$#,0.###############",
+      "description": "",
+      "expression": "CALCULATE(\n    SUM( 'Profit Loss'[Amount] ),\n    'Profit Loss'[AccountName] = SELECTEDVALUE( Budget[AccountName] )\n)",
+      "depends_on": []
+    },
+    {
+      "name": "Budget Variance Fixed",
+      "table": "_Measures",
+      "display_folder": "Budget",
+      "format": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+      "description": "",
+      "expression": "[Budget Actuals] - [Total Budget]",
+      "depends_on": [
+        "Budget Actuals",
+        "Total Budget"
+      ]
+    },
+    {
+      "name": "Budget Variance % Fixed",
+      "table": "_Measures",
+      "display_folder": "Budget",
+      "format": "0.00%;-0.00%;0.00%",
+      "description": "",
+      "expression": "DIVIDE( [Budget Variance Fixed], ABS( [Total Budget] ), 0 )",
+      "depends_on": [
+        "Budget Variance Fixed",
+        "Total Budget"
+      ]
+    }
+  ],
+  "rls": [
+    {
+      "role": "NSW_User",
+      "filters": [
+        {
+          "table": "Region",
+          "expression": "[Territory] = \"New South Wales\""
+        }
+      ]
+    },
+    {
+      "role": "QLD_User",
+      "filters": [
+        {
+          "table": "Region",
+          "expression": "[Territory] = \"Queensland\""
+        }
+      ]
+    },
+    {
+      "role": "VIC_User",
+      "filters": [
+        {
+          "table": "Region",
+          "expression": "[Territory] = \"Victoria\""
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "index": 0,
+      "display_name": "Navigation",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 24,
+      "visual_types": {
+        "actionButton": 6,
+        "image": 1,
+        "shape": 1,
+        "textbox": 16
+      }
+    },
+    {
+      "index": 1,
+      "display_name": "P&L Statement",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 7,
+      "visual_types": {
+        "actionButton": 1,
+        "clusteredBarChart": 1,
+        "columnChart": 1,
+        "slicer": 1,
+        "tableEx": 1,
+        "textbox": 1,
+        "waterfallChart": 1
+      }
+    },
+    {
+      "index": 2,
+      "display_name": "Balance Sheet",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 7,
+      "visual_types": {
+        "actionButton": 1,
+        "pivotTable": 2,
+        "slicer": 1,
+        "textbox": 1,
+        "waterfallChart": 2
+      }
+    },
+    {
+      "index": 3,
+      "display_name": "Cash Flow Statement",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 16,
+      "visual_types": {
+        "actionButton": 1,
+        "donutChart": 6,
+        "pivotTable": 1,
+        "slicer": 1,
+        "tableEx": 1,
+        "textbox": 6
+      }
+    },
+    {
+      "index": 4,
+      "display_name": "Aged AR",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 14,
+      "visual_types": {
+        "actionButton": 1,
+        "cardVisual": 3,
+        "custom-visual": 1,
+        "pivotTable": 1,
+        "slicer": 2,
+        "tableEx": 2,
+        "textbox": 4
+      }
+    },
+    {
+      "index": 5,
+      "display_name": "Revenue Insights",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 12,
+      "visual_types": {
+        "actionButton": 1,
+        "barChart": 2,
+        "cardVisual": 1,
+        "lineStackedColumnComboChart": 1,
+        "slicer": 4,
+        "tableEx": 1,
+        "textbox": 1,
+        "waterfallChart": 1
+      }
+    },
+    {
+      "index": 6,
+      "display_name": "Budget vs Actuals",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 6,
+      "visual_types": {
+        "actionButton": 1,
+        "cardVisual": 1,
+        "clusteredBarChart": 1,
+        "pivotTable": 1,
+        "slicer": 1,
+        "textbox": 1
+      }
+    }
+  ],
+  "techniques": [
+    "VAR",
+    "SELECTEDVALUE",
+    "SWITCH",
+    "time-intelligence",
+    "dynamic-TY/PY",
+    "disconnected-table",
+    "RLS",
+    "incremental-refresh",
+    "inactive-relationships",
+    "calculated-tables"
+  ],
+  "stats": {
+    "tables": 20,
+    "measures": 55,
+    "relationships": 14,
+    "pages": 7
+  },
+  "reports": [
+    {
+      "slug": "financial-statement-suite",
+      "title": "Financial Statement Reporting Suite",
+      "kind": "interactive",
+      "pages_doc": "/content/generated/financial-statement-suite.pages.json"
+    }
+  ]
+}

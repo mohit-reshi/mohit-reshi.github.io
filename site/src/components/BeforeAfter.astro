@@ -1,0 +1,15 @@
+---
+import Placeholder from './Placeholder.astro';
+interface Props { before: { src: string; w: number; h: number } | null; after: { src: string; w: number; h: number } | null; caption?: string; title: string }
+const { before, after, caption = '', title } = Astro.props;
+---
+<figure data-before-after class="ba-wrap" data-cursor="drag">
+  <div class="ba" style="--pos: 50%">
+    <div class="ba__layer ba__layer--before">{before ? <img src={before.src} alt={`${title}: before the redesign`} loading="lazy" /> : <Placeholder title="Before" seed={`${title}-before`} label="Before" />}</div>
+    <div class="ba__layer ba__layer--after">{after ? <img src={after.src} alt={`${title}: after the redesign`} loading="lazy" /> : <Placeholder title="After" seed={`${title}-after`} label="After" />}</div>
+    <span class="ba__tag ba__tag--before" aria-hidden="true">Before</span><span class="ba__tag ba__tag--after" aria-hidden="true">After</span>
+    <div class="ba__handle" aria-hidden="true"></div>
+    <input class="ba__range" type="range" min="0" max="100" value="50" step="1" aria-label="Before and after comparison: drag or use arrow keys" />
+  </div>
+  {caption && <figcaption class="ba-caption">{caption}</figcaption>}
+</figure>

@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "ES2022", "moduleResolution": "Bundler", "strict": true, "noEmit": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"], "skipLibCheck": true, "resolveJsonModule": true, "esModuleInterop": true,
+    "types": ["vite/client"]
+  },
+  "include": ["src", "test", "demo", "vite.config.ts", "vite.demo.config.ts"]
+}

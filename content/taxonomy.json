@@ -1,0 +1,122 @@
+{
+  "power-bi": {
+    "label": "Power BI",
+    "group": "platform",
+    "color": "#F2C811"
+  },
+  "fabric": {
+    "label": "Microsoft Fabric",
+    "group": "platform",
+    "color": "#4FD1C5"
+  },
+  "directlake": {
+    "label": "DirectLake",
+    "group": "platform",
+    "color": "#7C9CFF"
+  },
+  "embedded": {
+    "label": "Embedded analytics",
+    "group": "platform",
+    "color": "#FF7A90"
+  },
+  "paginated": {
+    "label": "Paginated reports",
+    "group": "platform",
+    "color": "#B794F4"
+  },
+  "rdl": {
+    "label": "RDL",
+    "group": "platform",
+    "color": "#B794F4"
+  },
+  "rls": {
+    "label": "Row-level security",
+    "group": "skill",
+    "color": "#FF7A90"
+  },
+  "dax": {
+    "label": "DAX",
+    "group": "skill",
+    "color": "#F2C811"
+  },
+  "time-intelligence": {
+    "label": "Time intelligence",
+    "group": "skill",
+    "color": "#4FD1C5"
+  },
+  "incremental-refresh": {
+    "label": "Incremental refresh",
+    "group": "skill",
+    "color": "#7C9CFF"
+  },
+  "userelationship": {
+    "label": "USERELATIONSHIP",
+    "group": "skill",
+    "color": "#F2C811"
+  },
+  "kpi-scorecard": {
+    "label": "KPI scorecards",
+    "group": "skill",
+    "color": "#4FD1C5"
+  },
+  "drillthrough": {
+    "label": "Drillthrough",
+    "group": "skill",
+    "color": "#7C9CFF"
+  },
+  "medallion": {
+    "label": "Medallion architecture",
+    "group": "skill",
+    "color": "#4FD1C5"
+  },
+  "python": {
+    "label": "Python",
+    "group": "skill",
+    "color": "#7C9CFF"
+  },
+  "insurance": {
+    "label": "Insurance",
+    "group": "domain",
+    "color": "#B794F4"
+  },
+  "finance": {
+    "label": "Finance",
+    "group": "domain",
+    "color": "#4FD1C5"
+  },
+  "manufacturing": {
+    "label": "Manufacturing",
+    "group": "domain",
+    "color": "#F2C811"
+  },
+  "it-governance": {
+    "label": "IT governance",
+    "group": "domain",
+    "color": "#7C9CFF"
+  },
+  "sla": {
+    "label": "SLA monitoring",
+    "group": "domain",
+    "color": "#FF7A90"
+  },
+  "compliance": {
+    "label": "Compliance",
+    "group": "domain",
+    "color": "#B794F4"
+  },
+  "capacity": {
+    "label": "Capacity planning",
+    "group": "domain",
+    "color": "#4FD1C5"
+  },
+  "ai-built": {
+    "label": "AI-built",
+    "group": "skill",
+    "color": "#F2C811"
+  },
+  "data-viz": {
+    "label": "Data visualization",
+    "group": "skill",
+    "color": "#FF7A90"
+  }
+}

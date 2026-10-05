@@ -1,0 +1,97 @@
+---
+// Model layout: the portfolio as a semantic-model relationship diagram. Server-rendered as a plain list (works without JS);
+// scripts/stage-model.ts upgrades it to the living diagram. Positions are computed at runtime from the data, never hand-placed.
+import type { ExplorerData } from '../../lib/explorer';
+import { isPortal } from '../../lib/model-graph';
+import { siteConfig } from '../../config';
+import { withBase } from '../../lib/url';
+interface Props { data: ExplorerData }
+const { data } = Astro.props;
+
+const personas = ['Employer', 'Member', 'Producer', 'Admin'];
+const cfg = {
+  liveHref: siteConfig.liveLab.enabled ? withBase('live-lab/') : null,
+  aboutHref: withBase('about/'),
+  about: { role: 'Power BI & Fabric developer', location: data.site.location, status: data.site.status },
+  links: { email: siteConfig.links.email, linkedin: siteConfig.links.linkedin, github: siteConfig.links.github },
+  personas,
+};
+const facts = data.projects;
+const dims = data.tags;
+const label = (k: string) => data.tags.find((t) => t.key === k)?.label ?? k;
+const portals = facts.filter(isPortal).length;
+const lede = siteConfig.bio[0];
+---
+<section class="mv" data-model-stage data-mode="diagram" data-config={JSON.stringify(cfg)} aria-labelledby="mv-h">
+  <div class="mv__thesis" data-mv-thesis>
+    <p class="mv__eyebrow mono">semantic model · {facts.length} fact{facts.length === 1 ? '' : 's'} · {dims.length} dimension{dims.length === 1 ? '' : 's'}</p>
+    <h1 id="mv-h" class="mv__title">{data.site.tagline}</h1>
+    <p class="mv__lede">{lede}</p>
+    <p class="mv__status">
+      {data.site.status && <span class="mv__pill" data-status-pill>{data.site.status}</span>}
+      <span class="mono">{data.site.location}</span>
+    </p>
+    <p class="mv__flow" data-mv-flow aria-hidden="true" hidden></p>
+    <p class="sr-only" role="status" aria-live="polite" data-mv-live></p>
+  </div>
+
+  <div class="mv__bar" data-mv-bar>
+    <form class="mv__search" role="search" data-mv-searchform>
+      <label for="mv-search" class="mv__search-l">Search fields</label>
+      <input id="mv-search" type="search" name="q" placeholder="Search fields" autocomplete="off" spellcheck="false" aria-keyshortcuts="/" data-mv-search />
+      <kbd aria-hidden="true">/</kbd>
+      <output class="mv__count mono" data-mv-count aria-live="polite"></output>
+    </form>
+    {cfg.liveHref && (
+      <div class="mv__persona" role="group" aria-label="Persona, a row-level security demo" data-mv-persona>
+        <span class="mv__persona-l mono" aria-hidden="true">Persona</span>
+        {personas.map((n) => <button type="button" class="mv__btn" data-persona={n.toLowerCase()} aria-pressed="false">{n}</button>)}
+      </div>
+    )}
+    <p class="mv__hint" id="mv-hint">Hover a table to see the filter flow. Drag tables, then Tidy up. Scroll to zoom.</p>
+    <div class="mv__tools" role="group" aria-label="View controls">
+      <button type="button" class="mv__btn mv__btn--sq" data-mv-zoom-out aria-label="Zoom out"><span aria-hidden="true">−</span></button>
+      <button type="button" class="mv__btn mv__btn--sq" data-mv-zoom-in aria-label="Zoom in"><span aria-hidden="true">+</span></button>
+      <button type="button" class="mv__btn" data-mv-fit>Fit</button>
+      <button type="button" class="mv__btn" data-mv-tidy>Tidy up</button>
+      <button type="button" class="mv__btn" data-mv-list-toggle aria-pressed="false">List view</button>
+    </div>
+  </div>
+
+  <div class="mv__stage" data-mv-stage>
+    <div class="mv__viewport" data-mv-viewport data-lenis-prevent role="region" tabindex="0" aria-label="Model diagram. Arrow keys pan, plus and minus zoom, zero fits everything, slash searches fields." aria-describedby="mv-hint">
+      <div class="mv__world" data-mv-world></div>
+    </div>
+    <div class="mv__mini" data-mv-mini aria-hidden="true"></div>
+    <div class="mv__drawer" data-mv-drawer hidden></div>
+  </div>
+
+  <div class="mv__list" data-mv-list>
+    <h2 class="mv__h2">Projects <span class="mono">fact tables</span></h2>
+    <ul class="mv__ul">
+      {facts.map((p) => (
+        <li>
+          <a href={p.href} data-case-open={p.slug}>{p.title}</a>
+          <span class="mono mv__sub">{p.kind} · {p.year}{p.measures ? ` · ${p.measures} measures` : ''}{p.live ? ' · live' : ''}</span>
+          <span class="mv__tagline">{p.tags.map(label).join(', ')}</span>
+        </li>
+      ))}
+    </ul>
+    <h2 class="mv__h2">Skills, platforms and domains <span class="mono">dimension tables</span></h2>
+    <ul class="mv__ul mv__ul--tags">
+      {dims.map((t) => (
+        <li>
+          <strong>{t.label}</strong>
+          <span class="mono mv__sub">{t.group} · used by {t.count}</span>
+          <span class="mv__tagline">{facts.filter((p) => p.tags.includes(t.key)).map((p) => p.title).join(', ')}</span>
+        </li>
+      ))}
+    </ul>
+    <h2 class="mv__h2">Also in the model</h2>
+    <ul class="mv__ul">
+      {cfg.liveHref && <li><a href={cfg.liveHref}>Live Lab</a> <span class="mono mv__sub">security table</span> <span class="mv__tagline">Switch persona to see row-level security change what each identity sees. {portals} of {facts.length} reports have a portal role.</span></li>}
+      <li><a href={cfg.aboutHref}>About</a> <span class="mono mv__sub">disconnected table</span></li>
+      <li><a href={`mailto:${siteConfig.links.email}`}>Contact</a> <span class="mono mv__sub">disconnected table</span> <span class="mv__tagline">{siteConfig.links.email}</span></li>
+    </ul>
+  </div>
+</section>

@@ -1,0 +1,178 @@
+---
+// Layout 1, "Index": a thesis, a ticker of real numbers, then every project as one giant typographic row.
+// Rows are real links (they work without JS). scripts/stage-index.ts adds filtering, the hover preview and the entrance.
+import type { ExplorerData } from '../../lib/explorer';
+import { withBase } from '../../lib/url';
+import { siteConfig } from '../../config';
+import { resumeUrl } from '../../lib/resume';
+interface Props { data: ExplorerData }
+const { data } = Astro.props;
+
+const projects = [...data.projects].sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+const kindLabel = { report: 'Report', paginated: 'Paginated', pipeline: 'Pipeline' } as const;
+const groupLabel = { portfolio: 'Portfolio', enterprise: 'Enterprise' } as const;
+const groups = (['portfolio', 'enterprise'] as const).filter((g) => projects.some((p) => p.group === g));
+const tags = data.tags.filter((t) => projects.some((p) => p.tags.includes(t.key)));
+const sum = (k: 'measures' | 'tables') => projects.reduce((n, p) => n + p[k], 0);
+const measures = sum('measures'), tables = sum('tables');
+const live = projects.filter((p) => p.live).length;
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+// Real numbers only; anything that is zero is left out.
+const facts: string[] = [
+  projects.length ? plural(projects.length, 'project') : '',
+  measures ? `${measures} DAX measures` : '',
+  tables ? `${tables} tables modelled` : '',
+  live ? `${live} live in the Live Lab` : '',
+  ...[...tags].sort((a, b) => b.count - a.count).slice(0, 9).map((t) => `${t.label} x${t.count}`),
+].filter(Boolean);
+const stats = [
+  projects.length ? { n: projects.length, l: projects.length === 1 ? 'project' : 'projects' } : null,
+  measures ? { n: measures, l: 'DAX measures' } : null,
+  live ? { n: live, l: 'running live' } : null,
+].filter(Boolean) as Array<{ n: number; l: string }>;
+
+const { links } = siteConfig;
+const resume = resumeUrl();
+const bare = (u: string) => u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+const contacts = [
+  links.email ? { k: 'Email', t: links.email, href: `mailto:${links.email}`, ext: false } : null,
+  links.linkedin ? { k: 'LinkedIn', t: bare(links.linkedin), href: links.linkedin, ext: true } : null,
+  links.github ? { k: 'GitHub', t: bare(links.github), href: links.github, ext: true } : null,
+  resume ? { k: 'Resume', t: 'Download PDF', href: withBase(resume), ext: false } : null,
+].filter(Boolean) as Array<{ k: string; t: string; href: string; ext: boolean }>;
+---
+<section class="ix" data-ix aria-label="Index layout">
+  <header class="ix-hero">
+    <div class="ix-wrap">
+      <p class="ix-eyebrow">
+        <span>Power BI &amp; Microsoft Fabric developer</span>
+        <span>{data.site.location}</span>
+        {data.site.status && <span class="ix-pill"><i aria-hidden="true"></i>{data.site.status}</span>}
+      </p>
+      <h1 class="ix-h1">
+        <span class="ix-mask"><span class="ix-line" data-ix-line>Embedded</span></span>
+        <span class="ix-mask"><span class="ix-line" data-ix-line>analytics,</span></span>
+        <span class="ix-mask"><span class="ix-line ix-line--accent" data-ix-line>end to end.</span></span>
+      </h1>
+      <div class="ix-hero__row">
+        <p class="ix-lede">{data.site.name} builds the model, the report and the embedding. {data.site.tagline}.</p>
+        {stats.length > 0 && (
+          <ul class="ix-stats" aria-label="At a glance">
+            {stats.map((s) => <li><b>{s.n}</b><span>{s.l}</span></li>)}
+          </ul>
+        )}
+        <a class="ix-jump" href="#ix-index">The index <span aria-hidden="true">↓</span></a>
+      </div>
+    </div>
+  </header>
+
+  {facts.length > 0 && (
+    <div class="ix-ticker" data-ix-ticker>
+      <div class="ix-ticker__view">
+        <div class="ix-ticker__belt">
+          <ul class="ix-ticker__track" aria-label="Portfolio in numbers">{facts.map((f) => <li>{f}</li>)}</ul>
+          <ul class="ix-ticker__track ix-ticker__dup" aria-hidden="true">{facts.map((f) => <li>{f}</li>)}</ul>
+        </div>
+      </div>
+      <button class="ix-ticker__btn" type="button" data-ix-pause aria-pressed="false">Pause</button>
+    </div>
+  )}
+
+  <section class="ix-index" id="ix-index" aria-labelledby="ix-index-h">
+    <div class="ix-wrap">
+      <div class="ix-head">
+        <h2 id="ix-index-h" class="ix-kicker">The index</h2>
+        <p class="ix-count" data-ix-status role="status" aria-live="polite">{plural(projects.length, 'project')}</p>
+      </div>
+      {projects.length > 0 && (groups.length > 1 || tags.length > 0) && (
+        <div class="ix-filters" data-ix-filters>
+          {groups.length > 1 && (
+            <div class="ix-filter" role="group" aria-label="Filter by group">
+              <button class="ix-chip" type="button" data-ix-group="all" aria-pressed="true">All <small>{projects.length}</small></button>
+              {groups.map((g) => <button class="ix-chip" type="button" data-ix-group={g} aria-pressed="false">{groupLabel[g]} <small>{projects.filter((p) => p.group === g).length}</small></button>)}
+            </div>
+          )}
+          {tags.length > 0 && (
+            <div class="ix-filter" role="group" aria-label="Filter by tag">
+              <button class="ix-chip" type="button" data-ix-tag="all" aria-pressed="true">Any tag</button>
+              {tags.map((t) => <button class="ix-chip" type="button" data-ix-tag={t.key} aria-pressed="false">{t.label} <small>{projects.filter((p) => p.tags.includes(t.key)).length}</small></button>)}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+
+    {projects.length === 0 ? (
+      <div class="ix-wrap"><p class="ix-empty">No projects are published yet.</p></div>
+    ) : (
+      <>
+        <div class="ix-wrap ix-cols" aria-hidden="true"><span>Kind</span><span>Project</span><span class="ix-cols__m"><span>Measures</span><span>Tables</span><span>Year</span><span></span></span></div>
+        <ol class="ix-list" data-ix-list>
+          {projects.map((p) => (
+            <li>
+              <a class="ix-row" href={p.href} data-case-open={p.slug} data-ix-row data-slug={p.slug} data-group={p.group} data-tags={p.tags.join(' ')}>
+                <span class="ix-wrap ix-row__in">
+                  <span class="ix-kind">{kindLabel[p.kind]}<em>{p.label || groupLabel[p.group]}</em></span>
+                  <span class="ix-thumb" data-ix-thumb aria-hidden="true">
+                    {p.cover && <img src={p.cover.src} width={p.cover.w} height={p.cover.h} alt="" loading="lazy" decoding="async" />}
+                  </span>
+                  <span class="ix-title">{p.title}</span>
+                  <span class="ix-meta" data-ix-meta>
+                    <span class="ix-n"><b>{p.measures}</b> <i>measures</i></span>
+                    <span class="ix-n"><b>{p.tables}</b> <i>tables</i></span>
+                    <span class="ix-n"><b>{p.year}</b></span>
+                    <span class="ix-flag">{p.live && <span class="ix-live"><i aria-hidden="true"></i>Live</span>}</span>
+                  </span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ol>
+        <div class="ix-wrap" data-ix-empty hidden>
+          <p class="ix-empty">No project matches both filters. <button class="ix-link" type="button" data-ix-reset>Clear filters</button></p>
+        </div>
+      </>
+    )}
+  </section>
+
+  {siteConfig.liveLab.enabled && (
+    <section class="ix-lab" aria-labelledby="ix-lab-h">
+      <div class="ix-wrap">
+        <h2 id="ix-lab-h" class="ix-kicker">Live Lab</h2>
+        <a class="ix-lab__link" href={withBase('live-lab/')}>
+          <span class="ix-lab__t">Same report. Same model. A different person signed in.</span>
+          <span class="ix-lab__s">{live ? `${live} reports run embedded` : 'Embedded reports'} with real row-level security. Switch persona and the numbers change.</span>
+          <span class="ix-lab__go">Open the Live Lab <span aria-hidden="true">→</span></span>
+        </a>
+      </div>
+    </section>
+  )}
+
+  <section class="ix-about" aria-labelledby="ix-about-h">
+    <div class="ix-wrap ix-about__grid">
+      <h2 id="ix-about-h" class="ix-kicker">About</h2>
+      <p class="ix-about__big">{siteConfig.bio[0]}</p>
+      <div class="ix-about__side">
+        {siteConfig.bio[1] && <p>{siteConfig.bio[1]}</p>}
+        {tags.length > 0 && <ul class="ix-skills" aria-label="Skills and tools">{tags.map((t) => <li>{t.label}</li>)}</ul>}
+      </div>
+    </div>
+  </section>
+
+  <section class="ix-contact" aria-labelledby="ix-contact-h">
+    <div class="ix-wrap">
+      <h2 id="ix-contact-h" class="ix-kicker">Contact</h2>
+      <ul class="ix-contact__list">
+        {contacts.map((c) => (
+          <li>
+            <a href={c.href} {...(c.ext ? { target: '_blank', rel: 'me noopener noreferrer' } : {})}>
+              <span class="ix-contact__k">{c.k}</span>
+              <span class="ix-contact__t">{c.t}{c.ext && <span class="sr-only"> (opens in a new tab)</span>}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</section>

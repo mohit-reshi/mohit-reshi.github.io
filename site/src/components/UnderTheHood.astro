@@ -1,0 +1,40 @@
+---
+import type { ModelDoc } from '../lib/projects';
+import { highlightCode } from '../lib/markdown';
+import { techniqueLabel } from '../lib/techniques';
+import RelationshipDiagram from './RelationshipDiagram.astro';
+interface Props { doc: ModelDoc; featured: string[]; title: string }
+const { doc, featured, title } = Astro.props;
+const measures = featured.map((n) => doc.measures.find((m) => m.name === n)).filter(Boolean) as ModelDoc['measures'];
+const storage = { import: 'Import', directlake: 'DirectLake', mixed: 'Composite' }[doc.storage_mode] ?? doc.storage_mode;
+---
+<div class="uth">
+  <ul class="uth__stats" aria-label="Model at a glance">
+    <li><b>{doc.stats.tables}</b><span>tables</span></li>
+    <li><b>{doc.stats.relationships}</b><span>relationships</span></li>
+    <li><b>{doc.stats.measures}</b><span>measures</span></li>
+    {doc.stats.pages > 0 && <li><b>{doc.stats.pages}</b><span>pages</span></li>}
+    <li><b>{doc.rls.length}</b><span>RLS roles</span></li>
+    <li><b style="font-size:var(--step-1)">{storage}</b><span>storage mode</span></li>
+  </ul>
+  <RelationshipDiagram doc={doc} title={title} />
+  {doc.techniques.length > 0 && (
+    <div><h3>Techniques</h3><ul class="chips">{doc.techniques.map((t) => <li class="chip"><i></i>{techniqueLabel(t)}</li>)}</ul></div>
+  )}
+  {doc.rls.length > 0 && (
+    <div><h3>Security</h3>
+      <div class="roles">{doc.rls.map((r) => (
+        <div class="role"><h4>{r.role}</h4>
+          {r.filters.map((f) => <details><summary>Filter on {f.table}</summary><Fragment set:html={highlightCode(f.expression, 'dax')} /></details>)}
+        </div>
+      ))}</div>
+    </div>
+  )}
+  {measures.length > 0 && (
+    <div><h3>Featured measures</h3>
+      <div class="roles">{measures.map((m) => (
+        <article class="measure"><header><h4>[{m.name}]</h4><p>{m.description || `${m.display_folder || 'Measure'} · ${m.table}`}</p></header><Fragment set:html={highlightCode(m.expression, 'dax')} /></article>
+      ))}</div>
+    </div>
+  )}
+</div>

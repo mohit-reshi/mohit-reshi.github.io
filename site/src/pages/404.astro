@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import { notFound } from '../lib/microcopy';
+import { withBase } from '../lib/url';
+---
+<Base title="Page not found" noindex>
+  <div class="container">
+    <header class="page-head">
+      <p class="eyebrow">Error 404</p>
+      <h1>{notFound.title}</h1>
+      <p>{notFound.text}</p>
+      <p><a class="btn btn--primary" href={withBase('work/')}>Back to the work</a></p>
+    </header>
+  </div>
+</Base>

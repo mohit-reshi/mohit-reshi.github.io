@@ -1,0 +1,19 @@
+---
+// The shared case-study panel. Index and Model layouts open it with: document.dispatchEvent(new CustomEvent('case:open', { detail: { slug } }))
+// or by clicking any element with [data-case-open="<slug>"]. Content comes from the #explorer-data JSON on the page.
+---
+<dialog class="case" id="case-panel" aria-labelledby="case-title" data-case-panel>
+  <div class="case__shell">
+    <div class="case__bar">
+      <p class="case__kicker mono" data-case-kicker></p>
+      <div class="case__actions">
+        <button class="case__btn" type="button" data-case-prev aria-label="Previous project"><span aria-hidden="true">←</span> <span class="case__btn-t">Prev</span></button>
+        <button class="case__btn" type="button" data-case-next aria-label="Next project"><span class="case__btn-t">Next</span> <span aria-hidden="true">→</span></button>
+        <button class="case__btn case__btn--close" type="button" data-case-close aria-label="Close case study">Close <kbd>Esc</kbd></button>
+      </div>
+    </div>
+    <div class="case__scroll" data-case-scroll tabindex="-1">
+      <article class="case__body" data-case-body></article>
+    </div>
+  </div>
+</dialog>

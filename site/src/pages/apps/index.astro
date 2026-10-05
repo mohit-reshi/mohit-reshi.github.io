@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { getProjects } from '../../lib/projects';
+import { emptyApps } from '../../lib/microcopy';
+
+const apps = (await getProjects()).filter((p) => p.data.kind === 'app');
+---
+<Base title="Apps" description="Small apps built with AI coding assistants: what they do, how they were built, and where to try them." current="apps">
+  <div class="container">
+    <header class="page-head">
+      <p class="eyebrow">Apps</p>
+      <h1>Things I built with AI as a pair programmer.</h1>
+      <p>Each one says how it was built and whether it needs your own API key. Nothing here stores keys.</p>
+    </header>
+    {apps.length
+      ? <div class="grid">{apps.map((p, i) => <div class="reveal"><ProjectCard project={p} eager={i < 3} /></div>)}</div>
+      : <div class="empty"><strong>{emptyApps.title}</strong><p>{emptyApps.text}</p></div>}
+  </div>
+</Base>

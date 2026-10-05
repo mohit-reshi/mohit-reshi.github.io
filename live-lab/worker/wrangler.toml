@@ -1,0 +1,29 @@
+# No secrets in this file. Secrets are set with `npx wrangler secret put <NAME>` (see docs/live-lab/OWNER-RUNBOOK.md).
+name = "portfolio-live-lab-broker"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+# Comma separated list of exact origins allowed to call the broker (add your Pages URL).
+ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:4321"
+# MOCK=true returns fake tokens so the site works without a tenant. Set to "false" for real mode.
+MOCK = "true"
+# Embed token lifetime in minutes (Power BI minimum is 10 and maximum is 60 minutes for GenerateToken).
+TOKEN_TTL = "30"
+# Set to "true" while setting up: /health failures then include a non-secret reason code. Turn off afterwards.
+DEBUG_HEALTH = "false"
+# Server-side export endpoint (POST /export). Off unless you turn it on.
+EXPORT_ENABLED = "false"
+# Cloudflare Turnstile (optional bot check). Off by default; needs the TURNSTILE_SECRET secret when on.
+TURNSTILE_ENABLED = "false"
+
+# Required secrets (set with wrangler secret put): TENANT_ID, CLIENT_ID, CLIENT_SECRET, REPORTS_CONFIG
+# Optional secret: TURNSTILE_SECRET
+
+# Rate limiting: uses the Workers Rate Limiting binding when present. If your plan does not offer it, remove this block:
+# the Worker then falls back to a per-location Cache API counter (best effort, see README).
+# [[unsafe.bindings]]
+# name = "RATE_LIMITER"
+# type = "ratelimit"
+# namespace_id = "1001"
+# simple = { limit = 20, period = 60 }

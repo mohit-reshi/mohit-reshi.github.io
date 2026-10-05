@@ -1,0 +1,18 @@
+---
+import { siteConfig } from '../config';
+import { footerLines } from '../lib/microcopy';
+import { withBase } from '../lib/url';
+const line = footerLines[Astro.url.pathname.length % footerLines.length];
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container site-footer__row">
+    <p class="wit">{line}</p>
+    <ul aria-label="Contact links">
+      {siteConfig.links.email && <li><a href={`mailto:${siteConfig.links.email}`}>Email</a></li>}
+      {siteConfig.links.linkedin && <li><a href={siteConfig.links.linkedin} rel="me noopener">LinkedIn</a></li>}
+      {siteConfig.links.github && <li><a href={siteConfig.links.github} rel="me noopener">GitHub</a></li>}
+    </ul>
+    <p class="muted">© {year} {siteConfig.name}. Sample data is synthetic. <a href={withBase('about/')}>About</a></p>
+  </div>
+</footer>

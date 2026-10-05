@@ -1,0 +1,149 @@
+{
+  "slug": "governance-evidence",
+  "public_title": "Governance Evidence Model",
+  "source_kind": "rdl",
+  "storage_mode": "import",
+  "tables": [
+    {
+      "name": "Dim_Application",
+      "role": "dimension",
+      "columns": 3,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Dim_Date",
+      "role": "date",
+      "columns": 4,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Fact_AuditEvent",
+      "role": "fact",
+      "columns": 7,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Fact_ControlRecord",
+      "role": "fact",
+      "columns": 7,
+      "measures": 0,
+      "hidden": false
+    },
+    {
+      "name": "Fact_InvoiceLine",
+      "role": "fact",
+      "columns": 5,
+      "measures": 1,
+      "hidden": false
+    }
+  ],
+  "relationships": [
+    {
+      "from": "Fact_InvoiceLine[ApplicationKey]",
+      "to": "Dim_Application[ApplicationKey]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_InvoiceLine[InvoiceMonth]",
+      "to": "Dim_Date[Date]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    },
+    {
+      "from": "Fact_AuditEvent[EventDate]",
+      "to": "Dim_Date[Date]",
+      "cardinality": "many-to-one",
+      "cross_filter": "single",
+      "active": true
+    }
+  ],
+  "measures": [
+    {
+      "name": "Total Invoiced Amount",
+      "table": "Fact_InvoiceLine",
+      "display_folder": "",
+      "format": "\\$#,0.00",
+      "description": "",
+      "expression": "SUM(Fact_InvoiceLine[Amount])",
+      "depends_on": []
+    }
+  ],
+  "rls": [],
+  "pages": [
+    {
+      "index": 0,
+      "display_name": "Audit Trail & Evidence Report",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 1,
+      "visual_types": {
+        "tablix": 1,
+        "textbox": 19
+      },
+      "page_header": true,
+      "page_footer": true
+    },
+    {
+      "index": 1,
+      "display_name": "Control Compliance Register",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 1,
+      "visual_types": {
+        "tablix": 1,
+        "textbox": 19
+      },
+      "page_header": true,
+      "page_footer": true
+    },
+    {
+      "index": 2,
+      "display_name": "Monthly Service Invoice Statement",
+      "hidden": false,
+      "tooltip": false,
+      "drillthrough": false,
+      "visual_count": 1,
+      "visual_types": {
+        "tablix": 1,
+        "textbox": 24
+      },
+      "page_header": true,
+      "page_footer": true
+    }
+  ],
+  "techniques": [],
+  "stats": {
+    "tables": 5,
+    "measures": 1,
+    "relationships": 3,
+    "pages": 3
+  },
+  "reports": [
+    {
+      "slug": "audit-trail-evidence-report",
+      "title": "Audit Trail & Evidence Report",
+      "kind": "paginated",
+      "pages_doc": "/content/generated/audit-trail-evidence-report.pages.json"
+    },
+    {
+      "slug": "control-compliance-register",
+      "title": "Control Compliance Register",
+      "kind": "paginated",
+      "pages_doc": "/content/generated/control-compliance-register.pages.json"
+    },
+    {
+      "slug": "monthly-service-invoice-statement",
+      "title": "Monthly Service Invoice Statement",
+      "kind": "paginated",
+      "pages_doc": "/content/generated/monthly-service-invoice-statement.pages.json"
+    }
+  ]
+}

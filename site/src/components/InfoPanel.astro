@@ -1,0 +1,23 @@
+---
+import { resumeUrl } from '../lib/resume';
+import { siteConfig } from '../config';
+import { withBase } from '../lib/url';
+---
+<dialog class="slideover" id="info-panel" aria-labelledby="info-title">
+  <div class="slideover__inner">
+    <div class="slideover__head">
+      <div><p class="eyebrow">Info</p><h2 id="info-title">{siteConfig.name}</h2></div>
+      <button class="btn btn--ghost btn--icon" type="button" data-info-close aria-label="Close info panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    {siteConfig.photo && <img src={siteConfig.photo} alt={`Portrait of ${siteConfig.name}`} width="160" height="160" style="border-radius:var(--radius);width:10rem;height:10rem;object-fit:cover" />}
+    <p>{siteConfig.headline}. Based in {siteConfig.location}.</p>
+    {siteConfig.bio.map((b) => <p class="muted">{b}</p>)}
+    {resumeUrl() && <a class="btn btn--primary" href={resumeUrl()} download>Download résumé</a>}
+    <ul class="link-list">
+      {siteConfig.links.email && <li><a href={`mailto:${siteConfig.links.email}`}>Email <span>{siteConfig.links.email}</span></a></li>}
+      {siteConfig.links.linkedin && <li><a href={siteConfig.links.linkedin} rel="me noopener">LinkedIn <span>↗</span></a></li>}
+      {siteConfig.links.github && <li><a href={siteConfig.links.github} rel="me noopener">GitHub <span>↗</span></a></li>}
+    </ul>
+    <p class="muted"><a href={withBase('about/')}>More on the About page</a></p>
+  </div>
+</dialog>

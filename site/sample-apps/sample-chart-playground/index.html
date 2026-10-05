@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Chart Playground (sample app)</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;margin:0;padding:16px;background:#fff;color:#111}label{display:block;font-weight:600;margin-bottom:4px}input{width:100%;font:inherit;padding:8px;border:2px solid #555;border-radius:6px}svg{width:100%;height:220px;margin-top:12px;background:#f4f4f4;border-radius:8px}:focus-visible{outline:3px solid #0b57d0;outline-offset:2px}p{margin:8px 0 0;color:#444}</style></head>
+<body><main><label for="v">Numbers (comma separated)</label><input id="v" value="4, 8, 15, 16, 23, 42" aria-describedby="h"><p id="h">Sample app. Runs entirely in your browser.</p>
+<svg id="c" role="img" aria-label="Bar chart of the numbers"></svg></main>
+<script>
+const i=document.getElementById('v'),c=document.getElementById('c');
+function draw(){const n=i.value.split(',').map(Number).filter(x=>Number.isFinite(x)&&x>=0);const m=Math.max(1,...n);c.innerHTML='';c.setAttribute('viewBox','0 0 400 220');
+n.forEach((x,k)=>{const w=360/n.length,h=Math.round(x/m*170),r=document.createElementNS('http://www.w3.org/2000/svg','rect');r.setAttribute('x',20+k*w+4);r.setAttribute('y',200-h);r.setAttribute('width',Math.max(2,w-8));r.setAttribute('height',h);r.setAttribute('fill','#b45309');c.appendChild(r)});
+c.setAttribute('aria-label','Bar chart of '+n.join(', '))}
+i.addEventListener('input',draw);draw();
+</script></body></html>

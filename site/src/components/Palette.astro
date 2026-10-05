@@ -1,0 +1,11 @@
+---
+import { withBase } from '../lib/url';
+---
+<dialog class="palette" id="palette" aria-label="Search the site" data-index={withBase('search-index.json')}>
+  <form method="dialog" role="search">
+    <input class="palette__input" type="text" role="combobox" aria-expanded="true" aria-controls="palette-list" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Jump to a project, page or tag…" aria-label="Search" data-palette-input />
+  </form>
+  <ul class="palette__list" id="palette-list" role="listbox" aria-label="Results" data-palette-list></ul>
+  <p class="palette__empty" data-palette-empty hidden>No match. Even the best model has blank rows: try another word.</p>
+  <div class="palette__foot"><span><kbd>↑</kbd> <kbd>↓</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span></div>
+</dialog>
