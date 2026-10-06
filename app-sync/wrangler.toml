@@ -11,4 +11,4 @@ ALLOWED_ORIGINS = "https://mohit-reshi.github.io,http://localhost:4321"
 # then paste the id it prints below (the id is not a secret).
 [[kv_namespaces]]
 binding = "APP_STATE"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "c791f1132b854888ae7cd595a85965e2"
