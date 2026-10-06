@@ -11,7 +11,7 @@
   var KEYS = (script.getAttribute('data-keys') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
   var ZIP = script.getAttribute('data-zip') || '';
   // Address of the progress-sync worker (not a secret). Left empty until deployed; the owner can also paste it once at sign-in.
-  var SYNC_URL = '';
+  var SYNC_URL = 'https://portfolio-app-sync.mohitreshi.workers.dev';
   var P = 'app-chrome:';
 
   if (location.protocol === 'file:') return;
