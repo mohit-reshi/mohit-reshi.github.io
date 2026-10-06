@@ -1,0 +1,14 @@
+# No secrets in this file. The owner key is set with `npx wrangler secret put OWNER_KEY` (see README.md).
+name = "portfolio-app-sync"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+# Comma separated exact origins allowed to call this worker.
+ALLOWED_ORIGINS = "https://mohit-reshi.github.io,http://localhost:4321"
+
+# Create the namespace once with: npx wrangler kv namespace create APP_STATE
+# then paste the id it prints below (the id is not a secret).
+[[kv_namespaces]]
+binding = "APP_STATE"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"

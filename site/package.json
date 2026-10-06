@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ../tools/site/ensure-livelab.mjs && node ../tools/site/sync-media.mjs --drafts && astro dev",
+    "dev": "node ../tools/site/ensure-livelab.mjs && node ../tools/site/sync-media.mjs --drafts && node ../tools/site/make-app-packages.mjs && astro dev",
     "build": "npm run sync && astro build",
     "preview": "astro preview",
-    "sync": "node ../tools/site/ensure-livelab.mjs && node ../tools/site/sync-media.mjs",
+    "sync": "node ../tools/site/ensure-livelab.mjs && node ../tools/site/sync-media.mjs && node ../tools/site/make-app-packages.mjs",
     "validate": "node ../tools/validate/validate.mjs",
     "leak-check": "node ../tools/validate/leak-check.mjs",
     "contrast": "node ../tools/validate/contrast.mjs",
