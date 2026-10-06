@@ -42,7 +42,9 @@
     '.acx a,.acx button{font:inherit;cursor:pointer;border-radius:999px;padding:5px 14px;border:1px solid #6fb3a8;background:transparent;color:#e6efed;text-decoration:none}' +
     '.acx a.acx-dl{background:#e6efed;color:#0f2428;border-color:#e6efed;font-weight:700}' +
     '.acx a:hover,.acx button:hover{filter:brightness(1.1)}.acx a:focus-visible,.acx button:focus-visible{outline:2px solid #fff;outline-offset:2px}' +
-    '.acx .acx-x{border:0;padding:4px 8px;opacity:.8}.acx .acx-own{border-color:#e1ae4c;color:#e1ae4c}' +
+    '.acx .acx-x{border:0;padding:4px 8px;opacity:.8}' +
+    '.acx-own{position:fixed;right:12px;bottom:12px;z-index:60;font:13px/1.2 system-ui,sans-serif;cursor:pointer;border-radius:999px;padding:7px 14px;border:1px solid #e1ae4c;background:#0f2428;color:#e1ae4c}' +
+    '.acx-own:focus-visible{outline:2px solid #fff;outline-offset:2px}' +
     '.acx-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:100}' +
     '.acx-card{background:#fff;color:#111;border-radius:12px;padding:20px;width:min(92vw,380px);font:15px system-ui,sans-serif}' +
     '.acx-card h2{margin:0 0 10px;font-size:18px}.acx-card label{display:block;margin:10px 0 4px;font-size:13px}' +
@@ -57,7 +59,7 @@
   var bar = null;
   var ownerChip = null;
   function buildBar() {
-    if (ss.get(P + 'dismissed:' + APP) === '1' && !ownerKey()) return;
+    if (ss.get(P + 'dismissed:' + APP) === '1') return;
     bar = el('div', { 'class': 'acx', role: 'region', 'aria-label': 'About this demo' });
     var msg = el('p');
     var b = el('b', {}, 'Live demo. ');
@@ -70,24 +72,27 @@
       var dl = el('a', { 'class': 'acx-dl', href: ZIP, download: ZIP }, 'Download for local use');
       bar.appendChild(dl);
     }
-    ownerChip = el('button', { type: 'button', 'class': 'acx-own', hidden: '' });
-    ownerChip.addEventListener('click', function () { signOut(); });
-    bar.appendChild(ownerChip);
     var x = el('button', { type: 'button', 'class': 'acx-x', 'aria-label': 'Hide this notice' }, '×');
     x.addEventListener('click', function () { ss.set(P + 'dismissed:' + APP, '1'); if (bar) bar.remove(); bar = null; });
     bar.appendChild(x);
     document.body.insertBefore(bar, document.body.firstChild);
-    renderChip();
   }
 
   // ---------- owner sync ----------
   var status = '';
   function ownerKey() { return ls.get(P + 'owner-key'); }
   function syncUrl() { return (SYNC_URL || ls.get(P + 'sync-url') || '').replace(/\/+$/, ''); }
+  // The owner chip is its own element, separate from the demo strip: it exists only while a key is stored,
+  // survives hiding the strip, and is removed from the page entirely on sign-out.
   function renderChip() {
-    if (!ownerChip) return;
-    if (ownerKey()) { ownerChip.hidden = false; ownerChip.textContent = 'Owner: ' + (status || 'signed in'); ownerChip.title = 'Click to sign out'; }
-    else ownerChip.hidden = true;
+    if (!document.body) return;
+    if (!ownerKey()) { if (ownerChip) { ownerChip.remove(); ownerChip = null; } return; }
+    if (!ownerChip) {
+      ownerChip = el('button', { type: 'button', 'class': 'acx-own', title: 'Signed in as owner. Click to sign out.' });
+      ownerChip.addEventListener('click', function () { signOut(); });
+      document.body.appendChild(ownerChip);
+    }
+    ownerChip.textContent = 'Owner: ' + (status || 'signed in') + ' \u00B7 sign out';
   }
   function setStatus(s) { status = s; renderChip(); }
 
@@ -115,7 +120,7 @@
     var snap = JSON.stringify(snapshot());
     var m = metaGet();
     // Never overwrite the saved copy with an empty one (a fresh browser that has not pulled yet).
-    if (snap === m.pushed || snap === '{}') return Promise.resolve();
+    if (snap === m.pushed || snap === '{}') { if (status === 'syncing') setStatus('synced'); return Promise.resolve(); }
     pushing = true;
     var at = Date.now();
     return api('PUT', { updatedAt: at, data: JSON.parse(snap) }).then(function (r) {
@@ -162,7 +167,13 @@
   window.addEventListener('pagehide', function () { push(); });
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') push(); });
 
-  function signOut() { ls.del(P + 'owner-key'); if (timer) { clearInterval(timer); timer = null; } renderChip(); }
+  function signOut() { ls.del(P + 'owner-key'); status = ''; if (timer) { clearInterval(timer); timer = null; } renderChip(); }
+  // Signing out (or in) in another tab of this browser updates this one too.
+  window.addEventListener('storage', function (e) {
+    if (e.key !== P + 'owner-key') return;
+    if (!ownerKey() && timer) { clearInterval(timer); timer = null; status = ''; }
+    renderChip();
+  });
 
   // ---------- owner sign-in (Ctrl+Shift+L) ----------
   function openSignIn() {
@@ -203,7 +214,6 @@
         if (r.status === 401) { ls.del(P + 'owner-key'); msg.textContent = 'That key was not accepted.'; return; }
         if (!r.ok && r.status !== 404) { ls.del(P + 'owner-key'); msg.textContent = 'Could not reach the sync service.'; return; }
         close();
-        if (!bar) buildBar();
         renderChip();
         startSync();
       }).catch(function () { ls.del(P + 'owner-key'); msg.textContent = 'Could not reach the sync service.'; });
@@ -215,6 +225,7 @@
 
   function init() {
     buildBar();
+    renderChip();
     if (ownerKey()) startSync();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
