@@ -4,7 +4,7 @@ title: "Interview Prep Desk"
 kind: app
 group: app
 client_label: null
-summary: "A browser app that turns a job description or resume into practice questions, with lessons and mock interviews. Runs fully offline."
+summary: "A browser app that turns a job description or resume into practice questions, with lessons and mock interviews. Runs in your browser."
 role: "Power BI developer"
 year: 2026
 tools: [HTML, JavaScript, Python]
@@ -39,12 +39,12 @@ A bank of 803 scenario questions with model answers, and 161 lessons in 26 topic
 
 ## Report
 
-Seven tabs: Job description, Resume, JD + resume, Browse and filter, Learn, Mock interview and My progress. Paste a job description and the app lists the skills it asks for, estimates seniority and ranks the questions most likely to come up. Compare it with your resume to see gaps and strengths. Practise with a timer, rate yourself, and the app schedules spaced reviews. Try it in the live app on this page.
+Seven tabs: Job description, Resume, JD + resume, Browse and filter, Learn, Mock interview and My progress. Paste a job description and the app lists the skills it asks for, estimates seniority and ranks the questions most likely to come up. Compare it with your resume to see gaps and strengths. Practise with a timer, rate yourself, and the app schedules spaced reviews. Typed answers are saved per question; the next time you practise it, the review shows your previous attempt, your new answer and the model answer side by side. Previous and Next buttons move through a practice list, you can continue where you left off, and your progress can be downloaded as a file and imported elsewhere.
 
 ## Under the hood
 
-One self-contained HTML file with no server and no network requests. Your resume and job description stay in the browser. Questions are scored by how squarely they cover each requested skill, with a text-similarity score as a second signal. A Python build script regenerates the app from the markdown guides and can fail the build if a question or lesson is not linked.
+One self-contained HTML file with no server. Your resume and job description stay in the browser. The only outside request is optional: uploading a PDF or Word file loads a small reader library from a public CDN. Pasting text needs none. Questions are scored by how squarely they cover each requested skill, with a text-similarity score as a second signal. A Python build script regenerates the app from the markdown guides and can fail the build if a question or lesson is not linked.
 
 ## Outcome
 
-A practice tool shared as a worked example of a small, offline app. [OWNER: add one line on how you use it or what you would change next.]
+A practice tool shared as a worked example of a small, self-contained app. [OWNER: add one line on how you use it or what you would change next.]

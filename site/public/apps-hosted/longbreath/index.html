@@ -307,6 +307,9 @@ dialog li{margin-bottom:6px}
     <div class="setrow"><span>Theme</span><select id="setTheme"><option value="auto">Match device</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
     <div class="setrow"><span>Breath-hold personal best (seconds)</span><input class="input" type="number" min="10" max="900" id="setPb"></div>
     <div class="setrow"><span>Your age (for heart-rate zones)</span><input class="input" type="number" min="10" max="100" id="setAge"></div>
+    <div class="setrow"><span>Your data</span><span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+      <button class="btn ghost" style="min-width:0;padding:8px 16px" id="exportData" type="button">Download backup</button>
+      <label class="btn ghost" style="min-width:0;padding:8px 16px;cursor:pointer">Import backup<input type="file" id="importData" accept=".json,application/json" hidden></label></span></div>
     <p class="note">Your personal best sets the timings of the CO₂ and O₂ tables. Update it with the Max hold test once a week.</p>
   </div>
   <div class="dfoot"><button class="btn" id="settingsOk">Save settings</button></div>
@@ -1131,6 +1134,23 @@ $('#settingsOk').addEventListener('click', () => {
   S.settings.theme = $('#setTheme').value; S.settings.age = $('#setAge').value;
   const pb = Math.round(+$('#setPb').value); if (pb >= 10 && pb <= 900 && pb !== S.pb) { S.pb = pb; }
   save(); applyTheme(); $('#settingsDlg').close(); renderAll();
+});
+
+$('#exportData').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({ app: 'longbreath', version: 1, state: S }, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'longbreath-backup.json';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast('Backup downloaded');
+});
+$('#importData').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    const st = d && d.app === 'longbreath' ? d.state : null;
+    if (!st || !Array.isArray(st.sessions) || !Array.isArray(st.hr)) throw new Error('bad');
+    S = merge(DEFAULT, st); save(); $('#settingsDlg').close(); renderAll(); toast('Backup imported');
+  } catch (err) { toast('That file is not a Longbreath backup'); }
 });
 
 function renderAll(){

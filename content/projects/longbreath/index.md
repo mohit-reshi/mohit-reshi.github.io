@@ -34,7 +34,7 @@ Most breathing apps are either a bare timer or a subscription. I wanted one page
 
 ## Data model
 
-Everything is stored in the browser on your device: sessions, max hold tests, resting heart rate readings and settings. There is no server and no sign-in. A button erases all of it.
+Everything is stored in the browser on your device: sessions, max hold tests, resting heart rate readings and settings. There is no server and no sign-in. You can download a backup file and import it on another device, and a button erases all of it.
 
 ## Report
 
