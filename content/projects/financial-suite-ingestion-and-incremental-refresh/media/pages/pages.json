@@ -1,0 +1,50 @@
+[
+  {
+    "file": "01-financial-suite-ingestion-and-incremental-refresh.webp",
+    "title": "Navigation",
+    "caption": "The landing page of the statement suite.",
+    "story": [
+      "The report reads the Warehouse views through the SQL endpoint, so the pipeline's job is to keep the facts behind these pages current."
+    ]
+  },
+  {
+    "file": "02-financial-suite-ingestion-and-incremental-refresh.webp",
+    "title": "P&L Statement",
+    "caption": "Profit and loss by account.",
+    "story": [
+      "The statement pages read year-end and monthly facts that the full-load procedures build."
+    ]
+  },
+  {
+    "file": "03-financial-suite-ingestion-and-incremental-refresh.webp",
+    "title": "Balance Sheet",
+    "caption": "Assets, liabilities and ratios.",
+    "story": [
+      "Balance sheet figures come from the same year-end facts."
+    ]
+  },
+  {
+    "file": "04-financial-suite-ingestion-and-incremental-refresh.webp",
+    "title": "Cash Flow Statement",
+    "caption": "Operating, investing and financing cash flows.",
+    "story": [
+      "Cash flow is built from the monthly and year-end facts the pipeline loads."
+    ]
+  },
+  {
+    "file": "05-financial-suite-ingestion-and-incremental-refresh.webp",
+    "title": "Aged AR",
+    "caption": "Outstanding invoices by age band.",
+    "story": [
+      "The invoice facts are the ones the daily incremental pipeline keeps current, so this is the page where a stale load would show first."
+    ]
+  },
+  {
+    "file": "06-financial-suite-ingestion-and-incremental-refresh.webp",
+    "title": "Revenue Insights",
+    "caption": "Sales, rolling average and margin.",
+    "story": [
+      "The sales facts are also kept current by the daily pipeline."
+    ]
+  }
+]

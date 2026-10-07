@@ -1,0 +1,42 @@
+[
+  {
+    "file": "01-cancellation-lakehouse-rebuild.webp",
+    "title": "Attrition Snapshot",
+    "caption": "The report page the gold tables feed.",
+    "story": [
+      "The toggles on the left (cases, lives, premium) are driven by parameter tables that the gold dataflow writes as ordinary Delta tables. The report cannot create them itself, because DirectLake does not support calculated tables."
+    ]
+  },
+  {
+    "file": "02-cancellation-lakehouse-rebuild.webp",
+    "title": "Recovery Snapshot",
+    "caption": "Reinstatements, built on the same gold facts.",
+    "story": [
+      "Reinstatements use the same keys as cancellations, so the two snapshot pages always cut the data the same way."
+    ]
+  },
+  {
+    "file": "03-cancellation-lakehouse-rebuild.webp",
+    "title": "Attrition Trend",
+    "caption": "Monthly cancellations against the prior year.",
+    "story": [
+      "The date basis and calendar grain switches rely on two pairs of keys that gold creates, so the model can swap between processed date and termination date."
+    ]
+  },
+  {
+    "file": "04-cancellation-lakehouse-rebuild.webp",
+    "title": "Recovery Trend",
+    "caption": "Monthly reinstatements against the prior year.",
+    "story": [
+      "The same trend design as the attrition page, so the two can be compared side by side."
+    ]
+  },
+  {
+    "file": "05-cancellation-lakehouse-rebuild.webp",
+    "title": "Non-Payment Watch",
+    "caption": "Non-payment cancellations and recovery rate.",
+    "story": [
+      "The tenure and case size splits read the tenure keys that gold computes, which is why the pipeline builds both versions of the key."
+    ]
+  }
+]

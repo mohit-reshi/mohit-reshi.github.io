@@ -1,0 +1,58 @@
+[
+  {
+    "file": "01-manufacturing-medallion-pipeline.webp",
+    "title": "Executive Summary",
+    "caption": "The top page of the report, built on the gold sales summary.",
+    "story": [
+      "Everything on this page is read from the gold tables the pipeline writes. The tiles and the revenue trend come from the sales summary, so a green validation gate upstream is what makes these numbers safe to show."
+    ],
+    "hidden_nav": {
+      "x": 0,
+      "y": 0.7,
+      "w": 3.5,
+      "h": 5.8,
+      "label": "Click here for navigation",
+      "note": "This report has a hidden navigation rail. The menu button at the top left opens it, and from there you jump to any other page. Every page except the drill-through page has the same button. Click it first when you open the report."
+    }
+  },
+  {
+    "file": "02-manufacturing-medallion-pipeline.webp",
+    "title": "Channel Performance",
+    "caption": "Revenue by channel against budget.",
+    "story": [
+      "The channel bars come from the sales summary. The budget comparison comes from the budget vs actuals table, which gold aggregates in the notebook so the logic is tested once and not repeated in measures."
+    ]
+  },
+  {
+    "file": "03-manufacturing-medallion-pipeline.webp",
+    "title": "Product Analysis",
+    "caption": "Products and categories by the selected metric.",
+    "story": [
+      "The product ranking and the margin scatter read the same sales summary table, so product numbers always agree with the channel page."
+    ]
+  },
+  {
+    "file": "04-manufacturing-medallion-pipeline.webp",
+    "title": "Rep Performance",
+    "caption": "Representatives against budget.",
+    "story": [
+      "This page reads the rep performance table, one of the four gold tables the model uses."
+    ]
+  },
+  {
+    "file": "05-manufacturing-medallion-pipeline.webp",
+    "title": "Trend Analysis",
+    "caption": "Rolling revenue, year-on-year change and margin.",
+    "story": [
+      "The long-range trend reads the same gold data. Because the model uses DirectLake, a new pipeline run shows up here without a separate import step."
+    ]
+  },
+  {
+    "file": "06-manufacturing-medallion-pipeline.webp",
+    "title": "Rep Detail",
+    "caption": "Drill-through page for one representative.",
+    "story": [
+      "The drill-through page is fed by the rep performance table, so it follows the same gold tables as the page it opens from."
+    ]
+  }
+]
