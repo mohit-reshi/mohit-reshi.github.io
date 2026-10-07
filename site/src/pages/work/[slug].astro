@@ -63,7 +63,7 @@ if (app && d.ai_built) meta.push(['AI-built', 'Yes']);
         {media.video
           ? <video controls preload="none" playsinline poster={media.poster?.src ?? media.cover?.src} src={media.video} aria-label={`${d.title}: recorded walkthrough`}></video>
           : media.cover ? <img src={media.cover.src} width={media.cover.w || 1280} height={media.cover.h || 720} alt={`${d.title}: cover`} fetchpriority="high" />
-          : <Placeholder title={d.title} seed={p.slug} label={kindLabel[d.kind]} />}
+          : <Placeholder title={d.title} seed={p.slug} label={kindLabel[d.kind]} kind={d.kind} />}
       </div>
       {intro.trim() && <div class="prose" style="margin-top:var(--s-6)" set:html={intro} />}
       {visible.map((c, i) => (

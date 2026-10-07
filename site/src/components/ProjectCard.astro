@@ -16,7 +16,7 @@ const previews = hasVideo ? [] : media.pages.slice(0, 4).map((g) => g.thumb ?? g
     <div class="card__media">
       {media.cover
         ? <img src={media.cover.src} width={media.cover.w || 640} height={media.cover.h || 400} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" />
-        : <Placeholder title={p.data.title} seed={p.slug} label={kindLabel[p.data.kind]} />}
+        : <Placeholder title={p.data.title} seed={p.slug} label={kindLabel[p.data.kind]} kind={p.data.kind} />}
       {hasVideo && <video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" data-src={media.video} poster={media.poster?.src ?? media.cover?.src}></video>}
       {p.data.sample && <span class="card__badge">Sample</span>}
       {p.data.status === 'live' && <span class="card__badge card__badge--live" style={p.data.sample ? 'left:auto;right:var(--s-3)' : ''}>Live Lab</span>}

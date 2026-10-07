@@ -1,7 +1,8 @@
 ---
 // Generated cover used whenever real media is missing, so the site builds and looks intentional.
-interface Props { title: string; seed?: string; label?: string }
-const { title, seed = title, label = '' } = Astro.props;
+interface Props { title: string; seed?: string; label?: string; kind?: string }
+const { title, seed = title, label = '', kind = 'report' } = Astro.props;
+const stages = [{ n: 'Bronze', c: '#cd7f32' }, { n: 'Silver', c: '#c0c8d0' }, { n: 'Gold', c: '#f2c94c' }];
 let h = 0; for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0;
 const hue = [42, 168, 224, 350, 266][h % 5];
 const bars = Array.from({ length: 9 }, (_, i) => 18 + ((h >>> (i % 8)) % 60) + (i % 3) * 8);
@@ -12,7 +13,26 @@ const id = `ph-${h.toString(36)}`;
     <linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color={`hsl(${hue} 70% 18%)`} /><stop offset="1" stop-color={`hsl(${(hue + 40) % 360} 60% 8%)`} /></linearGradient>
   </defs>
   <rect width="640" height="400" fill={`url(#${id})`} />
+  {kind === 'pipeline' ? (
+    <g font-family="ui-monospace, monospace" font-size="16" text-anchor="middle">
+      {stages.map((st, i) => (
+        <g>
+          <rect x={40 + i * 200} y="170" width="160" height="150" rx="10" fill="#ffffff14" stroke={st.c} stroke-width="3" />
+          {[0, 1, 2, 3].map((r) => <rect x={60 + i * 200} y={196 + r * 26} width={120 - (r % 2) * 30} height="10" rx="3" fill={st.c} opacity="0.55" />)}
+          <text x={120 + i * 200} y="350" fill={st.c}>{st.n}</text>
+          {i < 2 && <path d={`M${206 + i * 200} 245 h28 m-9 -9 l9 9 l-9 9`} stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />}
+        </g>
+      ))}
+    </g>
+  ) : kind === 'paginated' ? (
+    <g>
+      <rect x="170" y="110" width="300" height="270" rx="6" fill="#ffffff1c" stroke="#ffffff66" stroke-width="2" />
+      <rect x="194" y="134" width="150" height="12" rx="3" fill="#ffffffb3" />
+      {[0, 1, 2, 3, 4, 5, 6].map((r) => <g><rect x="194" y={170 + r * 28} width="252" height="2" fill="#ffffff44" /><rect x="194" y={178 + r * 28} width={70 + ((h >>> r) % 60)} height="8" rx="2" fill="#ffffff80" /><rect x="380" y={178 + r * 28} width="50" height="8" rx="2" fill="#ffffff80" /></g>)}
+    </g>
+  ) : (
   <g opacity="0.9">{bars.map((b, i) => <rect x={48 + i * 62} y={360 - b * 3.2} width="40" height={b * 3.2} rx="4" fill={`hsl(${(hue + i * 14) % 360} 85% 62%)`} opacity={0.35 + (i % 4) * 0.14} />)}</g>
+  )}
   <text x="32" y="56" fill="#fff" font-family="ui-sans-serif, system-ui, sans-serif" font-size="26" font-weight="700">{title.length > 34 ? title.slice(0, 33) + '…' : title}</text>
   {label && <text x="32" y="86" fill="#ffffffb3" font-family="ui-monospace, monospace" font-size="14" letter-spacing="2">{label.toUpperCase()}</text>}
 </svg>
