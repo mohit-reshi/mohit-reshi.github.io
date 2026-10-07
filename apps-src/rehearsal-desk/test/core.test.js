@@ -161,3 +161,79 @@ test('categorise and text helpers', () => {
   assert.equal(monthsBetween(parseDate('Jan 2020'), parseDate('Mar 2020')), 2);
   assert.equal(periodOf({ start: 'Jan 2020', end: 'Present' }), 'Jan 2020 to Present');
 });
+
+import { keyFacts, fadeTokens, scheduleReview, isDue, dueCount, priorityCards, buildMock, factsFor, INTERVAL_DAYS } from '../src/core/practice.js';
+
+test('keyFacts finds numbers, tools and proper names, and ignores gap markers', () => {
+  const f = keyFacts('I built a Power BI dashboard for 40 managers and cut reporting from 3 days to 4 hours at Brightleaf Analytics. [add: result 99%]');
+  assert.ok(f.some((x) => /40/.test(x)) && f.some((x) => /3 days/.test(x)) && f.includes('Power BI') && f.some((x) => /Brightleaf Analytics/.test(x)));
+  assert.ok(!f.some((x) => x.includes('99')));
+});
+
+test('fadeTokens: level 0 hides nothing, level 3 hides everything, facts and gaps survive levels 1 and 2', () => {
+  const text = 'I built a dashboard for 40 managers. This replaced weekly reports. [add: result]';
+  assert.equal(fadeTokens(text, 0).filter((t) => t.hide).length, 0);
+  const all = fadeTokens(text, 3).filter((t) => !t.space && t.t);
+  assert.ok(all.every((t) => t.hide));
+  const l2 = fadeTokens(text, 2);
+  assert.ok(!l2.find((t) => t.t === '40').hide, 'numbers stay visible');
+  assert.ok(!l2.find((t) => t.t === 'I').hide && !l2.find((t) => t.t === 'This').hide, 'first words stay visible');
+  assert.ok(l2.find((t) => t.t === 'dashboard').hide);
+  assert.equal(fadeTokens(text, 2).map((t) => t.t).join(''), text, 'text is preserved exactly');
+  assert.deepEqual(fadeTokens(text, 1).map((t) => t.hide), fadeTokens(text, 1).map((t) => t.hide), 'deterministic');
+});
+
+test('spaced review: right answers move out to longer gaps, a miss comes back soon', () => {
+  const t0 = Date.UTC(2026, 0, 1);
+  let p = scheduleReview(null, true, t0); assert.equal(p.box, 1); assert.equal(p.due, t0 + 1 * 864e5);
+  p = scheduleReview(p, true, t0); assert.equal(p.box, 2); assert.equal(p.due, t0 + 3 * 864e5);
+  for (let i = 0; i < 8; i++) p = scheduleReview(p, true, t0);
+  assert.equal(p.box, INTERVAL_DAYS.length - 1); assert.equal(p.due, t0 + 30 * 864e5);
+  const miss = scheduleReview(p, false, t0); assert.equal(miss.box, 0); assert.ok(miss.due - t0 <= 15 * 60000);
+  assert.equal(isDue({ practice: null }, t0), true);
+  assert.equal(isDue({ practice: { due: t0 + 1000 } }, t0), false);
+  assert.equal(isDue({ practice: { due: t0 + 1000 } }, t0 + 2000), true);
+  assert.equal(dueCount([{ a: 'x', practice: null }, { a: '', practice: null }, { a: 'y', practice: { due: t0 + 5 } }], t0), 1);
+});
+
+test('priorityCards puts the opening answer first and skips perfected ones', () => {
+  const r = resume(); const cards = buildResumeCards(r).map((c, i) => ({ ...c, id: 'c' + i, seq: i, source: 'resume', status: 'draft' }));
+  const jd = analyseJd(SAMPLE_JD); const jcards = buildJdCards(jd, r, matchJd(jd, r), 'x').map((c, i) => ({ ...c, id: 'j' + i, seq: 100 + i, source: 'jd', status: 'draft' }));
+  const p = priorityCards(cards.concat(jcards), 6);
+  assert.equal(p[0].key, 'intro:yourself'); assert.ok(p.length === 6);
+  cards.find((c) => c.key === 'intro:yourself').status = 'perfected';
+  assert.ok(!priorityCards(cards.concat(jcards), 6).some((c) => c.key === 'intro:yourself'));
+});
+
+test('buildMock fits the time, starts with the opening question and ends by asking questions', () => {
+  const r = resume(); const jd = analyseJd(SAMPLE_JD);
+  const cards = buildResumeCards(r).concat(buildJdCards(jd, r, matchJd(jd, r), 'x')).map((c, i) => ({ ...c, id: 'c' + i, status: 'draft', source: c.sec.kind === 'jd' ? 'jd' : 'resume' }));
+  for (const m of [20, 30, 45]) {
+    const seq = buildMock(cards, m, () => 0.3);
+    const total = seq.reduce((n, c) => n + c.seconds + 20, 0);
+    assert.equal(seq[0].key, 'intro:yourself'); assert.ok(seq.length >= 3);
+    assert.ok(total <= m * 60 + 200, m + ' min: ' + total);
+    assert.equal(new Set(seq.map((c) => c.id)).size, seq.length);
+  }
+  assert.ok(buildMock(cards, 45, () => 0.3).length > buildMock(cards, 20, () => 0.3).length);
+});
+
+test('factsFor returns the bullets of the job or project a card is about', () => {
+  const r = resume(); const cards = buildResumeCards(r);
+  const jobCard = cards.find((c) => c.key.startsWith('co:harborline-logistics-data-analyst:overview'));
+  const f = factsFor(jobCard, r, []);
+  assert.ok(f.length === 4 && f.every((x) => x.label.includes('Harborline')));
+  const projCard = cards.find((c) => c.key.startsWith('pr:customer-churn-analysis:'));
+  assert.ok(factsFor(projCard, r, []).length === 2);
+  assert.ok(factsFor(cards.find((c) => c.key === 'intro:yourself'), r, []).length > 2);
+  assert.deepEqual(factsFor(null, r, []), []);
+});
+
+import { rewriteBullet } from '../src/core/ats.js';
+test('readability suggestions carry a position and a safe rewrite for "responsible for"', () => {
+  const r = parseResume('Pat Doe\npat@example.com\n\nEXPERIENCE\nAnalyst | A Co | Jan 2020 - Present\n- Responsible for data quality checks\n- Built a report', NOW);
+  const s = checkResume(r).suggestions.find((x) => x.kind === 'wording');
+  assert.deepEqual(s.ref, { kind: 'job', i: 0, line: 0 });
+  assert.equal(s.rewrite, 'Owned data quality checks');
+  assert.equal(rewriteBullet('Worked on dashboards'), null);
+});

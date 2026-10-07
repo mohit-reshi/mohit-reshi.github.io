@@ -99,7 +99,8 @@ function render() {
     });
   } else if (prev !== route) window.scrollTo(0, 0);
   if (route === 'practice') startTimer();
-  if (route === 'edit') { const c = getCard(id); editStart = c ? c.a : ''; }
+  if (route === 'edit') { const c = getCard(id); editStart = c ? c.a : ''; UI.sw = null; clearInterval(swHandle); }
+  if (route === 'resume' && UI.resumeTab === 'design') updatePageEstimate();
 }
 const offsetTopSafe = () => { const h = $('.topbar'), f = $('#focusbar'); return (h ? h.offsetHeight : 0) + (f ? f.offsetHeight : 0) + 8; };
 
@@ -109,7 +110,9 @@ let timerHandle = null;
 function startTimer() {
   clearInterval(timerHandle);
   timerHandle = setInterval(() => {
-    const el = $('#pr-timer'); if (!el) { clearInterval(timerHandle); return; }
+    const clock = $('#pr-clock'); if (clock) { const left = Math.round((+clock.dataset.deadline - Date.now()) / 1000); clock.textContent = left > 0 ? Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0') + ' left' : 'Time is up'; clock.classList.toggle('over', left <= 0); }
+    const el = $('#pr-timer'); if (!el) { if (!clock) clearInterval(timerHandle); return; }
+    if (el.dataset.frozen !== '') return;
     const t0 = +el.dataset.t0; if (!t0) return;
     const s = Math.floor((Date.now() - t0) / 1000), tg = +el.dataset.target;
     el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' / ' + Math.floor(tg / 60) + ':' + String(tg % 60).padStart(2, '0');
@@ -128,6 +131,41 @@ function fillPrint() {
 function doPrint() { document.body.classList.add('printing-resume'); fillPrint(); setTimeout(() => window.print(), 50); }
 window.addEventListener('afterprint', () => document.body.classList.remove('printing-resume'));
 window.addEventListener('beforeprint', () => { if (UI.route === 'resume' && UI.resumeTab === 'design') document.body.classList.add('printing-resume'); fillPrint(); });
+
+// ---------- practice rounds ----------
+function shuffled(a) { const x = a.slice(); for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [x[i], x[j]] = [x[j], x[i]]; } return x; }
+function startRound(mode) {
+  const p = UI.practice; p.mode = mode; p.results = []; p.hits = {}; p.i = 0; p.reveal = false; p.spoken = 0;
+  if (mode === 'mock') { p.deck = buildMock(orderedCards(), p.minutes).map((c) => c.id); p.deadline = Date.now() + p.minutes * 60000; }
+  else { p.deck = shuffled(practiceDeck(p.scope).map((c) => c.id)).slice(0, 25); p.deadline = 0; }
+  p.t0 = Date.now(); render(); window.scrollTo({ top: 0 });
+}
+function revealNow() { const p = UI.practice; if (!p || !p.deck || p.reveal) return; p.spoken = Math.round((Date.now() - p.t0) / 1000); p.reveal = true; render(); }
+function rateNow(ok) { const p = UI.practice; if (!p || !p.deck || !p.reveal) return; const id = p.deck[p.i]; rateCard(id, ok, p.spoken); p.results.push({ id, ok, spoken: p.spoken }); p.i++; p.reveal = false; p.t0 = Date.now(); p.spoken = 0; render(); }
+
+// ---------- stopwatch in the editor ----------
+let swHandle = null;
+function swShow() { const el = $('#sw-time'); if (!el || !UI.sw) return; const sec = Math.round((UI.sw.running ? Date.now() - UI.sw.t0 : UI.sw.elapsed) / 1000); el.textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
+function toggleStopwatch() {
+  const btn = $('#sw-btn'); if (!btn) return;
+  if (!UI.sw || !UI.sw.running) { UI.sw = { running: true, t0: Date.now(), elapsed: 0 }; btn.textContent = 'Stop'; clearInterval(swHandle); swHandle = setInterval(swShow, 500); }
+  else {
+    UI.sw.elapsed = Date.now() - UI.sw.t0; UI.sw.running = false; clearInterval(swHandle); btn.textContent = 'Time myself'; swShow();
+    const c = getCard(UI.editId); const sec = Math.round(UI.sw.elapsed / 1000);
+    if (c && sec) { const target = coachFor(c).seconds || c.seconds; const el = $('#sw-time'); if (el) el.textContent += sec > target * 1.4 ? ' (long: aim for ' + target + ' s)' : sec < target * 0.5 ? ' (short: aim for ' + target + ' s)' : ' (on target)'; }
+  }
+}
+
+// ---------- page count estimate for the printable resume ----------
+function updatePageEstimate() {
+  const el = $('#page-est'); if (!el || !S.resume) return;
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;width:' + (S.ui.paper === 'letter' ? 'calc(8.5in - 32mm)' : 'calc(210mm - 32mm)');
+  probe.innerHTML = resumeHtml(S.resume, S.ui.template, S.ui.include);
+  document.body.appendChild(probe); const h = probe.offsetHeight; probe.remove();
+  const pages = Math.max(1, Math.ceil(h / 3.7795 / ((S.ui.paper === 'letter' ? 279.4 : 297) - 28)));
+  el.textContent = pages === 1 ? 'This fits on one page.' : pages === 2 ? 'About two pages. That is the usual limit.' : 'About ' + pages + ' pages. Consider trimming older roles or smaller projects.';
+}
 
 function entryList(kind) { return kind === 'job' ? S.resume.experience : kind === 'project' ? S.resume.projects : S.resume.personal; }
 
@@ -204,11 +242,26 @@ async function onClick(e) {
     case 'merge-dup': mergeCardInto(id); rerenderBoardKeepScroll(); break;
     case 'merge-next': if (!mergeNext(id)) UI.notice = 'There is no next card to join.'; rerenderBoardKeepScroll(); break;
     case 'split-card': if (!splitCard(id)) UI.notice = 'Nothing to split: the answer has no blank line.'; rerenderBoardKeepScroll(); break;
-    case 'pr-start': { const pool = practicePool(); const p = UI.practice; p.scope = $('#pr-scope') ? $('#pr-scope').value : p.scope; const deck = practicePool().map((c) => c.id); for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; } p.deck = deck.slice(0, 25); p.i = 0; p.reveal = false; p.t0 = Date.now(); render(); break; }
-    case 'pr-reveal': UI.practice.reveal = true; render(); break;
-    case 'pr-skip': UI.practice.i++; UI.practice.reveal = false; UI.practice.t0 = Date.now(); render(); break;
-    case 'pr-rate': { const p = UI.practice; rateCard(p.deck[p.i], t.dataset.ok === '1'); p.i++; p.reveal = false; p.t0 = Date.now(); render(); break; }
-    case 'backup': { const blob = new Blob([exportJson()], { type: 'application/json' }); const l = document.createElement('a'); l.href = URL.createObjectURL(blob); l.download = 'rehearsal-desk-backup.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); break; }
+    case 'pr-start': startRound('drill'); break;
+    case 'pr-mock': startRound('mock'); break;
+    case 'pr-minutes': UI.practice.minutes = +t.dataset.v; render(); break;
+    case 'pr-level-now': UI.practice.level = +t.dataset.v; render(); break;
+    case 'pr-reveal': revealNow(); break;
+    case 'pr-skip': { const p = UI.practice; p.results.push({ id: p.deck[p.i], ok: null }); p.i++; p.reveal = false; p.t0 = Date.now(); p.spoken = 0; render(); break; }
+    case 'pr-rate': rateNow(t.dataset.ok === '1'); break;
+    case 'pr-home': UI.practice = Object.assign(newPractice(), { scope: UI.practice.scope, level: UI.practice.level, minutes: UI.practice.minutes }); render(); break;
+    case 'pr-again-missed': { const p = UI.practice; const ids = p.results.filter((x) => x.ok === false).map((x) => x.id); Object.assign(p, { deck: ids, i: 0, reveal: false, t0: Date.now(), spoken: 0, results: [], hits: {} }); render(); break; }
+    case 'edit-prev': case 'edit-next': go('#/edit/' + id); break;
+    case 'perfect-next': { togglePerfected(id); const n = nextToWork(id) || neighbourCard(id, 1); go(n ? '#/edit/' + n.id : '#/board'); break; }
+    case 'next-gap': { const ta = $('#answer'); if (!ta) break; const m = /\[add:[^\]]*\]/g; const from = ta.selectionEnd || 0; let r = null, x; while ((x = m.exec(ta.value))) { if (x.index >= from) { r = x; break; } } if (!r) { m.lastIndex = 0; r = m.exec(ta.value); } if (r) { ta.focus(); ta.setSelectionRange(r.index, r.index + r[0].length); } else { const ss = $('#save-state'); if (ss) ss.textContent = 'No gaps left in this answer.'; } break; }
+    case 'star-frame': { const ta = $('#answer'); if (!ta) break; const add = (ta.value && !/\n$/.test(ta.value) ? '\n\n' : '') + STAR_FRAME; ta.value += add; ta.dispatchEvent(new Event('input', { bubbles: true })); ta.focus(); break; }
+    case 'insert-fact': { const ta = $('#answer'); const c = getCard(UI.editId); if (!ta || !c) break; const f = factsFor(c, S.resume, (matchFor(S.activeJd) || {}).rows)[+t.dataset.i]; if (!f) break; const pre = ta.value && !/[\s]$/.test(ta.value.slice(0, ta.selectionStart)) ? ' ' : ''; ta.setRangeText(pre + f.say + '. ', ta.selectionStart, ta.selectionEnd, 'end'); ta.dispatchEvent(new Event('input', { bubbles: true })); ta.focus(); break; }
+    case 'sw-toggle': toggleStopwatch(); break;
+    case 'next-work': { const els = [...document.querySelectorAll('.board .card')]; const off = offsetTopSafe(); const cur = els.find((e) => e.getBoundingClientRect().top > off) || els[0]; const n = nextToWork(cur ? cur.dataset.card : null); if (n && !flashCard(n.id)) { UI.ret = { y: window.scrollY }; go('#/edit/' + n.id); } else if (!n) { UI.notice = 'Everything is perfected. Time to practise.'; } break; }
+    case 'goto-bullet': { UI.resumeTab = 'content'; render(); const ta = document.getElementById(t.dataset.kind + '-' + t.dataset.i + '-bullets'); if (ta) { const lines = ta.value.split('\n'); const line = +t.dataset.line; let start = 0; for (let k = 0; k < line; k++) start += lines[k].length + 1; ta.focus(); ta.setSelectionRange(start, start + (lines[line] || '').length); ta.scrollIntoView({ block: 'center' }); } break; }
+    case 'apply-rewrite': { if (applyRewrite({ kind: t.dataset.kind, i: +t.dataset.i, line: +t.dataset.line }, t.dataset.text)) { UI.notice = 'Changed. Press "Save and refresh questions" on the first tab when you are happy.'; } render(); break; }
+    case 'add-skill': { addSkill(t.dataset.label); UI.notice = 'Added to your skills. Press "Save and refresh questions" on the Resume tab to update your cards.'; render(); break; }
+    case 'backup': { markBackup(); if (UI.route === 'home') setTimeout(render, 0); const blob = new Blob([exportJson()], { type: 'application/json' }); const l = document.createElement('a'); l.href = URL.createObjectURL(blob); l.download = 'rehearsal-desk-backup.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); break; }
     case 'erase': askDialog('Erase all my data?', { text: 'This removes your resume, answers and settings from this browser.', ok: 'Erase everything' }, () => { resetAll(); UI.notice = ''; go('#/home'); render(); }); break;
     default: break;
   }
@@ -242,7 +295,9 @@ function onChange(e) {
   const el = e.target;
   if (el.dataset.action === 'select') { if (el.checked) UI.selected.add(el.dataset.id); else UI.selected.delete(el.dataset.id); const sc = $('#sel-count'); if (sc) sc.textContent = UI.selected.size + ' selected'; const card = el.closest('.card'); if (card) card.classList.toggle('selected', el.checked); document.querySelectorAll('[data-action=move-menu],[data-action=clear-sel]').forEach((b) => { b.disabled = !UI.selected.size; }); return; }
   if (el.dataset.action === 'include') { const inc = Object.assign({}, S.ui.include, { [el.dataset.k]: el.checked }); setUi({ include: inc }); render(); return; }
-  if (el.id === 'pr-scope') { UI.practice.scope = el.value; return; }
+  if (el.id === 'pr-scope') { UI.practice.scope = el.value; render(); return; }
+  if (el.id === 'pr-level') { UI.practice.level = +el.value; return; }
+  if (el.dataset.action === 'pr-fact') { const p = UI.practice; const id = p.deck[p.i]; const set = new Set(p.hits[id] || []); if (el.checked) set.add(+el.dataset.i); else set.delete(+el.dataset.i); p.hits[id] = [...set]; const sc = $('#fact-score'); if (sc) sc.textContent = set.size + ' of ' + document.querySelectorAll('.facts input').length; return; }
   if (el.closest('.jd-detail') && el.dataset.f === 'status') { updateJdFields(el.closest('.jd-detail').dataset.id, { status: el.value }); render(); return; }
   if (el.closest('.jd-detail') && el.dataset.f === 'interviewDate') { updateJdFields(el.closest('.jd-detail').dataset.id, { interviewDate: el.value }); return; }
   if (el.type === 'file' && el.files && el.files[0]) {
@@ -275,6 +330,17 @@ function editResumeField(el) {
 function onFocusOut(e) { if (e.target.id === 'answer') { const c = getCard(e.target.dataset.id); if (c) { commitVersion(c.id, editStart); editStart = c.a; flush(); } } }
 
 function onKey(e) {
+  if (UI.route === 'practice' && UI.practice && UI.practice.deck && UI.practice.i < UI.practice.deck.length && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const tag = (e.target.tagName || '').toLowerCase();
+    const typing = tag === 'textarea' || tag === 'select' || (tag === 'input' && e.target.type !== 'checkbox');
+    if (!typing) {
+      const p = UI.practice;
+      if (!p.reveal && (e.key === ' ' || e.key === 'Enter') && tag !== 'button' && tag !== 'input') { e.preventDefault(); revealNow(); return; }
+      if (p.reveal && (e.key === '1' || e.key === '2')) { e.preventDefault(); rateNow(e.key === '2'); return; }
+      if (!p.reveal && (e.key === 's' || e.key === 'S')) { e.preventDefault(); const b = $('[data-action=pr-skip]'); if (b) b.click(); return; }
+      if (!p.reveal && p.mode === 'drill' && (e.key === 'f' || e.key === 'F')) { e.preventDefault(); p.level = (p.level + 1) % 4; render(); return; }
+    }
+  }
   if (e.key === 'Escape' && UI.openMenu) { UI.openMenu = null; if (UI.route === 'board') rerenderBoardKeepScroll(); }
 }
 

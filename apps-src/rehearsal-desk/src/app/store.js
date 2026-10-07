@@ -6,6 +6,7 @@ import { analyseJd, matchJd } from '../core/jd.js';
 import { checkResume } from '../core/ats.js';
 import { buildResumeCards, buildJdCards, categorise, scaffoldFor } from '../core/questions.js';
 import { extractQA } from '../core/extract.js';
+import { scheduleReview, isDue, dueCount, priorityCards } from '../core/practice.js';
 import { sampleResume, SAMPLE_JD } from '../sample.js';
 
 const KEY = 'rehearsal-desk-v1';
@@ -17,7 +18,7 @@ const UI = { route: 'home', focusCard: null, ret: null, notice: '', resumeTab: '
 const defaultUi = () => ({ template: 'classic', paper: 'a4', autofit: true, include: { projects: true, personal: true, certifications: true, education: true } });
 
 function blank() {
-  return { v: VERSION, sample: false, seq: 0, resumeText: '', resume: null, resumeAt: 0, jds: {}, activeJd: null, sections: {}, cards: {}, batches: [], ui: defaultUi() };
+  return { v: VERSION, sample: false, seq: 0, lastBackup: 0, resumeText: '', resume: null, resumeAt: 0, jds: {}, activeJd: null, sections: {}, cards: {}, batches: [], ui: defaultUi() };
 }
 
 function migrate(s) {
@@ -177,8 +178,55 @@ export function commitVersion(id, previous) {
 export function restoreVersion(id, i) { const c = S.cards[id]; if (!c || !c.history[i]) return; const cur = c.a; c.a = c.history[i].a; c.history.splice(i, 1); commitVersion(id, cur); save(); }
 export function resetToStarter(id) { const c = S.cards[id]; if (!c) return; const cur = c.a; c.a = c.gen || ''; commitVersion(id, cur); c.status = 'draft'; save(); }
 export function togglePerfected(id) { const c = S.cards[id]; if (!c) return; c.status = c.status === 'perfected' ? 'draft' : 'perfected'; c.perfectedAt = c.status === 'perfected' ? Date.now() : null; save(); return c.status; }
-export function rateCard(id, ok) { const c = S.cards[id]; if (!c) return; c.practice = { n: ((c.practice && c.practice.n) || 0) + 1, last: Date.now(), ok: !!ok }; save(); }
+export function rateCard(id, ok, spoken) {
+  const c = S.cards[id]; if (!c) return;
+  c.practice = Object.assign(scheduleReview(c.practice, ok, Date.now()), spoken ? { spoken } : {});
+  save();
+}
 export function deleteCard(id) { delete S.cards[id]; UI.selected.delete(id); save(); }
+
+// ---------- reading order, readiness and what to do next ----------
+export function orderedCards() {
+  return sectionsInOrder().flatMap((x) => x.cards.slice().sort((a, b) => ((a.seq || 0) - (b.seq || 0)) || a.key.localeCompare(b.key)));
+}
+export function neighbourCard(id, delta) {
+  const list = orderedCards(); const i = list.findIndex((c) => c.id === id);
+  return i < 0 ? null : list[i + delta] || null;
+}
+const hasGaps = (c) => !norm(c.a) || /\[add:/.test(c.a);
+/** The next card after `id` (wrapping) that is not perfected, preferring ones with gaps to fill. */
+export function nextToWork(id) {
+  const list = orderedCards(); if (!list.length) return null;
+  const start = Math.max(0, list.findIndex((c) => c.id === id) + 1);
+  const rotated = list.slice(start).concat(list.slice(0, start)).filter((c) => c.id !== id);
+  return rotated.find((c) => c.status !== 'perfected' && hasGaps(c)) || rotated.find((c) => c.status !== 'perfected') || null;
+}
+export function readiness() {
+  const cards = orderedCards();
+  const perfected = cards.filter((c) => c.status === 'perfected').length;
+  const gaps = cards.filter((c) => c.status !== 'perfected' && hasGaps(c)).length;
+  const due = dueCount(cards.filter((c) => c.status === 'perfected' || norm(c.a) && !hasGaps(c)), Date.now());
+  const sections = sectionsInOrder().map((x) => ({ id: x.s.id, title: x.s.title, total: x.cards.length, perfected: x.cards.filter((c) => c.status === 'perfected').length }));
+  return { total: cards.length, perfected, gaps, due, pct: cards.length ? Math.round(perfected / cards.length * 100) : 0, sections, priority: priorityCards(cards, 5) };
+}
+export function practiceDeck(scope) {
+  const all = orderedCards();
+  const now = Date.now();
+  const ready = (c) => norm(c.a) && !/\[add:/.test(c.a);
+  return all.filter((c) => scope === 'all' ? true : scope === 'draft' ? c.status !== 'perfected' : scope === 'perfected' ? c.status === 'perfected' : scope === 'due' ? (ready(c) && isDue(c, now)) : c.secId === scope);
+}
+export function addSkill(label) {
+  if (!S.resume) return false;
+  const have = (S.resume.skills || []).some((x) => x.toLowerCase() === String(label).toLowerCase());
+  if (have) return false;
+  S.resume.skills = (S.resume.skills || []).concat(label); save(); return true;
+}
+export function markBackup() { S.lastBackup = Date.now(); save(); }
+export function applyRewrite(ref, text) {
+  const list = ref.kind === 'job' ? S.resume.experience : ref.kind === 'project' ? S.resume.projects : S.resume.personal;
+  const item = list && list[ref.i]; if (!item || item.bullets[ref.line] === undefined) return false;
+  item.bullets[ref.line] = text; save(); return true;
+}
 
 // ---------- sections ----------
 export function sectionsInOrder() {

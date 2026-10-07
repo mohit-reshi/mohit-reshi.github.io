@@ -162,6 +162,25 @@ fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 16px;
 .tpl-editorial { font-family: var(--serif); line-height: 1.5; } .tpl-editorial .r-top { margin-bottom: 14px; } .tpl-editorial h1 { font-size: 30pt; font-weight: 400; letter-spacing: .01em; } .tpl-editorial .r-headline { font-style: italic; font-size: 12pt; color: #444; } .tpl-editorial h2 { font-family: var(--font); font-size: 8.5pt; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: #555; margin: 14px 0 8px; display: flex; align-items: center; gap: 10px; } .tpl-editorial h2::after { content: ""; flex: 1; height: .75pt; background: #bbb; } .tpl-editorial .r-entry { margin-bottom: 10px; }
 .tpl-technical { font-family: var(--font); } .tpl-technical h1 { font-size: 21pt; } .tpl-technical .r-headline { font-family: var(--mono); font-size: 10pt; color: #0f4c5c; } .tpl-technical .r-contact { font-family: var(--mono); font-size: 8.5pt; } .tpl-technical h2 { font-family: var(--mono); font-size: 10pt; color: #0f4c5c; border-bottom: 1pt solid #0f4c5c; text-transform: lowercase; } .tpl-technical h2::before { content: "# "; } .tpl-technical .r-grid { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 14px; font-family: var(--mono); font-size: 9pt; }
 
+/* guidance: stepper, readiness, priority, tools */
+.stepper { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 0; margin: 0 0 18px; counter-reset: s; } @media (max-width: 800px) { .stepper { grid-template-columns: 1fr 1fr; } }
+.stepper a { display: flex; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; text-decoration: none; color: var(--ink); height: 100%; } .stepper a:hover { background: var(--surface2); }
+.stepper .num { flex: 0 0 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--surface2); font-weight: 800; } .stepper em { display: block; font-style: normal; font-size: 13px; color: var(--ink2); }
+.stepper li.done .num { background: var(--green); color: var(--on-green); }
+.readiness { margin: 16px 0; } .ready-head { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; } .ready-head h2 { margin: 0 0 4px; }
+.ring.big { width: 88px; height: 88px; } .ring.big b { inset: 9px; font-size: 20px; }
+.plain-list { list-style: none; padding: 0; margin: 8px 0; } .plain-list li { display: flex; gap: 12px; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.priority { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; margin-bottom: 14px; }
+.chipbtn { font: inherit; font-size: 14px; background: var(--accent-soft); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; cursor: pointer; } .chipbtn:hover { background: var(--surface2); }
+.spacer { flex: 1; } .tools { margin: 6px 0; } .sw { display: inline-flex; gap: 8px; align-items: center; }
+.facts-list { list-style: none; padding: 0; margin: 0; } .facts-list li { border-bottom: 1px solid var(--line); padding: 8px 0; } .facts-list p { margin: 2px 0 6px; font-size: 14px; }
+.facts { border: 1px solid var(--paper-line, rgba(0,0,0,.25)); border-radius: 10px; background: rgba(255, 255, 255, .45); margin: 12px 0; } :root[data-theme="dark"] .facts { background: rgba(0, 0, 0, .25); } @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .facts { background: rgba(0, 0, 0, .25); } }
+.fade { font-size: 17px; line-height: 2; margin: 8px 0 12px; } .blank { display: inline-block; border-bottom: 2px solid currentColor; opacity: .55; margin: 0 1px; }
+.pr-top { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; max-width: 760px; margin: 0 auto 10px; } .pr-intro { max-width: 760px; }
+.progressbar { max-width: 760px; margin: 0 auto 12px; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; } .progressbar span { display: block; height: 100%; background: var(--accent); }
+kbd { font: 12px var(--mono); border: 1px solid currentColor; border-radius: 4px; padding: 0 5px; margin-left: 6px; opacity: .8; }
+.pr-card .seg { margin: 8px 0; } .pr-card .stat { margin: 6px 0 10px; }
+
 /* print */
 #print-root { display: none; }
 @media print {

@@ -43,12 +43,13 @@ Starter answers use only what the resume says. Anything it does not say is left 
 
 Home starts with a fictional sample resume and job description, so the app works before anything is pasted. Pasting your own text and pressing Analyse fills in the rest.
 
-- **Question cards** are grouped into sections (a start-here set, common questions, one section per job, projects, career story and the job description), shown as notes in wrapping rows. A bar at the top names the section in focus, and the page can scroll so each section fits the screen.
-- **Editor** opens each card on its own page with coaching on what the interviewer is testing, live checks for length, numbers, results and hedging, earlier versions, and a button back to the card.
+- **Guidance:** a four-step guide (paste, check what was found, perfect the answers, practise) and a readiness panel that lists what to prepare first and the next best step.
+- **Question cards** are grouped into sections (a start-here set, common questions, one section per job, projects, career story and the job description), shown as notes in wrapping rows. A bar at the top names the section in focus, and the page can scroll so each section fits the screen. "Next to work on" jumps to the next answer that needs attention.
+- **Editor** opens each card on its own page with coaching on what the interviewer is testing, live checks for length, numbers, results and hedging, a "Your facts" list of real resume lines to insert, a button that jumps to the next gap, a stopwatch for speaking time, earlier versions, and previous, next and "perfect and go on" buttons.
 - **Perfected** answers look different from the rest and can be filtered.
-- **Resume** shows what was found, readability checks with suggestions for individual bullets, and five single-column designs that print to PDF.
-- **Job match** compares a job description with the resume, lists what is shown, only listed or missing, and what the recruiter is likely testing.
-- **Practice** asks the questions one at a time with a timer.
+- **Resume** shows what was found, readability checks with suggestions that jump to the bullet (and a one-click rewrite for "responsible for"), a page-count estimate, and five single-column designs that print to PDF.
+- **Job match** compares a job description with the resume, lists what is shown, only listed or missing, what the recruiter is likely testing, and lets you add a skill you really have.
+- **Practice** is a drill that can hide words from your answer or all of it, lists the facts you should hit, and schedules reviews on a growing gap (a day, three, a week, two weeks, a month; a miss comes back within minutes). A timed mock interview runs in interview order with a clock and no hints.
 
 ## Under the hood
 

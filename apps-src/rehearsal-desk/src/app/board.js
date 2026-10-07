@@ -51,6 +51,7 @@ export function renderBoard() {
   const targets = secs.map((x) => x.s);
   let html = '<div class="board">' +
     (S.sample ? '<div class="notice">This is a fictional sample. Edits here are not saved. Paste your own resume on <a href="#/home">Home</a> to start saving.</div>' : '') +
+    (readiness().priority.length ? '<div class="priority" role="region" aria-label="Start with these"><strong>Start with these</strong>' + readiness().priority.map((c) => '<button class="chipbtn" data-action="edit" data-id="' + esc(c.id) + '">' + esc(trunc(c.q, 46)) + '</button>').join('') + '</div>' : '') +
     '<div class="board-tools"><div class="seg" role="group" aria-label="Show">' + filters.map(([v, l]) => '<button class="seg-btn" data-action="filter" data-v="' + v + '" aria-pressed="' + (UI.filter === v) + '">' + l + '</button>').join('') + '</div>' +
     '<label class="search"><span class="sr">Search cards</span><input type="search" id="board-search" placeholder="Search questions and answers" value="' + esc(UI.search) + '"></label>' +
     '<span class="muted">' + done + ' of ' + total + ' perfected</span></div>';
@@ -80,7 +81,7 @@ export function renderBoard() {
   return '<div id="focusbar" class="focusbar" role="navigation" aria-label="Sections"><div class="fb-main"><button class="btn small" data-action="sec-prev" aria-label="Previous section">←</button>' +
     '<div class="fb-title" aria-live="polite"><span class="fb-kicker">In focus</span><strong id="fb-name">' + esc(visible[0] ? visible[0].s.title : '') + '</strong><span id="fb-count" class="muted"></span></div>' +
     '<button class="btn small" data-action="sec-next" aria-label="Next section">→</button></div>' +
-    '<div class="fb-side"><button class="btn small" data-action="autofit" aria-pressed="' + S.ui.autofit + '" title="Scroll so that each section fits the screen">Auto-fit sections: ' + (S.ui.autofit ? 'on' : 'off') + '</button></div>' +
+    '<div class="fb-side"><button class="btn small primary" data-action="next-work" title="Jump to the next answer that still needs work">Next to work on</button><button class="btn small" data-action="autofit" aria-pressed="' + S.ui.autofit + '" title="Scroll so that each section fits the screen">Auto-fit sections: ' + (S.ui.autofit ? 'on' : 'off') + '</button></div>' +
     '<ol class="rail" aria-label="Jump to a section">' + visible.map((x, i) => '<li><button data-action="jump" data-sec="' + esc(x.s.id) + '" aria-label="' + esc(x.s.title) + '" title="' + esc(x.s.title) + '"></button></li>').join('') + '</ol></div>' + html;
 }
 const byOrder = (a, b) => ((a.seq || 0) - (b.seq || 0)) || a.key.localeCompare(b.key);
@@ -134,19 +135,25 @@ function maybeSnap() {
   const g = geometry(); if (g.length < 2) return;
   const off = g[0].off, vh = window.innerHeight;
   if (dir > 0) {
-    // first section whose bottom is still below the bar
-    const i = g.findIndex((x) => x.bottom > off + 40);
-    if (i < 1) return;
-    const cur = g[i], prev = g[i - 1];
-    const prevVisible = Math.max(0, Math.min(prev.bottom, vh) - Math.max(prev.top, off));
-    if (cur.top > off + 24 && cur.top < vh - 40 && prevVisible <= prev.h * 0.1) scrollToY(window.scrollY + cur.top - off);
+    // the first section whose top is on screen below the bar: if the one above it has almost left, bring it to the top
+    for (let j = 1; j < g.length; j++) {
+      const prev = g[j - 1], cur = g[j];
+      if (cur.top > off + 24 && cur.top < vh - 40) {
+        const prevVisible = Math.max(0, Math.min(prev.bottom, vh) - Math.max(prev.top, off));
+        if (prevVisible <= prev.h * 0.1) scrollToY(window.scrollY + cur.top - off);
+        return;
+      }
+    }
   } else if (dir < 0) {
-    // the section that owns the top of the screen; if the next one has left the screen, show this one whole
-    const i = g.findIndex((x) => x.bottom > off + 40 && x.top <= off + 40);
-    if (i < 0 || i >= g.length - 1) return;
-    const cur = g[i], next = g[i + 1];
-    const nextVisible = Math.max(0, Math.min(next.bottom, vh) - Math.max(next.top, off));
-    if (cur.top < off - 24 && cur.h <= vh - off && nextVisible <= next.h * 0.1) scrollToY(window.scrollY + cur.top - off);
+    // going up: a section that starts above the bar, with the next one almost gone below, is shown whole if it fits
+    for (let j = 0; j < g.length - 1; j++) {
+      const cur = g[j], next = g[j + 1];
+      if (cur.top < off - 24 && cur.bottom > off + 4) {
+        const nextVisible = Math.max(0, Math.min(next.bottom, vh) - Math.max(next.top, off));
+        if (nextVisible <= next.h * 0.1 && cur.h <= vh - off) scrollToY(window.scrollY + cur.top - off);
+        return;
+      }
+    }
   }
 }
 function onScroll() {

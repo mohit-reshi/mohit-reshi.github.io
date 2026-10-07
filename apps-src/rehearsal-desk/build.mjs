@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..', '..');
 const src = (p) => readFileSync(join(here, 'src', p), 'utf8');
-const ORDER = ['core/text.js', 'core/parse.js', 'core/jd.js', 'core/ats.js', 'core/answers.js', 'core/questions.js', 'core/extract.js', 'sample.js', 'app/store.js', 'app/board.js', 'app/views.js', 'app/main.js'];
+const ORDER = ['core/text.js', 'core/parse.js', 'core/jd.js', 'core/ats.js', 'core/answers.js', 'core/questions.js', 'core/practice.js', 'core/extract.js', 'sample.js', 'app/store.js', 'app/board.js', 'app/views.js', 'app/main.js'];
 
 const script = ORDER.map((f) => {
   let t = src(f);

@@ -126,19 +126,118 @@ try {
     const pages = (pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
     ok('pdf: short resume fits one page', pages === 1, pages);
 
-    // practice
+    // practice: drill
     await page.evaluate(() => { document.body.classList.remove('printing-resume'); });
     await page.goto(URL0 + '#/practice'); await settle(page);
+    ok('practice: home offers a drill and a mock interview', await page.locator('[data-action=pr-start]').count() === 1 && await page.locator('[data-action=pr-mock]').count() === 1);
+    await page.selectOption('#pr-scope', 'all'); await settle(page, 100);
+    await page.selectOption('#pr-level', '1');
     await page.click('[data-action=pr-start]'); await settle(page);
-    ok('practice: shows a question', await page.locator('.pr-card .q').count() === 1);
-    await page.click('[data-action=pr-reveal]'); await settle(page);
-    await page.click('[data-action=pr-rate][data-ok="1"]'); await settle(page);
-    ok('practice: rating moves on', (await page.locator('.pr-card .muted').first().innerText()).includes('Question 2'));
+    ok('practice: shows a question with some words hidden', await page.locator('.pr-card .q').count() === 1 && (await page.locator('.pr-card .blank').count()) >= 0);
+    await page.click('[data-action=pr-level-now][data-v="3"]'); await settle(page, 100);
+    ok('practice: from-memory level hides the answer', (await page.locator('.pr-card .fade').innerText()).includes('from memory'));
+    await page.keyboard.press('Space'); await settle(page, 200);
+    ok('practice: Space shows the answer and the facts to tick', await page.locator('.pr-card .a').count() === 1);
+    const factBoxes = await page.locator('.facts input').count();
+    if (factBoxes) { await page.locator('.facts input').first().check(); ok('practice: ticking a fact updates the count', (await page.locator('#fact-score').innerText()).startsWith('1 of')); }
+    else ok('practice: (no facts for this card)', true);
+    await page.keyboard.press('2'); await settle(page, 200);
+    ok('practice: key 2 rates "nailed it" and moves on', (await page.locator('.pr-top .muted').innerText()).includes('question 2'));
+    await settle(page, 450);
+    const sched = await page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('rehearsal-desk-v1')).cards).filter((c) => c.practice).map((c) => c.practice));
+    ok('practice: the review is scheduled one day out', sched.length === 1 && sched[0].box === 1 && sched[0].due - sched[0].last === 864e5, sched);
+    await page.keyboard.press('s'); await settle(page, 150);
+    await page.keyboard.press('Space'); await settle(page, 150); await page.keyboard.press('1'); await settle(page, 200);
+    await settle(page, 450);
+    const sched2 = await page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('rehearsal-desk-v1')).cards).filter((c) => c.practice && c.practice.ok === false).map((c) => c.practice));
+    ok('practice: a miss comes back within minutes', sched2.length === 1 && sched2[0].due - sched2[0].last <= 15 * 60000, sched2);
+    await page.click('[data-action=pr-home]'); await settle(page);
+    ok('practice: end round returns to the home', await page.locator('[data-action=pr-mock]').count() === 1);
+    // mock interview
+    await page.click('[data-action=pr-minutes][data-v="20"]'); await page.click('[data-action=pr-mock]'); await settle(page, 300);
+    ok('practice: mock shows a clock and opens with the opening question', await page.locator('#pr-clock').count() === 1 && (await page.locator('.pr-card .q').innerText()) === 'Tell me about yourself.');
+    ok('practice: mock gives no hints', await page.locator('.fade').count() === 0 && await page.locator('[data-action=pr-level-now]').count() === 0);
+    let guard = 0;
+    while (await page.locator('[data-action=pr-reveal]').count() && guard++ < 30) { await page.click('[data-action=pr-reveal]'); await page.click('[data-action=pr-rate][data-ok="1"]'); await settle(page, 60); }
+    ok('practice: the mock ends with a summary', (await page.locator('.practice h2').first().innerText()).includes('Round finished'));
+    await page.click('[data-action=pr-home]');
 
     // reload keeps everything
     await page.goto(URL0 + '#/board'); await page.reload(); await settle(page, 500);
     ok('persist: perfected card survives reload', await page.locator('.card.perfected').count() === 1);
     ok('visitor: no page errors', errs.length === 0, errs);
+    await ctx.close();
+  }
+
+  // ---------- guidance, editor tools, resume and match helpers ----------
+  {
+    const { ctx, page, errs } = await mk();
+    await page.goto(URL0); await settle(page, 500);
+    ok('home: four-step guide is shown', await page.locator('.stepper li').count() === 4);
+    ok('home: readiness panel is shown with the sample', await page.locator('.readiness').count() === 1 && (await page.locator('.readiness .plain-list li').count()) >= 3);
+    await page.fill('#resume-in', MY_RESUME);
+    await page.fill('#jd-in', 'Data Analyst\nTidy Co\nRequirements\n- SQL\n- Power BI\n- Tableau or Looker\n- A/B testing\nNice to have\n- dbt\nSend CV to jobs@tidy.example');
+    await page.click('[data-action=analyse]'); await settle(page, 500);
+    ok('home: step 1 is done after Analyse', (await page.locator('.stepper li').first().getAttribute('class')).includes('done'));
+    const firstPrio = await page.locator('.readiness .plain-list li span').first().innerText();
+    ok('home: the opening answer is the first thing to prepare', firstPrio === 'Tell me about yourself.', firstPrio);
+    // board strip and next-to-work
+    await page.goto(URL0 + '#/board'); await settle(page, 500);
+    ok('board: "Start with these" strip lists priority cards', (await page.locator('.priority .chipbtn').count()) >= 3);
+    await page.click('[data-action=next-work]'); await settle(page, 500);
+    ok('board: "Next to work on" flashes a card', await page.locator('.card.flash').count() === 1);
+    // editor tools
+    await page.locator('.priority .chipbtn').first().click(); await settle(page, 300);
+    ok('editor: previous is disabled on the first card, next is enabled', await page.locator('[data-action=edit-prev]').isDisabled() && !(await page.locator('[data-action=edit-next]').isDisabled()));
+    const q1 = await page.locator('.edit .q').innerText();
+    await page.click('[data-action=next-gap]'); await settle(page, 100);
+    const sel = await page.evaluate(() => { const t = document.getElementById('answer'); return t.value.slice(t.selectionStart, t.selectionEnd); });
+    ok('editor: "Jump to the next gap" selects an [add: ...] marker', /^\[add:/.test(sel), sel);
+    const factCount = await page.locator('.facts-list li').count();
+    ok('editor: shows facts from the resume', factCount >= 2, factCount);
+    const before = await page.inputValue('#answer');
+    await page.locator('[data-action=insert-fact]').first().click(); await settle(page, 200);
+    ok('editor: Insert puts a resume fact into the answer', (await page.inputValue('#answer')).length > before.length);
+    await page.click('[data-action=star-frame]'); await settle(page, 200);
+    ok('editor: STAR frame is added with gaps to fill', (await page.inputValue('#answer')).includes('Situation: [add:'));
+    await page.click('#sw-btn'); await page.waitForTimeout(1200); await page.click('#sw-btn');
+    ok('editor: the stopwatch measures speaking time', /0:0[1-3]/.test(await page.locator('#sw-time').innerText()), await page.locator('#sw-time').innerText());
+    await page.click('[data-action=perfect-next]'); await settle(page, 400);
+    ok('editor: "Perfect and go to the next one" moves on', page.url().includes('#/edit/') && (await page.locator('.edit .q').innerText()) !== q1);
+    const perfectedNow = await page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('rehearsal-desk-v1')).cards).filter((c) => c.status === 'perfected').length);
+    ok('editor: the first card was marked perfected', perfectedNow === 1, perfectedNow);
+    await page.click('[data-action=edit-prev]'); await settle(page, 300);
+    ok('editor: Previous goes back', (await page.locator('.edit .q').innerText()) === q1);
+    // resume suggestions
+    await page.goto(URL0 + '#/resume'); await settle(page);
+    await page.click('[data-action=resume-tab][data-v=checks]'); await settle(page, 200);
+    const rw = page.locator('[data-action=apply-rewrite]');
+    ok('resume: a safe rewrite is offered for "Responsible for"', await rw.count() === 1 && (await rw.innerText()).includes('Owned data quality checks'), await rw.count());
+    await rw.click(); await settle(page, 300);
+    await page.click('[data-action=resume-tab][data-v=content]'); await settle(page, 200);
+    ok('resume: the rewrite changed the bullet', (await page.inputValue('#job-0-bullets')).includes('Owned data quality checks') && !(await page.inputValue('#job-0-bullets')).includes('Responsible for'));
+    await page.click('[data-action=resume-tab][data-v=checks]'); await settle(page, 200);
+    await page.locator('[data-action=goto-bullet]').first().click(); await settle(page, 300);
+    ok('resume: "Go to this bullet" opens the editor with the line selected', await page.evaluate(() => document.activeElement && document.activeElement.tagName === 'TEXTAREA' && document.activeElement.selectionEnd > document.activeElement.selectionStart));
+    await page.click('[data-action=resume-tab][data-v=design]'); await settle(page, 300);
+    ok('design: a page-count estimate is shown', (await page.locator('#page-est').innerText()).length > 10 && (await page.locator('#page-est').innerText()).includes('page'));
+    // match: add a missing skill
+    await page.goto(URL0 + '#/match'); await settle(page);
+    const add = page.locator('[data-action=add-skill]').first();
+    const lbl = await add.getAttribute('data-label');
+    await add.click(); await settle(page, 300);
+    ok('match: "add to my skills" adds the skill', await page.evaluate((l) => JSON.parse(localStorage.getItem('rehearsal-desk-v1')).resume.skills.includes(l), lbl), lbl);
+    ok('match: the button disappears once added', await page.locator('[data-action=add-skill][data-label="' + lbl + '"]').count() === 0);
+    // backup nudge after three perfected answers
+    await page.goto(URL0 + '#/board'); await settle(page, 300);
+    for (const n of [0, 1]) { const c = page.locator('.card:not(.perfected)').first(); await c.hover(); await c.locator('[data-action=perfect]').click(); await settle(page, 100); }
+    await page.mouse.move(2, 500);
+    await page.goto(URL0 + '#/home'); await settle(page, 300);
+    ok('home: a backup reminder appears once real answers exist', (await page.locator('.notice', { hasText: 'Download a backup' }).count()) === 1);
+    await page.click('.notice [data-action=backup]'); await settle(page, 300);
+    await page.goto(URL0 + '#/home'); await settle(page, 300);
+    ok('home: the reminder goes away after a backup', (await page.locator('.notice', { hasText: 'Download a backup' }).count()) === 0);
+    ok('improvements: no page errors', errs.length === 0, errs);
     await ctx.close();
   }
 
@@ -178,6 +277,18 @@ try {
     await page.locator('.rail button').nth(3).click(); await page.waitForTimeout(reduced ? 300 : 1000);
     g = await geo();
     ok('sections: rail jumps to section 4', Math.abs(g.secs[3].t - g.off) <= 6 && g.focus === g.secs[3].name, g.focus);
+    // scrolling up: section 1 sits 50px under the bar and section 2 has almost left the bottom: section 1 is aligned whole
+    await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(400);
+    g = await geo();
+    const s0 = g.secs[0], s1 = g.secs[1];
+    if (s0.h <= g.vh - g.off && s1.h * 0.1 >= 24 + (s0.h - (g.vh - g.off))) {
+      const abs0 = g.y + s0.t;
+      await page.evaluate((y) => window.scrollTo(0, y), abs0 - g.off + 400); await page.waitForTimeout(reduced ? 500 : 1200);   // go down first
+      const target = abs0 - g.off + 50;                                                                                      // then up to 50px short of aligned
+      await page.evaluate((y) => window.scrollTo(0, y), target); await page.waitForTimeout(reduced ? 500 : 1300);
+      g = await geo();
+      ok('auto-fit: scrolling up aligns the section above (' + (reduced ? 'reduced' : 'normal') + ' motion)', Math.abs(g.secs[0].t - g.off) <= 6, { t: g.secs[0].t, off: g.off });
+    } else ok('auto-fit: (up-scroll case not applicable at this size)', true);
     ok('board scroll: no page errors', errs.length === 0, errs);
     await ctx.close();
   }

@@ -14,13 +14,21 @@ const WEAK = [
 const ACTION = /^(?:built|led|ran|drove|wrote|made|cut|grew|won|set up|designed|developed|created|launched|delivered|automated|reduced|increased|improved|owned|managed|analysed|analyzed|presented|forecast|mentored|migrated|implemented|introduced|streamlined|negotiated|defined|established|trained|identified|combined|visualised|visualized|published|cleaned|prepared|replaced|raised|scaled|rebuilt|produced|partnered|collaborated|coordinated|reviewed|tested|optimised|optimized|simplified|standardised|standardized|transformed|supported|helped|worked|used|maintained)\b/i;
 const HAS_NUMBER = /\d|%|£|\$|€|₹/;
 
+/** A safe one-phrase rewrite for the most common weak opening. Anything else is left for the user. */
+export function rewriteBullet(b) {
+  const t = String(b || '');
+  const m = /^(?:responsible for|duties (?:include|included)|in charge of)\s+(.*)$/i.exec(t);
+  return m && m[1] ? 'Owned ' + m[1].charAt(0).toLowerCase() + m[1].slice(1) : null;
+}
+
 export function checkResume(r, rawText) {
   const items = [];
   const add = (id, area, level, title, detail) => items.push({ id, area, level, title, detail });
   const c = r.contact || {};
   const bullets = [];
-  (r.experience || []).forEach((e) => (e.bullets || []).forEach((b) => bullets.push({ b, where: e.company || e.role || 'a job' })));
-  (r.projects || []).concat(r.personal || []).forEach((p) => (p.bullets || []).forEach((b) => bullets.push({ b, where: p.name })));
+  (r.experience || []).forEach((e, i) => (e.bullets || []).forEach((b, line) => bullets.push({ b, where: e.company || e.role || 'a job', ref: { kind: 'job', i, line } })));
+  (r.projects || []).forEach((p, i) => (p.bullets || []).forEach((b, line) => bullets.push({ b, where: p.name, ref: { kind: 'project', i, line } })));
+  (r.personal || []).forEach((p, i) => (p.bullets || []).forEach((b, line) => bullets.push({ b, where: p.name, ref: { kind: 'personal', i, line } })));
   const text = rawText || resumeText(r);
   const wc = wordCount(text);
 
@@ -58,7 +66,7 @@ export function checkResume(r, rawText) {
 
   // Wording
   const weak = [];
-  bullets.forEach((x) => WEAK.forEach(([rx, tip]) => { if (rx.test(x.b)) weak.push({ where: x.where, bullet: x.b, tip }); }));
+  bullets.forEach((x) => WEAK.forEach(([rx, tip]) => { if (rx.test(x.b)) weak.push({ where: x.where, bullet: x.b, tip, ref: x.ref }); }));
   add('weak', 'Wording', weak.length ? 'warn' : 'pass', weak.length ? weak.length + ' bullet(s) use weak phrasing' : 'No weak phrasing found', weak.length ? 'See the suggestions list for each one.' : '');
   const first = bullets.filter((x) => /\b(I|my)\b/.test(x.b));
   add('pronouns', 'Wording', first.length ? 'warn' : 'pass', first.length ? first.length + ' bullet(s) use "I" or "my"' : 'No first-person pronouns', first.length ? 'Resume bullets usually drop "I" and start with the verb.' : '');
@@ -66,9 +74,9 @@ export function checkResume(r, rawText) {
   add('chars', 'Format', /[─-╿�■-◿]/.test(text.replace(/[▪●◦■○]/g, '')) ? 'warn' : 'pass', 'Characters', 'Avoid boxes, icons and decorative characters. Parsers may drop them or turn them into noise.');
 
   const suggestions = [];
-  weak.forEach((w) => suggestions.push({ kind: 'wording', where: w.where, text: w.tip, bullet: w.bullet }));
-  bullets.filter((x) => !HAS_NUMBER.test(x.b)).slice(0, 8).forEach((x) => suggestions.push({ kind: 'metric', where: x.where, text: 'Add a number or result: how many, how much, how often, or what changed?', bullet: x.b }));
-  long.slice(0, 4).forEach((x) => suggestions.push({ kind: 'length', where: x.where, text: 'Shorten to one idea: the action, then the result.', bullet: x.b }));
+  weak.forEach((w) => suggestions.push({ kind: 'wording', where: w.where, text: w.tip, bullet: w.bullet, ref: w.ref, rewrite: rewriteBullet(w.bullet) }));
+  bullets.filter((x) => !HAS_NUMBER.test(x.b)).slice(0, 8).forEach((x) => suggestions.push({ kind: 'metric', where: x.where, text: 'Add a number or result: how many, how much, how often, or what changed?', bullet: x.b, ref: x.ref }));
+  long.slice(0, 4).forEach((x) => suggestions.push({ kind: 'length', where: x.where, text: 'Shorten to one idea: the action, then the result.', bullet: x.b, ref: x.ref }));
 
   const counts = items.reduce((a, i) => { a[i.level] = (a[i.level] || 0) + 1; return a; }, {});
   const scored = items.filter((i) => i.level !== 'info');
