@@ -12,7 +12,7 @@
   var ZIP = script.getAttribute('data-zip') || '';
   // Address of the progress-sync worker (not a secret). Left empty until deployed; the owner can also paste it once at sign-in.
   // Lets an app know whether the owner is signed in (apps use it to show owner-only features).
-  window.appChrome = { isOwner: function () { return !!ls.get(P + 'owner-key'); } };
+  window.appChrome = { isOwner: function () { try { return !!ownerKey(); } catch (e) { return false; } } };
   var SYNC_URL = 'https://portfolio-app-sync.mohitreshi.workers.dev';
   var P = 'app-chrome:';
 
@@ -25,7 +25,8 @@
   };
   var ss = {
     get: function (k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
-    set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+    set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* ignore */ } },
+    del: function (k) { try { sessionStorage.removeItem(k); } catch (e) { /* ignore */ } }
   };
 
   function el(tag, attrs, text) {
@@ -47,6 +48,8 @@
     '.acx .acx-x{border:0;padding:4px 8px;opacity:.8}' +
     '.acx-own{position:fixed;right:12px;bottom:12px;z-index:60;font:13px/1.2 system-ui,sans-serif;cursor:pointer;border-radius:999px;padding:7px 14px;border:1px solid #e1ae4c;background:#0f2428;color:#e1ae4c}' +
     '.acx-own:focus-visible{outline:2px solid #fff;outline-offset:2px}' +
+    '.acx-toast{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:70;background:#0f2428;color:#e6efed;border-radius:10px;padding:10px 16px;font:14px system-ui,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.3)}.acx-toast[hidden]{display:none}' +
+    '.acx-card .acx-rem{display:flex;align-items:center;gap:6px;margin:12px 0 4px}.acx-card .acx-rem input{width:auto}.acx-card .acx-note{margin:4px 0 0;font-size:12.5px;color:#444}' +
     '.acx-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:100}' +
     '.acx-card{background:#fff;color:#111;border-radius:12px;padding:20px;width:min(92vw,380px);font:15px system-ui,sans-serif}' +
     '.acx-card h2{margin:0 0 10px;font-size:18px}.acx-card label{display:block;margin:10px 0 4px;font-size:13px}' +
@@ -82,7 +85,54 @@
 
   // ---------- owner sync ----------
   var status = '';
-  function ownerKey() { return ls.get(P + 'owner-key'); }
+  // Owner session: signed out after two hours without activity. "Remember me" keeps the key in local storage
+  // (it survives closing the browser); otherwise it lives in session storage and ends with the tab.
+  var TTL = 2 * 60 * 60 * 1000;
+  var lastTouch = 0, expTimer = null, tickTimer = null;
+  function findOwner() {
+    var stores = [ss, ls];
+    for (var i = 0; i < stores.length; i++) {
+      var k = stores[i].get(P + 'owner-key');
+      if (k) return { s: stores[i], key: k, exp: +stores[i].get(P + 'owner-exp') || 0 };
+    }
+    return null;
+  }
+  function clearOwner() { [ss, ls].forEach(function (s) { s.del(P + 'owner-key'); s.del(P + 'owner-exp'); }); }
+  function setOwner(key, remember) { clearOwner(); var s = remember ? ls : ss; s.set(P + 'owner-key', key); s.set(P + 'owner-exp', String(Date.now() + TTL)); lastTouch = 0; scheduleExpiry(); }
+  function ownerKey() {
+    var o = findOwner(); if (!o) return null;
+    if (!o.exp) { o.s.set(P + 'owner-exp', String(Date.now() + TTL)); return o.key; } // sessions from before this rule start now
+    if (Date.now() > o.exp) { clearOwner(); return null; }
+    return o.key;
+  }
+  function touch() {
+    var o = findOwner(); var now = Date.now();
+    if (!o || now - lastTouch < 20000 || (o.exp && now > o.exp)) return;
+    lastTouch = now; o.s.set(P + 'owner-exp', String(now + TTL)); scheduleExpiry();
+  }
+  function scheduleExpiry() {
+    clearTimeout(expTimer);
+    var o = findOwner(); if (!o || !o.exp) return;
+    expTimer = setTimeout(checkExpiry, Math.min(Math.max(o.exp - Date.now() + 60, 100), 2000000000));
+  }
+  var toastEl = null;
+  function toast(text) {
+    if (!toastEl) { toastEl = el('div', { 'class': 'acx-toast', role: 'status' }); document.body.appendChild(toastEl); }
+    toastEl.textContent = text; toastEl.hidden = false;
+    setTimeout(function () { if (toastEl) toastEl.hidden = true; }, 7000);
+  }
+  function checkExpiry() {
+    var o = findOwner();
+    if (o && o.exp && Date.now() > o.exp) {
+      clearOwner(); status = '';
+      if (timer) { clearInterval(timer); timer = null; }
+      renderChip(); toast('Signed out after 2 hours without activity.');
+    } else renderChip();
+    scheduleExpiry();
+  }
+  ['keydown', 'pointerdown', 'touchstart', 'scroll', 'input'].forEach(function (ev) { window.addEventListener(ev, touch, { passive: true, capture: true }); });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') checkExpiry(); });
+  tickTimer = setInterval(function () { var o = findOwner(); if (o) checkExpiry(); }, 30000);
   function syncUrl() { return (SYNC_URL || ls.get(P + 'sync-url') || '').replace(/\/+$/, ''); }
   // The owner chip is its own element, separate from the demo strip: it exists only while a key is stored,
   // survives hiding the strip, and is removed from the page entirely on sign-out.
@@ -95,7 +145,9 @@
       ownerChip.addEventListener('click', function () { signOut(); });
       document.body.appendChild(ownerChip);
     }
-    ownerChip.textContent = 'Owner: ' + (status || 'signed in') + ' \u00B7 sign out';
+    var o = findOwner(); var left = o && o.exp ? Math.ceil((o.exp - Date.now()) / 60000) : 999;
+    ownerChip.textContent = left <= 10 ? 'Owner: signing out in ' + Math.max(left, 1) + ' min \u00B7 sign out' : 'Owner: ' + (status || 'signed in') + ' \u00B7 sign out';
+    ownerChip.title = 'Signed in as owner. You are signed out after 2 hours without activity. Click to sign out now.';
   }
   function setStatus(s) { status = s; renderChip(); }
 
@@ -170,12 +222,12 @@
   window.addEventListener('pagehide', function () { push(); });
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') push(); });
 
-  function signOut() { ls.del(P + 'owner-key'); status = ''; if (timer) { clearInterval(timer); timer = null; } renderChip(); }
+  function signOut() { clearOwner(); status = ''; if (timer) { clearInterval(timer); timer = null; } renderChip(); }
   // Signing out (or in) in another tab of this browser updates this one too.
   window.addEventListener('storage', function (e) {
-    if (e.key !== P + 'owner-key') return;
+    if (e.key !== P + 'owner-key' && e.key !== P + 'owner-exp') return;
     if (!ownerKey() && timer) { clearInterval(timer); timer = null; status = ''; }
-    renderChip();
+    scheduleExpiry(); renderChip();
   });
 
   // ---------- owner sign-in (Ctrl+Shift+L) ----------
@@ -194,6 +246,11 @@
     card.appendChild(el('label', { 'for': 'acx-key' }, 'Key'));
     var keyIn = el('input', { id: 'acx-key', type: 'password', autocomplete: 'current-password' });
     card.appendChild(keyIn);
+    var rem = el('label', { 'class': 'acx-rem' });
+    var remIn = el('input', { type: 'checkbox', id: 'acx-remember' });
+    rem.appendChild(remIn); rem.appendChild(document.createTextNode(' Remember me on this device'));
+    card.appendChild(rem);
+    card.appendChild(el('p', { 'class': 'acx-note' }, 'You are signed out after 2 hours without activity. Without "Remember me", closing this tab also signs you out.'));
     var msg = el('p', { 'class': 'msg', 'aria-live': 'polite' });
     card.appendChild(msg);
     var row = el('div', { 'class': 'row' });
@@ -211,15 +268,15 @@
       e.preventDefault();
       if (urlIn) { var u = urlIn.value.trim(); if (!/^https:\/\//.test(u)) { msg.textContent = 'Enter the https address.'; return; } ls.set(P + 'sync-url', u); }
       if (!keyIn.value) { msg.textContent = 'Enter the key.'; return; }
-      ls.set(P + 'owner-key', keyIn.value.trim());
+      setOwner(keyIn.value.trim(), remIn.checked);
       msg.textContent = 'Checking…';
       api('GET').then(function (r) {
-        if (r.status === 401) { ls.del(P + 'owner-key'); msg.textContent = 'That key was not accepted.'; return; }
-        if (!r.ok && r.status !== 404) { ls.del(P + 'owner-key'); msg.textContent = 'Could not reach the sync service.'; return; }
+        if (r.status === 401) { clearOwner(); msg.textContent = 'That key was not accepted.'; return; }
+        if (!r.ok && r.status !== 404) { clearOwner(); msg.textContent = 'Could not reach the sync service.'; return; }
         close();
         renderChip();
         startSync();
-      }).catch(function () { ls.del(P + 'owner-key'); msg.textContent = 'Could not reach the sync service.'; });
+      }).catch(function () { clearOwner(); msg.textContent = 'Could not reach the sync service.'; });
     });
   }
   document.addEventListener('keydown', function (e) {

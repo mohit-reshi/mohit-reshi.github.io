@@ -287,6 +287,76 @@ I pushed back on a deadline.
     await ctx.close();
   }
 
+  // ---------- owner sign-in: remember me and the two-hour limit ----------
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
+    await ctx.route('https://portfolio-app-sync.mohitreshi.workers.dev/**', (route) => {
+      const h = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
+      if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: h });
+      return route.fulfill({ status: route.request().headers()['authorization'] === 'Bearer good' ? 404 : 401, headers: h, body: '{}' });
+    });
+    const signIn = async (page, key, remember) => {
+      await page.keyboard.press('Control+Shift+L'); await page.fill('#acx-key', key);
+      if (remember) await page.check('#acx-remember');
+      await page.click('.acx-card .go'); await page.waitForTimeout(500);
+    };
+    const adminShown = (page) => page.locator('.nav-a', { hasText: 'Collected' }).count();
+    // without "Remember me": this tab only
+    let page = await ctx.newPage(); await page.goto(URL0); await page.waitForTimeout(500);
+    ok('signin: dialog has the Remember me box, unticked, and explains the limit', !(await page.evaluate(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'L', ctrlKey: true, shiftKey: true, bubbles: true })); return document.querySelector('#acx-remember') ? document.querySelector('#acx-remember').checked : null; })) && (await page.locator('.acx-note').innerText()).includes('2 hours'));
+    await page.keyboard.press('Escape');
+    await signIn(page, 'bad', false);
+    ok('signin: a wrong key is refused', (await page.locator('.acx-card .msg').innerText()).includes('not accepted') && await adminShown(page) === 0);
+    await page.fill('#acx-key', 'good'); await page.click('.acx-card .go'); await page.waitForTimeout(600);
+    ok('signin: admin appears after a correct key', await adminShown(page) === 1);
+    const where1 = await page.evaluate(() => ({ local: localStorage.getItem('app-chrome:owner-key'), session: sessionStorage.getItem('app-chrome:owner-key'), exp: +sessionStorage.getItem('app-chrome:owner-exp') }));
+    ok('signin: without Remember me the key is in session storage only', where1.local === null && where1.session === 'good');
+    ok('signin: the expiry is about two hours away', Math.abs(where1.exp - Date.now() - 2 * 3600 * 1000) < 60000, where1.exp - Date.now());
+    await page.reload(); await page.waitForTimeout(700);
+    ok('signin: still signed in after a reload of the same tab', await adminShown(page) === 1);
+    const other = await ctx.newPage(); await other.goto(URL0); await other.waitForTimeout(700);
+    ok('signin: a new tab is not signed in', await adminShown(other) === 0);
+    await other.close(); await page.close();
+    await ctx.clearCookies();
+    // with "Remember me": survives a new tab
+    page = await ctx.newPage(); await page.goto(URL0); await page.waitForTimeout(500);
+    await signIn(page, 'good', true);
+    const where2 = await page.evaluate(() => ({ local: localStorage.getItem('app-chrome:owner-key'), session: sessionStorage.getItem('app-chrome:owner-key') }));
+    ok('remember: the key is in local storage', where2.local === 'good' && where2.session === null);
+    const tab2 = await ctx.newPage(); await tab2.goto(URL0); await tab2.waitForTimeout(700);
+    ok('remember: a new tab is signed in', await adminShown(tab2) === 1);
+    // expiry: set it to 1.5 s away, wait, the page signs out without a reload
+    await tab2.evaluate(() => localStorage.setItem('app-chrome:owner-exp', String(Date.now() + 1500)));   // another tab changes it; this tab is told by the storage event
+    await page.waitForTimeout(2600);
+    ok('expiry: signs out by itself when the time is up', await adminShown(page) === 0 && await page.locator('.acx-own').count() === 0);
+    ok('expiry: says why', (await page.locator('.acx-toast').innerText()).includes('2 hours'));
+    ok('expiry: the key is removed from storage', await page.evaluate(() => localStorage.getItem('app-chrome:owner-key') === null && localStorage.getItem('app-chrome:owner-exp') === null));
+    await page.reload(); await page.waitForTimeout(600);
+    ok('expiry: stays signed out after reloading', await adminShown(page) === 0);
+    await tab2.close();   // a second tab would react to the writes below and make the check racy
+    // an expired stored session is refused at load
+    await page.evaluate(() => { localStorage.setItem('app-chrome:owner-key', 'good'); localStorage.setItem('app-chrome:owner-exp', String(Date.now() - 1000)); });
+    await page.reload(); await page.waitForTimeout(600);
+    ok('expiry: an expired session is not restored on load', await adminShown(page) === 0);
+    // activity keeps you signed in: 3 s left, a key press resets it to two hours
+    await page.evaluate(() => { localStorage.setItem('app-chrome:owner-key', 'good'); localStorage.setItem('app-chrome:owner-exp', String(Date.now() + 3000)); });
+    await page.reload(); await page.waitForTimeout(600);
+    await page.keyboard.press('Shift'); await page.waitForTimeout(300);
+    const exp2 = await page.evaluate(() => +localStorage.getItem('app-chrome:owner-exp'));
+    ok('activity: a key press moves the expiry back to two hours', exp2 - Date.now() > 3600 * 1000, exp2 - Date.now());
+    // warning label in the last ten minutes
+    await page.evaluate(() => localStorage.setItem('app-chrome:owner-exp', String(Date.now() + 5 * 60000)));
+    await page.reload(); await page.waitForTimeout(700);
+    ok('warning: the chip says how long is left in the last ten minutes', (await page.locator('.acx-own').innerText()).includes('signing out in'));
+    // sessions from before this rule get a fresh two hours
+    await page.evaluate(() => { localStorage.removeItem('app-chrome:owner-exp'); });
+    await page.reload(); await page.waitForTimeout(700);
+    ok('legacy: a stored key with no expiry is kept and given two hours', await adminShown(page) === 1 && (await page.evaluate(() => +localStorage.getItem('app-chrome:owner-exp'))) - Date.now() > 7000 * 1000);
+    await page.click('.acx-own'); await page.waitForTimeout(300);
+    ok('signout: clicking the chip removes the key and expiry', await page.evaluate(() => localStorage.getItem('app-chrome:owner-key') === null && localStorage.getItem('app-chrome:owner-exp') === null) && await adminShown(page) === 0);
+    await ctx.close();
+  }
+
   // ---------- accessibility (axe, light and dark) ----------
   {
     const { AxeBuilder } = require('@axe-core/playwright');
