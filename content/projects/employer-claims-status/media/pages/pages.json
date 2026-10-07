@@ -1,12 +1,20 @@
 [
   {
     "file": "01-employer-claims-status.webp",
-    "title": "",
-    "caption": ""
+    "title": "Claims status overview",
+    "caption": "Claim volume, open claims, days to decision and denial rate for one employer account, with the pipeline by status.",
+    "story": [
+      "This page is for an employer's HR team. It answers: how many claims have my employees filed, where are they, and how fast are we deciding?",
+      "Row-level security limits every figure to the viewer's own account, so there is no need to filter by hand. The tiles carry a status line, such as how many open claims are over 30 days. The pipeline chart deepens in colour as a claim moves toward payment, and denied claims are red.",
+      "The open claims table lists the oldest first, because the oldest claim is the one someone should chase."
+    ]
   },
   {
     "file": "02-employer-claims-status.webp",
-    "title": "",
-    "caption": ""
+    "title": "Claim volume tooltip",
+    "caption": "The tooltip page behind the claim tiles.",
+    "story": [
+      "A tooltip page. It repeats the volume tiles with a one-line note on what the counts cover, so the definition is one hover away."
+    ]
   }
 ]

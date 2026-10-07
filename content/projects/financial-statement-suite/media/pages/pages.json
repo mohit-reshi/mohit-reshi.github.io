@@ -2,36 +2,64 @@
   {
     "file": "01-financial-statement-suite.webp",
     "title": "Navigation",
-    "caption": "Landing page with a button for each statement page."
+    "caption": "Landing page with a button for each statement page.",
+    "story": [
+      "The suite opens on a landing page with one button per statement. Finance users know the statement they want, so I gave them a direct route instead of a page tab strip.",
+      "Every other page has a home button at the top left that returns here."
+    ]
   },
   {
     "file": "02-financial-statement-suite.webp",
     "title": "P&L Statement",
-    "caption": "Profit and loss by account with prior-year comparison and a year selector, plus a bridge and monthly revenue by channel."
+    "caption": "Profit and loss by account with prior-year comparison and a year selector, plus a bridge and monthly revenue by channel.",
+    "story": [
+      "The profit and loss statement is laid out the way accountants read it, by account, with the prior year beside it.",
+      "A year selector drives the whole page. The bridge chart explains the change from one result to the next, and the monthly revenue by channel shows where the movement came from."
+    ]
   },
   {
     "file": "03-financial-statement-suite.webp",
     "title": "Balance Sheet",
-    "caption": "Assets and liabilities by year, common financial ratios and bridge charts for assets and liabilities."
+    "caption": "Assets and liabilities by year, common financial ratios and bridge charts for assets and liabilities.",
+    "story": [
+      "The balance sheet shows assets and liabilities by year, with the usual financial ratios next to them.",
+      "The two bridge charts explain what moved the totals, so a reader does not have to subtract line by line."
+    ]
   },
   {
     "file": "04-financial-statement-suite.webp",
     "title": "Cash Flow Statement",
-    "caption": "Operating, investing and financing cash flows by year with cash in and cash out breakdowns."
+    "caption": "Operating, investing and financing cash flows by year with cash in and cash out breakdowns.",
+    "story": [
+      "The cash flow statement is split into operating, investing and financing, by year.",
+      "The cash in and cash out breakdowns answer the question behind the statement: where did the cash come from and where did it go."
+    ]
   },
   {
     "file": "05-financial-statement-suite.webp",
     "title": "Aged AR",
-    "caption": "Outstanding invoices grouped by age band with a customer filter and follow-up flag."
+    "caption": "Outstanding invoices grouped by age band with a customer filter and follow-up flag.",
+    "story": [
+      "Aged receivables is the page a collections team would live in.",
+      "Outstanding invoices are grouped into age bands, and a customer filter and a follow-up flag point to who needs a call."
+    ]
   },
   {
     "file": "06-financial-statement-suite.webp",
     "title": "Revenue Insights",
-    "caption": "Sales, rolling average and profit margin with filters for category, channel and territory, and top customers and cities."
+    "caption": "Sales, rolling average and profit margin with filters for category, channel and territory, and top customers and cities.",
+    "story": [
+      "Revenue insights is the exploratory page. Sales, a rolling average and profit margin respond to the category, channel and territory filters.",
+      "The top customers and cities at the bottom show where the revenue sits."
+    ]
   },
   {
     "file": "07-financial-statement-suite.webp",
     "title": "Budget vs Actuals",
-    "caption": "Budget against actuals by account with variance and a year selector."
+    "caption": "Budget against actuals by account with variance and a year selector.",
+    "story": [
+      "Budget against actuals, by account, with the variance shown and a year selector.",
+      "Variance is the number a finance lead looks at first, so it has its own column rather than being left for the reader to calculate."
+    ]
   }
 ]

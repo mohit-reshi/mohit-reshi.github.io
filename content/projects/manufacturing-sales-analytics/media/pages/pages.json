@@ -2,31 +2,90 @@
   {
     "file": "01-manufacturing-sales-analytics.webp",
     "title": "Executive Summary",
-    "caption": "Headline revenue and profit tiles above a monthly revenue trend against last year, with the top products ranked below."
+    "caption": "Headline revenue and profit tiles above a monthly revenue trend against last year, with the top products ranked below.",
+    "story": [
+      "This is the page an executive sees first. I kept it to one question: how is revenue doing this year compared with last year?",
+      "The tiles at the top give the headline numbers. Below them, the area chart puts this year's monthly revenue next to last year's dashed line, so a gap between the two is visible without reading a single number.",
+      "The ranked bars underneath show which products carry the revenue. The Year and Month dropdowns at the top right filter every visual on the page."
+    ],
+    "hidden_nav": {
+      "x": 0,
+      "y": 0.7,
+      "w": 3.5,
+      "h": 5.8,
+      "label": "Click here for navigation",
+      "note": "This report has a hidden navigation rail. The menu button at the top left opens it, and from there you jump to any other page. Click it first when you open the report."
+    }
   },
   {
     "file": "02-manufacturing-sales-analytics.webp",
     "title": "Channel Performance",
-    "caption": "Revenue by sales channel compared with budget, with a metric selector and a monthly trend."
+    "caption": "Revenue by sales channel compared with budget, with a metric selector and a monthly trend.",
+    "story": [
+      "Next question a sales director asks: which channel is carrying us, and which is behind budget?",
+      "The row of buttons under the tiles switches the metric on the bars, so one visual answers gross profit, margin, revenue, transactions and units sold. The channel buttons on the right filter the trend and the budget comparison.",
+      "The last chart shows the difference to budget by channel. Green is ahead, red is behind, so the problem channels stand out before anyone reads a label."
+    ],
+    "hidden_nav": {
+      "x": 0,
+      "y": 0.7,
+      "w": 3.5,
+      "h": 5.8,
+      "label": "Click here for navigation",
+      "note": "This report has a hidden navigation rail. The menu button at the top left opens it, and from there you jump to any other page. Click it first when you open the report."
+    }
   },
   {
     "file": "03-manufacturing-sales-analytics.webp",
     "title": "Product Analysis",
-    "caption": "Top products by the selected metric, with a scatter of margin against revenue by category."
+    "caption": "Top products by the selected metric, with a scatter of margin against revenue by category.",
+    "story": [
+      "This page goes one level down, from channels to products.",
+      "The ranking follows the metric the user picks. The scatter plot puts margin against revenue by category, which separates products that sell a lot but earn little from products that are small but profitable.",
+      "A reader should leave this page knowing which categories to push and which to review."
+    ],
+    "hidden_nav": {
+      "x": 0,
+      "y": 0.7,
+      "w": 3.5,
+      "h": 5.8,
+      "label": "Click here for navigation",
+      "note": "This report has a hidden navigation rail. The menu button at the top left opens it, and from there you jump to any other page. Click it first when you open the report."
+    }
   },
   {
     "file": "04-manufacturing-sales-analytics.webp",
     "title": "Rep Performance",
-    "caption": "Sales representatives ranked by revenue against budget, with a detail table."
+    "caption": "Sales representatives ranked by revenue against budget, with a detail table.",
+    "story": [
+      "Here the same numbers are cut by sales representative, against budget.",
+      "The ranking and the detail table sit together so a manager can see who is ahead and then check the figures behind them. Selecting a representative leads to the drill-through page."
+    ]
   },
   {
     "file": "05-manufacturing-sales-analytics.webp",
     "title": "Trend Analysis",
-    "caption": "Rolling twelve-month revenue, year-on-year change and gross profit margin across the full date range."
+    "caption": "Rolling twelve-month revenue, year-on-year change and gross profit margin across the full date range.",
+    "story": [
+      "The trend page takes the long view across all years.",
+      "A rolling twelve-month line removes the seasonal noise, year-on-year change shows direction, and the margin line shows whether growth came at the cost of profit. Reading the three together tells the story of the business, not just of one month."
+    ]
   },
   {
     "file": "06-manufacturing-sales-analytics.webp",
     "title": "Rep Detail",
-    "caption": "Drill-through page showing one representative's revenue by month, product, channel and year."
+    "caption": "Drill-through page showing one representative's revenue by month, product, channel and year.",
+    "story": [
+      "This is a drill-through page. You do not reach it from the menu. You right-click a representative on the Rep Performance page and choose drill through.",
+      "It shows one person's revenue by month, product, channel and year, so a conversation about performance starts from facts."
+    ],
+    "hidden_nav": {
+      "x": 0,
+      "y": 0.8,
+      "w": 7.8,
+      "h": 5.4,
+      "label": "Back button",
+      "note": "This is a drill-through page, so the button at the top left is a back button. It returns you to the page you came from."
+    }
   }
 ]

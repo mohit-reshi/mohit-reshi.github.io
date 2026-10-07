@@ -314,3 +314,19 @@ html.has-cursor:has(dialog[open]) .cursor { display: none !important; }
 html.has-cursor:has(dialog[open]), html.has-cursor:has(dialog[open]) body { cursor: auto; }
 html.has-cursor:has(dialog[open]) :is(a, button, summary, label, select, [role='button'], [role='radio'], [data-case-open]) { cursor: pointer; }
 html.has-cursor:has(dialog[open]) :is(input, textarea) { cursor: text; }
+
+/* ---------- report walkthrough (story under each page) ---------- */
+.walk { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-8, 4rem); }
+.walk__title { margin: 0 0 var(--s-3); font-size: var(--step-1, 1.25rem); }
+.walk__title .mono { color: var(--ink-3, var(--ink)); margin-right: .5ch; }
+.walk__fig { margin: 0; }
+.walk__fig button { display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-sunken); cursor: pointer; position: relative; }
+.walk__fig button:hover { border-color: var(--accent-line); }
+.walk__fig img { display: block; width: 100%; height: auto; }
+.walk__fig figcaption { margin-top: var(--s-2); font-size: .9em; color: var(--ink-2, var(--ink)); }
+.walk__hl { position: absolute; border: 3px solid #f5a623; border-radius: 6px; background: rgba(245, 166, 35, .18); box-shadow: 0 0 0 2px rgba(0, 0, 0, .55); pointer-events: none; animation: walk-pulse 2.4s ease-in-out infinite; }
+.walk__hl-tag { position: absolute; left: 0; top: 100%; margin-top: 6px; background: #1b1b1b; color: #fff; font: 600 .8rem/1.2 var(--font-sans, system-ui); padding: .3rem .5rem; border-radius: 4px; white-space: nowrap; }
+@keyframes walk-pulse { 50% { background: rgba(245, 166, 35, .32); } }
+@media (prefers-reduced-motion: reduce) { .walk__hl { animation: none; } }
+.walk__text { max-width: 68ch; margin-top: var(--s-4); }
+.walk__note { border-left: 4px solid #f5a623; padding: .5rem .9rem; background: var(--bg-sunken); }

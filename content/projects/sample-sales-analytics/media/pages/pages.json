@@ -1,17 +1,17 @@
 [
   {
     "file": "01-sample-sales-analytics.webp",
-    "title": "",
-    "caption": ""
+    "title": "Overview",
+    "caption": "Synthetic sample page used to test the site."
   },
   {
     "file": "02-sample-sales-analytics.webp",
-    "title": "",
-    "caption": ""
+    "title": "Product Analysis",
+    "caption": "Synthetic sample page used to test the site."
   },
   {
     "file": "03-sample-sales-analytics.webp",
-    "title": "",
-    "caption": ""
+    "title": "Detail",
+    "caption": "Synthetic sample page used to test the site."
   }
 ]

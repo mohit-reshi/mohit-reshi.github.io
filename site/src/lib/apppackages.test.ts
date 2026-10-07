@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import zlib from 'node:zlib';
-// @ts-expect-error plain node module
 import { makeZip } from '../../../tools/site/make-app-packages.mjs';
 
 /** Reads the central directory and inflates each entry, so the test checks a real, extractable zip. */

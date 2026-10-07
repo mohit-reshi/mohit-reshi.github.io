@@ -49,7 +49,7 @@ async function main() {
     entry.pages = names.map((f) => {
       const m = meta.find((x) => x.file === f) ?? {};
       const thumb = entry.files[`media/thumbs/${f}`] ? `media/thumbs/${f}` : null;
-      return { file: `media/pages/${f}`, thumb, title: m.title ?? '', caption: m.caption ?? '', w: entry.files[`media/pages/${f}`].w, h: entry.files[`media/pages/${f}`].h, tw: thumb ? entry.files[thumb].w : 0 };
+      return { file: `media/pages/${f}`, thumb, title: m.title ?? '', caption: m.caption ?? '', story: m.story ?? [], hidden_nav: m.hidden_nav ?? null, w: entry.files[`media/pages/${f}`].w, h: entry.files[`media/pages/${f}`].h, tw: thumb ? entry.files[thumb].w : 0 };
     });
     manifest[slug] = entry;
   }

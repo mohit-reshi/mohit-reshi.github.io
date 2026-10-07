@@ -1,12 +1,19 @@
 [
   {
     "file": "01-producer-book-of-business.webp",
-    "title": "",
-    "caption": ""
+    "title": "Book of business",
+    "caption": "Premium in force, active policies, concentration and upcoming renewals for a producer, by account and state.",
+    "story": [
+      "A producer wants to know what they depend on. The tiles show premium in force, active policies, the share held by the largest account and renewals coming in 90 days.",
+      "The account bars show concentration at a glance. The register below puts each account's renewal date, renewal status and unpaid premium in one row, so the next call is obvious."
+    ]
   },
   {
     "file": "02-producer-book-of-business.webp",
-    "title": "",
-    "caption": ""
+    "title": "Active policy tooltip",
+    "caption": "The tooltip page for active policies and premium renewing.",
+    "story": [
+      "A tooltip page. It shows active policies, employer accounts and premium renewing in 90 days, with a note that premium in force is annualised and counts active policies only."
+    ]
   }
 ]

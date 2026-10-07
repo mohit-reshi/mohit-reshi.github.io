@@ -1,12 +1,19 @@
 [
   {
     "file": "01-member-claim-history.webp",
-    "title": "",
-    "caption": ""
+    "title": "Your claim history",
+    "caption": "A member sees their own claims, status and days of leave. Shown with no member selected.",
+    "story": [
+      "This page is written for the person who filed the claim, not for an analyst. It greets the member by name and uses plain labels such as claims filed and days to a decision.",
+      "A timeline lists the most recent claim first, and the charts show where claims stand, days of leave by benefit and claims filed by year. The member selector at the top is for the demo."
+    ]
   },
   {
     "file": "02-member-claim-history.webp",
-    "title": "",
-    "caption": ""
+    "title": "Claim count tooltip",
+    "caption": "The tooltip page for the claim counts.",
+    "story": [
+      "A tooltip page that breaks the count into claims filed, approved or paid, and still in review."
+    ]
   }
 ]

@@ -2,26 +2,45 @@
   {
     "file": "01-cancellation-reinstatement-analytics.webp",
     "title": "Attrition Snapshot",
-    "caption": "Cancellation counts with a prior-year comparison, broken down by product, case tenure, reason and case size, with filters on the left."
+    "caption": "Cancellation counts with a prior-year comparison, broken down by product, case tenure, reason and case size, with filters on the left.",
+    "story": [
+      "The first page answers one question: how many cases are we losing, and where?",
+      "Counts sit next to the prior year, and the same cancellations are split by product, how long the case had been with us, the reason, and the case size. The toggles on the left switch between cases, lives and premium, so one page serves people who think in different units."
+    ]
   },
   {
     "file": "02-cancellation-reinstatement-analytics.webp",
     "title": "Recovery Snapshot",
-    "caption": "Reinstatement counts and recovery rate with the same product, tenure, reason and case size breakdowns."
+    "caption": "Reinstatement counts and recovery rate with the same product, tenure, reason and case size breakdowns.",
+    "story": [
+      "The second page is the mirror image: what did we win back?",
+      "It uses the same breakdowns as the first page on purpose. A reader who learned to read page one can read page two without any new explanation."
+    ]
   },
   {
     "file": "03-cancellation-reinstatement-analytics.webp",
     "title": "Attrition Trend",
-    "caption": "Monthly cancellations against the prior year with the change line, plus product and reason mix over time."
+    "caption": "Monthly cancellations against the prior year with the change line, plus product and reason mix over time.",
+    "story": [
+      "This page moves from a snapshot to a trend. Monthly cancellations are drawn against the prior year with a change line, so a bad month is easy to spot.",
+      "The mix charts below show whether the make-up of cancellations is shifting by product or by reason."
+    ]
   },
   {
     "file": "04-cancellation-reinstatement-analytics.webp",
     "title": "Recovery Trend",
-    "caption": "Monthly reinstatements against the prior year with the change line, plus product and reason mix over time."
+    "caption": "Monthly reinstatements against the prior year with the change line, plus product and reason mix over time.",
+    "story": [
+      "The same trend view, for reinstatements. Reading this page after the previous one shows whether recovery is keeping pace with loss."
+    ]
   },
   {
     "file": "05-cancellation-reinstatement-analytics.webp",
     "title": "Non-Payment Watch",
-    "caption": "Monthly non-payment cancellations and recoveries with the recovery rate, split by tenure and case size."
+    "caption": "Monthly non-payment cancellations and recoveries with the recovery rate, split by tenure and case size.",
+    "story": [
+      "Non-payment is the cancellation reason a team can act on, so it gets its own page.",
+      "Monthly non-payment cancellations and recoveries sit side by side with the recovery rate. The split by tenure and case size shows which kinds of case to call first."
+    ]
   }
 ]

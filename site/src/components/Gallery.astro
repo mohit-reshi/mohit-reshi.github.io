@@ -1,18 +1,45 @@
 ---
 import Placeholder from './Placeholder.astro';
-interface Item { src: string; thumb: string | null; title: string; caption: string; w: number; h: number; tw: number }
+interface HiddenNav { x: number; y: number; w: number; h: number; label: string; note: string }
+interface Item { src: string; thumb: string | null; title: string; caption: string; story?: string[]; hidden_nav?: HiddenNav | null; w: number; h: number; tw: number }
 interface Props { items: Item[]; title: string; slug: string; placeholders?: number }
 const { items, title, slug, placeholders = 3 } = Astro.props;
 const fallback = items.length === 0 ? Array.from({ length: placeholders }, (_, i) => ({ title: `Page ${i + 1}`, i })) : [];
+const walk = items.some((it) => (it.story?.length ?? 0) > 0 || it.hidden_nav);
 ---
-<ul class="gallery" data-gallery>
-  {items.map((it, i) => (
-    <li><button type="button" data-lightbox-index={i} data-full={it.src} data-title={it.title} data-caption={it.caption} data-cursor="view" aria-label={`Open ${it.title || `screenshot ${i + 1}`} larger`}>
-      <img src={it.thumb ?? it.src} width={it.tw || it.w} height={Math.round((it.tw || it.w) * (it.h / (it.w || 1))) || undefined} alt={it.title || `${title}, screenshot ${i + 1}`} loading="lazy" decoding="async" />
-    </button></li>
-  ))}
-  {fallback.map((f) => <li><div class="gallery__ph" style="aspect-ratio:16/10;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden"><Placeholder title={`${title} · ${f.title}`} seed={`${slug}-${f.i}`} label="Screenshot placeholder" /></div></li>)}
-</ul>
+{walk ? (
+  <ol class="walk" data-gallery>
+    {items.map((it, i) => (
+      <li class="walk__item">
+        <h3 class="walk__title"><span class="mono">{String(i + 1).padStart(2, '0')}</span> {it.title || `Page ${i + 1}`}</h3>
+        <figure class="walk__fig">
+          <button type="button" data-lightbox-index={i} data-full={it.src} data-title={it.title} data-caption={it.caption} data-cursor="view" aria-label={`Open ${it.title || `page ${i + 1}`} larger`}>
+            <img src={it.src} width={it.w} height={it.h} alt={it.title ? `${title}, ${it.title} page` : `${title}, page ${i + 1}`} loading="lazy" decoding="async" />
+            {it.hidden_nav && (
+              <span class="walk__hl" aria-hidden="true" style={`left:${it.hidden_nav.x}%;top:${it.hidden_nav.y}%;width:${it.hidden_nav.w}%;height:${it.hidden_nav.h}%`}>
+                <span class="walk__hl-tag">{it.hidden_nav.label}</span>
+              </span>
+            )}
+          </button>
+          {it.caption && <figcaption>{it.caption}</figcaption>}
+        </figure>
+        <div class="walk__text prose">
+          {(it.story ?? []).map((para) => <p>{para}</p>)}
+          {it.hidden_nav && <p class="walk__note"><strong>Hidden navigation.</strong> {it.hidden_nav.note}</p>}
+        </div>
+      </li>
+    ))}
+  </ol>
+) : (
+  <ul class="gallery" data-gallery>
+    {items.map((it, i) => (
+      <li><button type="button" data-lightbox-index={i} data-full={it.src} data-title={it.title} data-caption={it.caption} data-cursor="view" aria-label={`Open ${it.title || `screenshot ${i + 1}`} larger`}>
+        <img src={it.thumb ?? it.src} width={it.tw || it.w} height={Math.round((it.tw || it.w) * (it.h / (it.w || 1))) || undefined} alt={it.title || `${title}, screenshot ${i + 1}`} loading="lazy" decoding="async" />
+      </button></li>
+    ))}
+    {fallback.map((f) => <li><div class="gallery__ph" style="aspect-ratio:16/10;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden"><Placeholder title={`${title} · ${f.title}`} seed={`${slug}-${f.i}`} label="Screenshot placeholder" /></div></li>)}
+  </ul>
+)}
 <dialog class="lightbox" data-lightbox aria-label="Screenshot viewer">
   <div class="lightbox__inner">
     <div class="lightbox__bar"><span data-lightbox-count class="mono"></span><button class="btn btn--ghost" type="button" data-lightbox-close>Close <kbd>Esc</kbd></button></div>

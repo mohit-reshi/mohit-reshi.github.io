@@ -1,12 +1,21 @@
 [
   {
     "file": "01-service-reliability-overview.webp",
-    "title": "",
-    "caption": ""
+    "title": "Portfolio summary",
+    "caption": "Availability against the committed SLA, applications at risk, outage events, open incidents and the service lines behind them.",
+    "story": [
+      "A risk and governance committee reads this page. Their question is simple: are we meeting what we promised, and where are we not?",
+      "The tiles give the answer in five numbers, each with a status mark so green, amber and red are never left to colour alone. The trend line sits against the dashed committed target, and the bars on the right rank applications by how far they are from that target, worst first.",
+      "The register below groups the same data by service line. Expand a line to see its applications."
+    ]
   },
   {
     "file": "02-service-reliability-overview.webp",
-    "title": "",
-    "caption": ""
+    "title": "Availability tooltip",
+    "caption": "The tooltip page that appears when you hover the availability tile.",
+    "story": [
+      "This small page is a tooltip. It appears on hover over the availability tile and shows the selected period next to the prior period and the committed target, with a one-line definition of what prior period means.",
+      "Putting the definition where the question arises keeps the main page clean."
+    ]
   }
 ]
