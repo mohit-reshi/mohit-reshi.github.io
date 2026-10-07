@@ -90,6 +90,21 @@ jobs:
         if: failure()
         with: { name: playwright-report, path: site/test-results, retention-days: 3 }
 
+  apps:
+    name: Apps (Rehearsal Desk tests, sync Worker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: "site/package-lock.json\napp-sync/package-lock.json" }
+      - run: node --test apps-src/rehearsal-desk/test/core.test.js
+      - run: node apps-src/rehearsal-desk/build.mjs && git diff --exit-code -- site/public/apps-hosted/rehearsal-desk/index.html
+      - run: npm --prefix app-sync ci && npm --prefix app-sync run typecheck && npm --prefix app-sync test
+      - run: npm --prefix site ci
+      - run: npx playwright install --with-deps chromium
+        working-directory: site
+      - run: node tools/site/make-app-packages.mjs && node apps-src/rehearsal-desk/test/ui.test.mjs
+
   live-lab:
     name: Live Lab, Worker and tools
     runs-on: ubuntu-latest

@@ -34,7 +34,7 @@ describe('owner state worker', () => {
     expect((await call(env, 'PUT', '/state/demo', { key: k, body: { updatedAt: 1, data: { a: 1 } } })).status).toBe(400);
     expect((await call(env, 'PUT', '/state/demo', { key: k, raw: '{not json' })).status).toBe(400);
     expect((await call(env, 'PUT', '/state/demo', { key: k, raw: '{}', type: 'text/plain' })).status).toBe(415);
-    expect((await call(env, 'PUT', '/state/demo', { key: k, raw: JSON.stringify({ updatedAt: 1, data: { a: 'x'.repeat(600_000) } }) })).status).toBe(413);
+    expect((await call(env, 'PUT', '/state/demo', { key: k, raw: JSON.stringify({ updatedAt: 1, data: { a: 'x'.repeat(2_200_000) } }) })).status).toBe(413);
   });
   it('only answers allowed origins', async () => {
     const { env } = make();

@@ -40,6 +40,11 @@ jobs:
           npm --prefix tools/media ci
           npm --prefix live-lab ci
           npm --prefix site ci
+      - name: Rehearsal Desk tests and bundle check
+        run: |
+          node --test apps-src/rehearsal-desk/test/core.test.js
+          node apps-src/rehearsal-desk/build.mjs
+          git diff --exit-code -- site/public/apps-hosted/rehearsal-desk/index.html
       - name: Validate content
         run: npm --prefix site run validate
       - name: Build Live Lab module

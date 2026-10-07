@@ -11,6 +11,8 @@
   var KEYS = (script.getAttribute('data-keys') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
   var ZIP = script.getAttribute('data-zip') || '';
   // Address of the progress-sync worker (not a secret). Left empty until deployed; the owner can also paste it once at sign-in.
+  // Lets an app know whether the owner is signed in (apps use it to show owner-only features).
+  window.appChrome = { isOwner: function () { return !!ls.get(P + 'owner-key'); } };
   var SYNC_URL = 'https://portfolio-app-sync.mohitreshi.workers.dev';
   var P = 'app-chrome:';
 
@@ -86,6 +88,7 @@
   // survives hiding the strip, and is removed from the page entirely on sign-out.
   function renderChip() {
     if (!document.body) return;
+    try { window.dispatchEvent(new CustomEvent('appchrome:owner', { detail: { owner: !!ownerKey() } })); } catch (e) { /* old browser */ }
     if (!ownerKey()) { if (ownerChip) { ownerChip.remove(); ownerChip = null; } return; }
     if (!ownerChip) {
       ownerChip = el('button', { type: 'button', 'class': 'acx-own', title: 'Signed in as owner. Click to sign out.' });

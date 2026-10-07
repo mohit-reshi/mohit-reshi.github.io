@@ -8,7 +8,7 @@
 export interface KV { get(key: string): Promise<string | null>; put(key: string, value: string): Promise<void>; }
 export interface Env { OWNER_KEY?: string; ALLOWED_ORIGINS?: string; APP_STATE: KV; }
 
-const MAX_BODY = 512 * 1024;
+const MAX_BODY = 2 * 1024 * 1024;
 const APP = /^[a-z0-9][a-z0-9-]{0,39}$/;
 
 const origins = (env: Env) => (env.ALLOWED_ORIGINS ?? '').split(',').map((s) => s.trim()).filter(Boolean);

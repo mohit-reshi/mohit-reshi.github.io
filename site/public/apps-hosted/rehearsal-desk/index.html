@@ -1,0 +1,2164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rehearsal Desk</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f5c63'/%3E%3Cpath d='M8 11h16M8 16h16M8 21h10' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta name="description" content="Paste your resume and rehearse the answers you will give: starter answers from your own facts, editable cards, readability checks, job match and a printable resume.">
+<style>
+:root {
+  --bg: #f3efe7; --surface: #fffdf8; --surface2: #ece6da; --ink: #1d2428; --ink2: #4b565c; --line: #d6cfc0;
+  --accent: #0f5c63; --accent-ink: #ffffff; --accent-soft: #d7ecec; --green: #1d7a46; --green-soft: #dcf0e2; --warn: #8a5a00; --warn-soft: #f8ecd0; --bad: #a3322a; --bad-soft: #f7dcd8;
+  --bar: #fffdf8; --focus: #0b6fb5; --shadow: 0 1px 2px rgba(30, 30, 20, .08), 0 6px 14px rgba(30, 30, 20, .08);
+  --topbar-h: 56px;
+  --p-blue: #dbe9f8; --p-yellow: #fbf0b8; --p-green: #d9efd5; --p-purple: #e6dcf5; --p-orange: #fbdcbf; --p-slate: #e1e6ea; --p-pink: #f9d9e4; --p-teal: #cdeeea;
+  --paper-ink: #1d2428; --on-green: #ffffff; --green-text: #135a2d; --top-bg: #0f5c63; --top-ink: #ffffff; --top-on: rgba(0, 0, 0, .32); --top-hover: rgba(0, 0, 0, .18);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --serif: Georgia, "Times New Roman", serif; --mono: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #14181b; --surface: #1c2226; --surface2: #252d32; --ink: #e8edef; --ink2: #aab6bb; --line: #36444b; --accent: #5cc0c8; --accent-ink: #072326; --accent-soft: #17383b; --green: #5fd08c; --green-soft: #17331f; --warn: #e4b45b; --warn-soft: #382c10; --bad: #f08a80; --bad-soft: #3a1c19; --bar: #1c2226; --focus: #6bb7f0; --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 14px rgba(0, 0, 0, .35);
+    --p-blue: #20354a; --p-yellow: #43391a; --p-green: #1f3a26; --p-purple: #35294d; --p-orange: #4a3220; --p-slate: #2a343b; --p-pink: #46283a; --p-teal: #1b3b3a; --paper-ink: #eef1f2; --on-green: #06210f; --green-text: #7fdca2; --top-bg: #0f3b40; --top-ink: #e8f6f7; --top-on: rgba(255, 255, 255, .2); --top-hover: rgba(255, 255, 255, .12); color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #14181b; --surface: #1c2226; --surface2: #252d32; --ink: #e8edef; --ink2: #aab6bb; --line: #36444b; --accent: #5cc0c8; --accent-ink: #072326; --accent-soft: #17383b; --green: #5fd08c; --green-soft: #17331f; --warn: #e4b45b; --warn-soft: #382c10; --bad: #f08a80; --bad-soft: #3a1c19; --bar: #1c2226; --focus: #6bb7f0; --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 14px rgba(0, 0, 0, .35);
+  --p-blue: #20354a; --p-yellow: #43391a; --p-green: #1f3a26; --p-purple: #35294d; --p-orange: #4a3220; --p-slate: #2a343b; --p-pink: #46283a; --p-teal: #1b3b3a; --paper-ink: #eef1f2; --on-green: #06210f; --green-text: #7fdca2; --top-bg: #0f3b40; --top-ink: #e8f6f7; --top-on: rgba(255, 255, 255, .2); --top-hover: rgba(255, 255, 255, .12); color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: auto; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--font); }
+a { color: var(--accent); }
+h1, h2, h3, h4 { line-height: 1.2; margin: 0 0 .5em; }
+h1 { font-size: clamp(26px, 4vw, 38px); } h2 { font-size: 22px; } h3 { font-size: 16px; } h4 { font-size: 15px; }
+p { margin: 0 0 .8em; } ul { margin: 0 0 .8em; padding-left: 1.2em; }
+.muted { color: var(--ink2); } .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; } .skip:focus { left: 8px; top: 8px; z-index: 100; background: var(--surface); padding: 8px 12px; border-radius: 6px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+mark.gap { background: var(--warn-soft); color: var(--warn); border-radius: 3px; padding: 0 3px; font-weight: 600; }
+
+/* top bar */
+.topbar { position: sticky; top: 0; z-index: 40; height: var(--topbar-h); display: flex; align-items: center; gap: 14px; padding: 0 18px; background: var(--top-bg); color: var(--top-ink); }
+.brand { display: flex; align-items: center; gap: 9px; color: inherit; text-decoration: none; font-weight: 800; letter-spacing: -.01em; white-space: nowrap; font-size: 18px; }
+.logo { width: 22px; height: 22px; border-radius: 6px 6px 6px 2px; background: var(--top-ink); display: inline-block; position: relative; }
+.logo::after { content: ""; position: absolute; left: 5px; top: 6px; width: 12px; height: 2px; background: var(--top-bg); box-shadow: 0 5px 0 var(--top-bg), 0 10px 0 var(--top-bg); }
+.nav { display: flex; gap: 2px; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav-a { color: inherit; text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap; font-size: 15px; }
+.nav-a:hover { background: var(--top-hover); } .nav-a.on { background: var(--top-on); font-weight: 700; }
+.topbar .btn.ghost { color: inherit; background: transparent; border-color: currentColor; } .topbar .btn.ghost:hover { background: var(--top-hover); }
+.pill { background: #e1ae4c; color: #231a05; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.main { max-width: 1280px; margin: 0 auto; padding: 22px 18px 60px; min-height: 70vh; }
+.foot { max-width: 1280px; margin: 0 auto; padding: 18px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; color: var(--ink2); font-size: 14px; border-top: 1px solid var(--line); }
+.linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; }
+
+/* controls */
+.btn { font: inherit; font-size: 15px; cursor: pointer; border-radius: 10px; padding: 9px 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+.btn:hover { background: var(--surface2); } .btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.small { padding: 5px 11px; min-height: 32px; font-size: 14px; border-radius: 8px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; } .btn.primary:hover { filter: brightness(1.08); }
+.btn.big { padding: 13px 24px; font-size: 17px; }
+.btn.on { background: var(--green); color: var(--on-green); border-color: var(--green); }
+.btn.danger { color: var(--bad); border-color: var(--bad); }
+.btn.file { cursor: pointer; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 10px 0; } .row.end { justify-content: flex-end; } .row.actions { margin: 18px 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg-btn { font: inherit; font-size: 14px; padding: 7px 13px; background: var(--surface); color: var(--ink); border: 0; border-right: 1px solid var(--line); cursor: pointer; }
+.seg-btn:last-child { border-right: 0; } .seg-btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+input, textarea, select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; }
+textarea { resize: vertical; line-height: 1.5; }
+.field { display: block; margin: 0 0 12px; } .field > span { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--ink2); } .field.inline { display: flex; align-items: center; gap: 8px; margin: 0; flex-wrap: wrap; max-width: 100%; } .field.inline > span { margin: 0; } .field.inline select { width: auto; max-width: 100%; min-width: 0; }
+.search input { min-width: 220px; }
+.check { display: flex; align-items: center; gap: 8px; margin: 6px 0; } .check input { width: auto; }
+.chip { display: inline-block; font-size: 12px; background: var(--surface2); border-radius: 999px; padding: 1px 9px; margin-right: 4px; color: var(--ink2); }
+.flag { display: inline-block; font-size: 12px; background: var(--warn-soft); color: var(--warn); border-radius: 6px; padding: 1px 7px; font-weight: 600; } .flag.need { background: var(--bad-soft); color: var(--bad); }
+.notice { background: var(--warn-soft); color: var(--ink); border-left: 4px solid var(--warn); border-radius: 6px; padding: 10px 14px; margin: 0 0 16px; }
+.status { margin: 8px 0; font-weight: 600; } .hint { color: var(--ink2); font-size: 14px; }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 30px; text-align: center; }
+.warns { background: var(--warn-soft); border-radius: 10px; padding: 12px 16px; margin: 12px 0; } .warns ul { margin: 6px 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; } .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+@media (max-width: 800px) { .two, .grid2 { grid-template-columns: 1fr; } .topbar { padding: 0 10px; gap: 8px; } .brand span.logo { display: none; } }
+
+/* home */
+.hero { max-width: 760px; margin-bottom: 18px; } .hero p { font-size: 18px; color: var(--ink2); } .privacy { color: var(--ink) !important; font-size: 16px !important; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 16px 0; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; text-align: center; } .tile b { display: block; font-size: 28px; color: var(--accent); } .tile span { font-size: 13px; color: var(--ink2); }
+.opt { font-size: 12px; font-weight: 600; color: var(--ink2); background: var(--surface2); padding: 2px 8px; border-radius: 999px; vertical-align: middle; }
+
+/* resume view */
+.tabs2 { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
+.tab2 { font: inherit; background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 14px; cursor: pointer; color: var(--ink2); }
+.tab2[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 16px; padding: 14px 16px; background: var(--surface); } legend { font-weight: 800; padding: 0 8px; }
+.entry { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 12px; background: var(--bg); } .entry-head { display: flex; gap: 10px; align-items: center; justify-content: space-between; } .entry-head h4 { margin: 0; flex: 1; }
+.sticky-actions { position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; display: flex; gap: 12px; align-items: center; border-top: 1px solid var(--line); z-index: 5; }
+.checklist { list-style: none; padding: 0; } .checklist li { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); } .checklist p { margin: 2px 0 0; color: var(--ink2); font-size: 14px; }
+.lvl { flex: 0 0 52px; font-size: 12px; font-weight: 800; text-transform: uppercase; border-radius: 6px; text-align: center; height: 22px; line-height: 22px; background: var(--surface2); }
+.lvl-pass .lvl { background: var(--green-soft); color: var(--green-text); } .lvl-warn .lvl { background: var(--warn-soft); color: var(--warn); } .lvl-fail .lvl { background: var(--bad-soft); color: var(--bad); }
+.meter-line { font-size: 18px; margin: 10px 0; }
+.sugg { list-style: none; padding: 0; } .sugg li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; } .sugg q { display: block; margin: 6px 0; font-style: italic; } .sugg p { margin: 0; color: var(--ink2); }
+.design { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; } @media (max-width: 960px) { .design { grid-template-columns: 1fr; } }
+.tpls { display: grid; gap: 8px; } .tpl { text-align: left; font: inherit; background: var(--surface); border: 2px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; color: var(--ink); display: grid; gap: 2px; } .tpl span { font-size: 13px; color: var(--ink2); } .tpl em { font-size: 12px; color: var(--green-text); font-style: normal; }
+.tpl[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.design-view { background: var(--surface2); border-radius: 14px; padding: 16px; overflow: auto; }
+.paper-wrap { display: flex; justify-content: center; } .paper { background: #fff; color: #111; box-shadow: var(--shadow); zoom: .78; padding: 14mm 16mm; } .paper.a4 { width: 210mm; min-height: 297mm; } .paper.letter { width: 8.5in; min-height: 11in; }
+@media (max-width: 1280px) { .paper { zoom: .6; } } @media (max-width: 760px) { .paper { zoom: .42; } }
+
+/* match */
+.match-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; } .sub { color: var(--ink2); margin: 0; }
+.score { text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 22px; } .score b { font-size: 36px; color: var(--accent); display: block; } .score span { font-size: 13px; color: var(--ink2); }
+.tbl { width: 100%; border-collapse: collapse; } .tbl th, .tbl td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 15px; } .tbl .st-missing td:first-child { color: var(--bad); font-weight: 700; } .tbl .st-shown td strong { color: var(--green-text); } .tbl .st-listed td strong { color: var(--warn); }
+
+/* board */
+.focusbar { position: sticky; top: var(--topbar-h); z-index: 30; background: var(--bar); border-bottom: 1px solid var(--line); margin: -22px -18px 18px; padding: 8px 18px; display: flex; gap: 12px; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0, 0, 0, .06); }
+.fb-main { display: flex; gap: 12px; align-items: center; min-width: 0; } .fb-title { display: flex; flex-direction: column; min-width: 0; } .fb-title strong { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fb-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink2); font-weight: 700; }
+.rail { position: fixed; right: 10px; top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 8px 4px; display: flex; flex-direction: column; gap: 6px; z-index: 20; } .rail button { width: 12px; height: 12px; padding: 0; border-radius: 50%; border: 2px solid var(--ink2); background: transparent; cursor: pointer; } .rail button.on { background: var(--accent); border-color: var(--accent); transform: scale(1.25); }
+.rail button:focus-visible { outline: 3px solid var(--focus); }
+@media (max-width: 1100px) { .rail { display: none; } .fb-side .btn { font-size: 12px; padding: 4px 8px; } }
+.board-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.admin-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin-bottom: 16px; }
+.menu-wrap { position: relative; } .menu { position: absolute; z-index: 35; top: 100%; left: 0; min-width: 220px; max-height: 320px; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 6px; display: grid; } .menu.right { left: auto; right: 0; }
+.menu button { font: inherit; text-align: left; background: none; border: 0; padding: 8px 10px; border-radius: 6px; cursor: pointer; color: var(--ink); } .menu button:hover, .menu button:focus-visible { background: var(--surface2); } .menu .newsec { border-top: 1px solid var(--line); font-weight: 700; }
+.sec { padding: 18px 0 30px; scroll-margin-top: calc(var(--topbar-h) + 64px); }
+.sec-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 14px; border-bottom: 2px solid var(--line); padding-bottom: 10px; } .sec-head h2 { margin: 0; font-size: 26px; } .sec-side { display: flex; gap: 12px; align-items: center; }
+.ring { position: relative; width: 48px; height: 48px; display: inline-block; } .ring span { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(var(--green) calc(var(--p) * 1%), var(--line) 0); } .ring b { position: absolute; inset: 5px; border-radius: 50%; background: var(--bg); display: grid; place-items: center; font-size: 11px; }
+.cards { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+.card { --paper: var(--p-slate); flex: 1 1 320px; max-width: 460px; min-width: 260px; background: var(--paper); color: var(--paper-ink); border-radius: 4px 4px 16px 4px; padding: 14px 16px 12px; box-shadow: var(--shadow); position: relative; transform: rotate(var(--tilt, 0deg)); transition: transform .15s ease, box-shadow .15s ease; }
+.card:nth-child(3n+1) { --tilt: -.5deg; } .card:nth-child(3n+2) { --tilt: .4deg; }
+.card:hover, .card:focus-within, .card.flash { transform: rotate(0) translateY(-2px); box-shadow: 0 10px 24px rgba(0, 0, 0, .18); }
+@media (prefers-reduced-motion: reduce) { .card, .card:hover, .card:focus-within { transition: none; transform: none; } }
+.hue-blue { --paper: var(--p-blue); } .hue-yellow { --paper: var(--p-yellow); } .hue-green { --paper: var(--p-green); } .hue-purple { --paper: var(--p-purple); } .hue-orange { --paper: var(--p-orange); } .hue-slate { --paper: var(--p-slate); } .hue-pink { --paper: var(--p-pink); } .hue-teal { --paper: var(--p-teal); }
+.card-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; } .cat { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; opacity: .75; }
+.card .chip { background: rgba(0, 0, 0, .08); color: inherit; } .card .muted { color: inherit; opacity: .7; }
+.card .q { font-size: 17px; margin: 0 0 8px; font-weight: 700; } .card .a { font-size: 15px; overflow-wrap: anywhere; }
+.card-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 12px; margin-top: 10px; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0, 0, 0, .25); opacity: 0; transition: opacity .12s; }
+.card:hover .card-actions, .card:focus-within .card-actions, .card.selected .card-actions, .card.flash .card-actions { opacity: 1; }
+@media (pointer: coarse) { .card-actions { opacity: 1; } }
+.card .btn { background: rgba(255, 255, 255, .7); color: #1d2428; border-color: rgba(0, 0, 0, .25); } :root[data-theme="dark"] .card .btn, :root:not([data-theme="light"]) .card .btn { }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .card .btn { background: rgba(0, 0, 0, .35); color: #eef1f2; border-color: rgba(255, 255, 255, .3); } }
+:root[data-theme="dark"] .card .btn { background: rgba(0, 0, 0, .35); color: #eef1f2; border-color: rgba(255, 255, 255, .3); }
+.card .btn.on { background: var(--green); color: var(--on-green); }
+.sel { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; margin-right: 4px; } .sel input { width: auto; }
+.card.selected { outline: 3px solid var(--accent); }
+.card.flash { outline: 3px solid var(--focus); outline-offset: 3px; }
+.card.perfected { --paper: var(--surface); background: var(--surface); border: 2px solid var(--green); border-left-width: 8px; border-radius: 6px; transform: none; box-shadow: none; }
+.card.perfected:hover, .card.perfected:focus-within { transform: none; }
+.badge-done { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; background: var(--green); color: var(--on-green); font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px; }
+.archived { margin-top: 24px; } .archived summary { cursor: pointer; font-weight: 700; margin-bottom: 12px; }
+.pr-card { max-width: 760px; margin: 18px auto; transform: none; } .pr-card:hover { transform: none; } .timer { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 700; } .timer.over { color: var(--bad); }
+
+/* editor */
+.edit-top { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.edit-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); gap: 22px; align-items: start; } @media (max-width: 900px) { .edit-grid { grid-template-columns: 1fr; } }
+.edit .q { font-size: 28px; padding: 16px 18px; background: var(--paper); color: var(--paper-ink); border-radius: 4px 4px 16px 4px; margin-bottom: 16px; }
+.edit textarea#answer { min-height: 280px; font-size: 17px; line-height: 1.6; }
+.stat { font-size: 15px; } .hist { list-style: none; padding: 0; } .hist li { border-bottom: 1px solid var(--line); padding: 8px 0; }
+.dlg { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); padding: 20px; width: min(92vw, 420px); } .dlg::backdrop { background: rgba(0, 0, 0, .5); }
+.jdlist { list-style: none; padding: 0; display: grid; gap: 8px; } .jdlist li.active .jd-open { border-color: var(--accent); background: var(--accent-soft); }
+.jd-open { width: 100%; text-align: left; font: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; cursor: pointer; color: var(--ink); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; } .jd-open strong { min-width: 160px; }
+.batches { list-style: none; padding: 0; } .batches li { padding: 6px 0; border-bottom: 1px solid var(--line); }
+
+/* resume templates (preview and print) */
+.resume { font-size: 10pt; line-height: 1.38; color: #111; } .resume h1 { margin: 0; } .resume h2 { margin: 0 0 4px; } .resume p { margin: 0 0 4px; } .resume ul { margin: 2px 0 4px; padding-left: 16px; } .resume li { margin: 1px 0; }
+.resume .r-entry { margin-bottom: 7px; break-inside: avoid; } .resume .r-head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; } .resume .r-date { margin-left: auto; color: #444; font-size: 9pt; white-space: nowrap; } .resume .r-co { color: #333; }
+.resume .r-sec { margin-top: 10px; } .resume ul.plain { list-style: none; padding: 0; } .resume .r-contact span + span::before { content: "\00b7"; margin: 0 .5em; } .resume .r-headline { font-size: 11pt; }
+.tpl-classic { font-family: var(--serif); } .tpl-classic .r-top { text-align: center; border-bottom: 1.5px solid #111; padding-bottom: 6px; } .tpl-classic h1 { font-size: 22pt; font-weight: 700; letter-spacing: .02em; } .tpl-classic h2 { font-size: 10.5pt; text-transform: uppercase; letter-spacing: .1em; border-bottom: .75pt solid #888; padding-bottom: 2px; margin-bottom: 6px; }
+.tpl-modern { font-family: var(--font); } .tpl-modern .r-top { background: #0f4c5c; color: #fff; padding: 12px 16px; border-radius: 4px; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .tpl-modern h1 { font-size: 22pt; } .tpl-modern .r-top p { color: #e3f1f3; } .tpl-modern h2 { font-size: 11pt; color: #0f4c5c; border-left: 4px solid #0f4c5c; padding-left: 8px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .06em; }
+.tpl-compact { font-family: var(--font); font-size: 9pt; line-height: 1.3; } .tpl-compact .r-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; border-bottom: 1pt solid #333; padding-bottom: 4px; flex-wrap: wrap; } .tpl-compact h1 { font-size: 17pt; } .tpl-compact .r-contact { text-align: right; margin: 0; } .tpl-compact h2 { font-size: 9pt; text-transform: uppercase; letter-spacing: .08em; color: #333; border-bottom: .5pt solid #aaa; } .tpl-compact .r-sec { margin-top: 6px; } .tpl-compact .r-entry { margin-bottom: 4px; }
+.tpl-editorial { font-family: var(--serif); line-height: 1.5; } .tpl-editorial .r-top { margin-bottom: 14px; } .tpl-editorial h1 { font-size: 30pt; font-weight: 400; letter-spacing: .01em; } .tpl-editorial .r-headline { font-style: italic; font-size: 12pt; color: #444; } .tpl-editorial h2 { font-family: var(--font); font-size: 8.5pt; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: #555; margin: 14px 0 8px; display: flex; align-items: center; gap: 10px; } .tpl-editorial h2::after { content: ""; flex: 1; height: .75pt; background: #bbb; } .tpl-editorial .r-entry { margin-bottom: 10px; }
+.tpl-technical { font-family: var(--font); } .tpl-technical h1 { font-size: 21pt; } .tpl-technical .r-headline { font-family: var(--mono); font-size: 10pt; color: #0f4c5c; } .tpl-technical .r-contact { font-family: var(--mono); font-size: 8.5pt; } .tpl-technical h2 { font-family: var(--mono); font-size: 10pt; color: #0f4c5c; border-bottom: 1pt solid #0f4c5c; text-transform: lowercase; } .tpl-technical h2::before { content: "# "; } .tpl-technical .r-grid { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 14px; font-family: var(--mono); font-size: 9pt; }
+
+/* print */
+#print-root { display: none; }
+@media print {
+  @page { margin: 0; }
+  body:not(.printing-resume) .topbar, body:not(.printing-resume) .foot, body:not(.printing-resume) .focusbar, body:not(.printing-resume) .rail, body:not(.printing-resume) .card-actions { display: none !important; }
+  body:not(.printing-resume) #print-root { display: none !important; }
+  body.printing-resume { background: #fff; }
+  body.printing-resume > *:not(#print-root) { display: none !important; }
+  body.printing-resume #print-root { display: block; }
+  .pt { width: 100%; border-collapse: collapse; } .pt td { padding: 0; } .pad { height: 14mm; } .pc { padding: 0 16mm !important; }
+}
+
+</style>
+<script defer src="./app-chrome.js" data-app="rehearsal-desk" data-keys="rehearsal-desk-v1" data-zip="rehearsal-desk-local.zip"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="#/home"><span class="logo" aria-hidden="true"></span>Rehearsal Desk</a>
+  <nav id="nav" class="nav" aria-label="Main"></nav>
+  <span id="admin-pill" class="pill" hidden>Admin</span>
+  <button id="theme-btn" class="btn small ghost" type="button">Theme: system</button>
+</header>
+<main id="main" class="main" tabindex="-1"></main>
+<footer class="foot">
+  <span>Your resume and answers stay in this browser.</span>
+  <button class="linkbtn" data-action="backup" type="button">Download a backup</button>
+  <label class="linkbtn">Import a backup<input type="file" id="backup-in" accept=".json,application/json" hidden></label>
+  <button class="linkbtn" data-action="erase" type="button">Erase all my data</button>
+</footer>
+<div id="print-root" aria-hidden="true"></div>
+<script>
+(function () {
+'use strict';
+/* ---- core/text.js ---- */
+// Small text helpers shared by the parser, the question builder and the UI. No dependencies.
+
+const STOP = new Set('a an and are as at be but by for from has have in is it its of on or that the this to was were will with you your we our their they them i my me about into over under more most than then also can per via using use used'.split(' '));
+
+function norm(s) { return String(s == null ? '' : s).replace(/\r\n?/g, '\n').replace(/[ \t ]+/g, ' ').trim(); }
+function slug(s) { return norm(s).toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'x'; }
+function hash(s) { let h = 5381; s = String(s); for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function uid(prefix) { return (prefix || 'id') + '-' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3); }
+function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+function words(s) { return (String(s || '').match(/[A-Za-z0-9][A-Za-z0-9'’+#./-]*/g) || []); }
+function wordCount(s) { return words(s).length; }
+function tokens(s) { return words(s).map((w) => w.toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '')).filter((w) => w.length > 2 && !STOP.has(w)); }
+function jaccard(a, b) {
+  const A = new Set(tokens(a)), B = new Set(tokens(b));
+  if (!A.size || !B.size) return 0;
+  let inter = 0; A.forEach((t) => { if (B.has(t)) inter++; });
+  return inter / (A.size + B.size - inter);
+}
+function trunc(s, n) { s = norm(s); return s.length <= n ? s : s.slice(0, n - 1).replace(/\s+\S*$/, '') + '…'; }
+function lcFirst(s) { return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+function ucFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+function stripBullet(s) { return String(s || '').replace(/^\s*(?:[•▪●◦‣⁃■○·*\-–—]|\d{1,2}[.)])\s+/, '').trim(); }
+function isBullet(s) { return /^\s*(?:[•▪●◦‣⁃■○·*–—-]|\d{1,2}[.)])\s+\S/.test(s); }
+function speakSeconds(text) { return Math.round(wordCount(text) / 130 * 60); }
+function fmtSeconds(sec) { const m = Math.floor(sec / 60), s = sec % 60; return m ? m + ' min ' + (s ? s + ' s' : '') : s + ' s'; }
+
+const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+/** "Mar 2021", "03/2021", "2021", "Present" -> { y, m } (m defaults to 1, or 12 for an end date). */
+function parseDate(str, asEnd, now) {
+  const s = norm(str).toLowerCase();
+  const today = now || new Date();
+  if (/^(present|current|now|till date|to date|ongoing)$/.test(s)) return { y: today.getFullYear(), m: today.getMonth() + 1, present: true };
+  let m = /^([a-z]{3})[a-z]*\.?\s*,?\s*(\d{4})$/.exec(s);
+  if (m && MONTHS[m[1]]) return { y: +m[2], m: MONTHS[m[1]] };
+  m = /^(\d{1,2})[/.-](\d{4})$/.exec(s);
+  if (m && +m[1] >= 1 && +m[1] <= 12) return { y: +m[2], m: +m[1] };
+  m = /^(\d{4})$/.exec(s);
+  if (m) return { y: +m[1], m: asEnd ? 12 : 1 };
+  return null;
+}
+function monthIndex(d) { return d ? d.y * 12 + (d.m - 1) : null; }
+function monthsBetween(a, b) { return a && b ? monthIndex(b) - monthIndex(a) : null; }
+function fmtYM(d) { if (!d) return ''; if (d.present) return 'Present'; const n = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return n[d.m - 1] + ' ' + d.y; }
+
+/* ---- core/parse.js ---- */
+// Resume text -> structured record. Rule based: headings, date ranges, bullets. Imperfect by nature, so every result
+// carries warnings and the UI lets the user correct what was found.
+
+const MON = '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
+const DATE = '(?:' + MON + '\\.?\\s*,?\\s*\\d{4}|\\d{1,2}[/.-]\\d{4}|\\d{4})';
+const END = '(?:' + DATE + '|present|current|now|till date|to date|ongoing)';
+const RANGE_RE = new RegExp('(' + DATE + ')\\s*(?:-|\\u2013|\\u2014|to|until|till)\\s*(' + END + ')', 'i');
+const ROLE_RE = /\b(analyst|engineer|developer|manager|lead|consultant|scientist|intern|architect|specialist|associate|director|head|officer|administrator|coordinator|executive|designer|programmer|statistician|researcher|trainee|assistant|supervisor|owner|partner|founder|vp|president)\b/i;
+const LOCATION_RE = /^(remote|hybrid|on-?site|[A-Z][A-Za-z.]+(?: [A-Z][A-Za-z.]+)?,\s*[A-Z][A-Za-z.]+(?: [A-Z][A-Za-z.]+)?)$/;
+
+const HEADINGS = [
+  ['summary', /^(?:professional |career |executive |personal )?(?:summary|profile|about(?: me)?|objective|overview)$/i],
+  ['experience', /^(?:(?:work|professional|relevant|employment|career) )?(?:experience|history)$|^employment(?: history)?$|^work history$|^professional experience$/i],
+  ['personal', /^(?:personal|side|independent|open[- ]source|self[- ]directed|hobby) projects?$/i],
+  ['projects', /^(?:key |selected |academic |technical |notable )?projects?$/i],
+  ['skills', /^(?:(?:technical|key|core|professional) )?skills(?: (?:&|and) (?:tools|technologies))?$|^(?:tools|technologies|tech stack|core competencies|tools (?:&|and) technologies)$/i],
+  ['education', /^(?:education|academic background|qualifications|education (?:&|and) training)$/i],
+  ['certifications', /^(?:certifications?|licen[sc]es?(?: (?:&|and) certifications?)?|courses|training|certificates)$/i],
+  ['achievements', /^(?:achievements?|awards?|honou?rs?|accomplishments|awards (?:&|and) honou?rs)$/i],
+  ['languages', /^languages?$/i],
+  ['interests', /^(?:interests|hobbies)$/i],
+];
+
+function headingKind(line) {
+  const t = norm(line).replace(/[:\-_=*#|]+$/g, '').replace(/^[#*_=\-\s]+/, '').trim();
+  if (!t || t.length > 42 || /[.!?]$/.test(t)) return null;
+  for (const [kind, re] of HEADINGS) if (re.test(t)) return kind;
+  return null;
+}
+
+function splitSections(lines) {
+  const out = []; let cur = { kind: 'top', lines: [] };
+  for (const raw of lines) {
+    const k = headingKind(raw);
+    if (k) { out.push(cur); cur = { kind: k, lines: [] }; } else cur.lines.push(raw);
+  }
+  out.push(cur);
+  return out;
+}
+
+/** Joins wrapped lines (PDF text often breaks mid-sentence) into whole bullets. */
+function toBullets(lines) {
+  const out = [];
+  for (const raw of lines) {
+    const t = norm(raw);
+    if (!t) continue;
+    if (isBullet(raw)) { out.push(stripBullet(raw)); continue; }
+    const prev = out[out.length - 1];
+    if (prev && /^[a-z(]/.test(t) && !/[.!?]$/.test(prev)) out[out.length - 1] = prev + ' ' + t;
+    else if (prev !== undefined && out.length && !isBullet(raw) && t.length < 60 && /[,;]$/.test(prev)) out[out.length - 1] = prev + ' ' + t;
+    else out.push(t);
+  }
+  return out;
+}
+
+function partsOf(text) {
+  text = norm(text).replace(/^[\s|\u2022\u00b7@\u2014\u2013-]+|[\s|\u2022\u00b7@\u2014\u2013-]+$/g, '');
+  return text.split(/\s+[|•·@—–-]\s+|\s*\|\s*|,\s+(?=[A-Z])/).map((p) => norm(p)).filter(Boolean);
+}
+
+function readHeader(candidates) {
+  let company = '', role = '', location = '';
+  const parts = []; const rest = [];
+  for (const c of candidates) partsOf(c).forEach((p) => parts.push(p));
+  for (const p of parts) {
+    if (!role && ROLE_RE.test(p) && p.length <= 70) { role = p; continue; }
+    if (!location && LOCATION_RE.test(p) && company) { location = p; continue; }
+    if (!company && !ROLE_RE.test(p)) { company = p; continue; }
+    if (!location && company && role && p.length <= 40) { location = p; continue; }
+    if (!location && LOCATION_RE.test(p)) { location = p; continue; }
+    rest.push(p);
+  }
+  if (!location) location = rest.find((p) => p.length <= 30 && /^[A-Z][A-Za-z.]*(?: [A-Z][A-Za-z.]*)?$/.test(p)) || '';
+  if (!company && parts.length > 1) company = parts.find((p) => p !== role) || '';
+  return { company, role, location };
+}
+
+let SKIP_LINES = new Set();
+const isHeaderLine = (l) => { const t = norm(l); return t && t.length <= 80 && !isBullet(l) && !/[.!?]$/.test(t) && !headingKind(t) && !SKIP_LINES.has(t) && !/@|https?:/.test(t); };
+
+function parseExperience(lines, now, skip) {
+  skip = skip || new Set();
+  const idx = [];
+  lines.forEach((l, i) => { if (RANGE_RE.test(l) && l.length < 120) idx.push(i); });
+  const entries = [];
+  const starts = [];
+  for (const i of idx) {
+    let s = i; let n = 0;
+    while (s > 0 && n < 2 && isHeaderLine(lines[s - 1]) && !RANGE_RE.test(lines[s - 1]) && !(starts.length && s - 1 <= starts[starts.length - 1].dateIdx)) { s--; n++; }
+    starts.push({ dateIdx: i, headStart: s });
+  }
+  starts.forEach((st, k) => {
+    const m = RANGE_RE.exec(lines[st.dateIdx]);
+    const dateLineRest = norm(lines[st.dateIdx].replace(RANGE_RE, ' ').replace(/[()]/g, ' '));
+    const head = [];
+    for (let i = st.headStart; i < st.dateIdx; i++) head.push(norm(lines[i]));
+    if (dateLineRest) head.push(dateLineRest);
+    let bodyStart = st.dateIdx + 1;
+    let info = readHeader(head);
+    // Date line first, header after it ("Mar 2021 - Present" then "Role, Company"), or company above and role below.
+    if ((!info.company || !info.role) && bodyStart < lines.length && isHeaderLine(lines[bodyStart]) && !RANGE_RE.test(lines[bodyStart])) {
+      info = readHeader(head.concat(norm(lines[bodyStart]))); bodyStart++;
+    }
+    const end = k + 1 < starts.length ? starts[k + 1].headStart : lines.length;
+    const bullets = toBullets(lines.slice(bodyStart, end));
+    const start = parseDate(m[1], false, now), stop = parseDate(m[2], true, now);
+    entries.push({
+      kind: 'job', company: info.company, role: info.role, location: info.location,
+      start: start ? fmtYM(start) : m[1], end: stop ? (stop.present ? 'Present' : fmtYM(stop)) : m[2],
+      _start: start, _end: stop, bullets,
+      confidence: info.company && info.role && start ? 'high' : 'low',
+    });
+  });
+  return entries;
+}
+
+function parseProjects(lines, kind) {
+  const entries = []; let cur = null;
+  for (const raw of lines) {
+    const t = norm(raw);
+    if (!t) continue;
+    const bullet = isBullet(raw);
+    const looksTitle = !bullet && t.length <= 90 && !/[.!?]$/.test(t);
+    if (looksTitle && (!cur || cur.bullets.length)) {
+      const parts = t.split(/\s+[|—–-]\s+|\s*\|\s*/).map(norm).filter(Boolean);
+      let name = parts[0] || t; let tech = parts.slice(1).join(', ');
+      const par = /^(.*?)\s*\(([^)]+)\)$/.exec(name);
+      if (par) { name = par[1]; tech = tech || par[2]; }
+      cur = { kind, name, tech, bullets: [], confidence: 'medium' };
+      entries.push(cur);
+    } else if (cur) {
+      const m = /^(?:tech(?:nologies)?|stack|tools)\s*[:\-]\s*(.+)$/i.exec(stripBullet(raw));
+      if (m) cur.tech = m[1]; else cur.bullets.push(...toBullets([raw]));
+    } else {
+      cur = { kind, name: 'Project', tech: '', bullets: toBullets([raw]), confidence: 'low' }; entries.push(cur);
+    }
+  }
+  // Merge wrapped bullets that were split across lines
+  entries.forEach((e) => { e.bullets = toBullets(e.bullets); });
+  return entries;
+}
+
+function parseSkills(lines) {
+  const items = []; const groups = [];
+  for (const raw of lines) {
+    let t = stripBullet(raw);
+    if (!t) continue;
+    let label = '';
+    const m = /^([A-Za-z][A-Za-z &/]{1,28}):\s*(.+)$/.exec(t);
+    if (m) { label = m[1]; t = m[2]; }
+    const list = t.split(/[,;|•·]|\s{2,}|\s\/\s/).map((s) => norm(s).replace(/\.$/, '')).filter((s) => s.length >= 2 && s.length <= 40);
+    list.forEach((s) => { if (!items.some((x) => x.toLowerCase() === s.toLowerCase())) items.push(s); });
+    if (label) groups.push({ label, items: list });
+  }
+  return { items, groups };
+}
+
+const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+const PHONE_RE = /(?:\+?\d{1,3}[\s.-]?)?(?:\(?\d{2,5}\)?[\s.-]?)\d{3,5}[\s.-]?\d{3,5}/;
+
+function parseContact(topLines, all) {
+  const text = all.join('\n');
+  const email = (EMAIL_RE.exec(text) || [''])[0];
+  const phone = (topLines.join(' ').match(PHONE_RE) || [''])[0].trim();
+  const links = (text.match(/(?:https?:\/\/)?(?:www\.)?(?:linkedin\.com|github\.com|gitlab\.com|behance\.net|medium\.com)\/[^\s,;|)]+/gi) || []);
+  let name = '';
+  for (const l of topLines) {
+    const t = norm(l);
+    if (!t || EMAIL_RE.test(t) || /\d/.test(t) || /https?:|www\./i.test(t)) continue;
+    if (/^[A-Za-z][A-Za-z.'’-]*(?: [A-Za-z][A-Za-z.'’-]*){1,3}$/.test(t) && !ROLE_RE.test(t)) { name = t; break; }
+  }
+  const headline = (() => { for (const l of topLines) { const t = norm(l); if (t && t !== name && ROLE_RE.test(t) && t.length <= 80 && !EMAIL_RE.test(t) && !/\d{4}/.test(t)) return t; } return ''; })();
+  const loc = (() => { for (const l of topLines) for (const p of norm(l).split(/\s*\|\s*|\s+[\u2022\u00b7]\s+/).map(norm)) if (LOCATION_RE.test(p) && !ROLE_RE.test(p) && p !== name && !EMAIL_RE.test(p)) return p; return ''; })();
+  return { name, headline, email, phone, location: loc, links: links.map((x) => x.replace(/[.)]+$/, '')) };
+}
+
+function parseResume(text, now) {
+  const raw = String(text || '').replace(/\r\n?/g, '\n');
+  const lines = raw.split('\n').map((l) => l.replace(/\s+$/, ''));
+  const secs = splitSections(lines);
+  const warnings = [];
+  const get = (k) => secs.filter((s) => s.kind === k);
+  const top = (secs[0] && secs[0].lines) || [];
+  const contact = parseContact(top.filter((l) => norm(l)).slice(0, 8), lines);
+
+  let summary = get('summary').map((s) => toBullets(s.lines).join(' ')).join(' ').trim();
+  if (!summary) {
+    const para = toBullets(top.slice(1)).filter((l) => l.split(/\s+/).length >= 18).join(' ');
+    summary = para;
+  }
+
+  let experience = [];
+  SKIP_LINES = new Set([contact.name, contact.headline].filter(Boolean).map(norm));
+  get('experience').forEach((s) => { experience = experience.concat(parseExperience(s.lines, now)); });
+  // Some resumes have no "Experience" heading: look for dated entries in the loose text instead.
+  if (!experience.length && !get('experience').length) experience = parseExperience(top, now);
+  SKIP_LINES = new Set();
+  const projects = []; get('projects').forEach((s) => projects.push(...parseProjects(s.lines, 'project')));
+  const personal = []; get('personal').forEach((s) => personal.push(...parseProjects(s.lines, 'personal')));
+  const skillSec = get('skills'); const sk = parseSkills([].concat(...skillSec.map((s) => s.lines)));
+  const education = [].concat(...get('education').map((s) => toBullets(s.lines)));
+  const certifications = [].concat(...get('certifications').map((s) => toBullets(s.lines)));
+  const achievements = [].concat(...get('achievements').map((s) => toBullets(s.lines)));
+
+  if (!experience.length) warnings.push('No jobs with dates were found. Check that each job has a date range such as "Mar 2021 - Present".');
+  experience.forEach((e) => { if (e.confidence === 'low') warnings.push('Check the company, role and dates for the entry "' + (e.company || e.role || 'unnamed') + '".'); });
+  if (!contact.name) warnings.push('No name was found at the top.');
+  if (!contact.email) warnings.push('No email address was found.');
+  if (!sk.items.length) warnings.push('No skills section was found.');
+
+  // Total experience in years (first start to last end, ignoring overlaps).
+  let years = 0;
+  const starts = experience.map((e) => e._start).filter(Boolean);
+  const ends = experience.map((e) => e._end).filter(Boolean);
+  if (starts.length && ends.length) {
+    const first = starts.reduce((a, b) => (a.y * 12 + a.m < b.y * 12 + b.m ? a : b));
+    const last = ends.reduce((a, b) => (a.y * 12 + a.m > b.y * 12 + b.m ? a : b));
+    years = Math.max(0, Math.round(monthsBetween(first, last) / 12 * 10) / 10);
+  }
+  experience.forEach((e) => { delete e._start; delete e._end; });
+  // Dates are recomputed from the visible strings when needed (see datesOf in questions.js).
+
+  return {
+    contact, summary, experience, projects, personal, skills: sk.items, skillGroups: sk.groups,
+    education, certifications, achievements, years, warnings,
+    foundAt: Date.now(),
+  };
+}
+
+/** Plain text of a structured resume (used for JD matching and the ATS keyword checks). */
+function resumeText(r) {
+  if (!r) return '';
+  const out = [r.contact && r.contact.name, r.contact && r.contact.headline, r.summary];
+  (r.experience || []).forEach((e) => { out.push(e.role, e.company, ...(e.bullets || [])); });
+  (r.projects || []).concat(r.personal || []).forEach((p) => { out.push(p.name, p.tech, ...(p.bullets || [])); });
+  out.push((r.skills || []).join(', '), ...(r.education || []), ...(r.certifications || []), ...(r.achievements || []));
+  return out.filter(Boolean).join('\n');
+}
+
+/* ---- core/jd.js ---- */
+// Job description analysis and resume-to-JD matching. Rule based: a skills dictionary with synonyms, section cues
+// ("Requirements", "Nice to have") and a few patterns for years, seniority, company and contact details.
+
+
+// id, label, group, synonyms (matched as whole words, case-insensitive)
+const SKILLS = [
+  ['sql', 'SQL', 'Data', ['sql', 't-sql', 'tsql', 'pl/sql', 'mysql', 'postgresql', 'postgres']],
+  ['python', 'Python', 'Data', ['python', 'pandas', 'numpy']],
+  ['r', 'R', 'Data', ['r programming', 'rstudio', 'r language', 'tidyverse', 'python or r', 'r or python']],
+  ['excel', 'Excel', 'Tools', ['excel', 'spreadsheets', 'vba', 'google sheets']],
+  ['powerbi', 'Power BI', 'BI', ['power bi', 'powerbi', 'dax', 'power query']],
+  ['tableau', 'Tableau', 'BI', ['tableau']],
+  ['looker', 'Looker', 'BI', ['looker', 'looker studio', 'data studio']],
+  ['dashboards', 'Dashboards and reporting', 'BI', ['dashboard', 'dashboards', 'reporting', 'reports', 'visualisation', 'visualization', 'data visualisation', 'data visualization']],
+  ['snowflake', 'Snowflake', 'Warehouse', ['snowflake']],
+  ['bigquery', 'BigQuery', 'Warehouse', ['bigquery', 'big query']],
+  ['redshift', 'Redshift', 'Warehouse', ['redshift']],
+  ['warehouse', 'Cloud data warehouse', 'Warehouse', ['data warehouse', 'cloud data warehouse', 'warehouse', 'data warehousing', 'synapse', 'databricks']],
+  ['dbt', 'dbt', 'Engineering', ['dbt']],
+  ['etl', 'ETL / data pipelines', 'Engineering', ['etl', 'elt', 'data pipeline', 'data pipelines', 'airflow', 'data modelling', 'data modeling', 'ssis', 'azure data factory']],
+  ['git', 'Git', 'Engineering', ['git', 'github', 'version control']],
+  ['cloud', 'Cloud (AWS, Azure, GCP)', 'Engineering', ['aws', 'azure', 'gcp', 'google cloud']],
+  ['abtesting', 'A/B testing and experiments', 'Analysis', ['a/b test', 'a/b testing', 'ab testing', 'experiment', 'experiments', 'experimentation', 'experiment design']],
+  ['stats', 'Statistics', 'Analysis', ['statistics', 'statistical', 'hypothesis testing', 'regression', 'probability']],
+  ['forecasting', 'Forecasting', 'Analysis', ['forecast', 'forecasting', 'demand modelling', 'demand modeling', 'time series', 'predictive']],
+  ['ml', 'Machine learning', 'Analysis', ['machine learning', 'scikit-learn', 'sklearn', 'predictive modelling']],
+  ['geospatial', 'Geospatial data', 'Analysis', ['geospatial', 'gis', 'spatial data']],
+  ['kpi', 'KPIs and metrics', 'Analysis', ['kpi', 'kpis', 'metrics', 'okr']],
+  ['quality', 'Data quality and testing', 'Engineering', ['data quality', 'well-tested', 'testing', 'validation', 'data governance']],
+  ['stakeholders', 'Stakeholder management', 'People', ['stakeholder', 'stakeholders', 'senior stakeholders', 'cross-functional', 'business partners']],
+  ['communication', 'Communication and storytelling', 'People', ['communication', 'storytelling', 'present findings', 'presentation', 'presenting', 'communicate']],
+  ['mentoring', 'Mentoring and leadership', 'People', ['mentor', 'mentoring', 'coach', 'coaching', 'lead a team', 'team lead', 'line management', 'leadership']],
+  ['agile', 'Agile ways of working', 'People', ['agile', 'scrum', 'kanban', 'jira']],
+  ['product', 'Product analytics', 'Analysis', ['product analytics', 'product team', 'product managers', 'funnel', 'retention']],
+];
+
+const NICE_HEAD = /^(?:nice to have|preferred|bonus|desirable|a plus|nice-to-have|plus|good to have|would be a plus|advantageous)/i;
+const REQ_HEAD = /^(?:requirements?|what you(?:'|’)ll need|what we(?:'|’)re looking for|must have|essential|you have|qualifications|skills and experience|about you|who you are|key skills)/i;
+const RESP_HEAD = /^(?:responsibilities|what you(?:'|’)ll do|the role|key responsibilities|duties|your role|day to day|in this role)/i;
+
+function re(syn) { return new RegExp('(?<![A-Za-z0-9+#])' + syn.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+') + '(?![A-Za-z0-9+#])', 'i'); }
+const SKILL_RES = SKILLS.map(([id, label, group, syns]) => ({ id, label, group, res: syns.map(re) }));
+const skillById = (id) => SKILLS.find((s) => s[0] === id);
+const skillLabel = (id) => (skillById(id) || [id, id])[1];
+
+function skillsIn(text) {
+  const t = String(text || '');
+  return SKILL_RES.filter((s) => s.res.some((r) => r.test(t))).map((s) => s.id);
+}
+
+function headingOf(line) {
+  const t = norm(line).replace(/[:\-*#]+$/g, '').trim();
+  if (!t || t.length > 60 || /[.!?]$/.test(t)) return null;
+  if (NICE_HEAD.test(t)) return 'nice';
+  if (REQ_HEAD.test(t)) return 'req';
+  if (RESP_HEAD.test(t)) return 'resp';
+  return null;
+}
+
+function analyseJd(text) {
+  const raw = String(text || '').replace(/\r\n?/g, '\n');
+  const lines = raw.split('\n').map((l) => l.replace(/\s+$/, ''));
+  const nonEmpty = lines.filter((l) => norm(l));
+  const title = norm(nonEmpty[0] || '').replace(/^job title\s*[:-]\s*/i, '');
+
+  const emails = [...new Set(raw.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [])];
+  const phones = [...new Set((raw.match(/(?:\+\d{1,3}[\s.-]?)?\(?\d{2,5}\)?[\s.-]\d{3,5}[\s.-]?\d{3,5}/g) || []).map(norm))];
+  const links = [...new Set(raw.match(/https?:\/\/[^\s)]+/g) || [])];
+
+  let company = '';
+  let m = /^\s*(?:company|employer|organisation|organization)\s*[:\-]\s*(.+)$/im.exec(raw);
+  if (m) company = norm(m[1]);
+  if (!company) { m = /^\s*about\s+(?:us\s*[:\-]?\s*)?(.{2,50}?)\s*$/im.exec(raw); if (m && !/^(?:us|the role|you|the team)$/i.test(m[1])) company = norm(m[1]); }
+  if (!company && nonEmpty[1] && norm(nonEmpty[1]).length <= 50 && !/[:.]$/.test(norm(nonEmpty[1])) && !/location|salary|contract/i.test(nonEmpty[1])) company = norm(nonEmpty[1]);
+  if (!company) { m = /\bat\s+([A-Z][A-Za-z0-9&' -]{2,40})(?:[,.\s]|$)/.exec(raw); if (m) company = norm(m[1]); }
+
+  const loc = (/^\s*location\s*[:\-]\s*(.+)$/im.exec(raw) || [])[1] || '';
+  const yearsM = /(\d{1,2})\s*\+?\s*(?:-\s*\d{1,2}\s*)?years?/i.exec(raw);
+  const years = yearsM ? +yearsM[1] : 0;
+  const hay = (title + ' ' + raw.slice(0, 400)).toLowerCase();
+  const seniority = /\b(principal|head of|director)\b/.test(hay) ? 'lead' : /\b(lead|staff)\b/.test(hay) ? 'lead' : /\bsenior|sr\.?\b/.test(hay) ? 'senior' : /\b(junior|graduate|entry)\b/.test(hay) ? 'junior' : years >= 6 ? 'senior' : years >= 3 ? 'mid' : 'mid';
+
+  // Walk the lines tracking which block we are in, so skills under "Nice to have" count as optional.
+  let mode = 'other';
+  const required = new Set(), nice = new Set(), responsibilities = [], reqLines = [], groups = [];
+  for (const l of lines) {
+    const h = headingOf(l);
+    if (h) { mode = h; continue; }
+    const t = norm(l);
+    if (!t) continue;
+    if (/^(?:about|to apply|how to apply|benefits|what we offer|salary)\b/i.test(t) && !isBullet(l)) mode = 'other';
+    const found = skillsIn(t);
+    if (found.length > 1 && /\b(?:or|such as|e\.g\.)\b|\//i.test(t)) groups.push(found);
+    if (mode === 'nice') found.forEach((id) => nice.add(id));
+    else found.forEach((id) => required.add(id));
+    if (mode === 'resp' && isBullet(l)) responsibilities.push(stripBullet(l));
+    if (mode === 'req' && isBullet(l)) reqLines.push(stripBullet(l));
+  }
+  nice.forEach((id) => { if (required.has(id)) nice.delete(id); });
+  // Skills only mentioned in the "about" paragraph are weak signals; keep the ones found in a responsibilities or requirements line.
+  const strong = new Set();
+  [...responsibilities, ...reqLines].forEach((l) => skillsIn(l).forEach((id) => strong.add(id)));
+  const req = [...required].filter((id) => strong.has(id) || !strong.size);
+
+  const themes = [];
+  if (seniority === 'senior' || seniority === 'lead') themes.push('Ownership and judgement: can you run an area of analysis without close direction?');
+  if (req.includes('stakeholders') || req.includes('communication')) themes.push('Influence: can you explain findings and change a senior person’s mind?');
+  if (req.includes('mentoring')) themes.push('Leadership: have you raised the level of other people’s work?');
+  if (req.includes('abtesting') || req.includes('stats')) themes.push('Rigour: do you design and read experiments correctly?');
+  if (req.includes('sql') || req.includes('warehouse')) themes.push('Technical depth: writing clear, correct, tested SQL on a real warehouse.');
+  if (req.includes('dashboards') || req.includes('powerbi') || req.includes('tableau')) themes.push('Product thinking: dashboards people actually use, not just build.');
+
+  return { title, company, location: norm(loc), emails, phones, links, years, seniority, required: req, nice: [...nice], responsibilities, themes, groups };
+}
+
+/** Which JD skills does the resume show, and where? */
+function matchJd(jd, resume) {
+  const rows = [];
+  const bulletsOf = [];
+  (resume.experience || []).forEach((e) => (e.bullets || []).forEach((b) => bulletsOf.push({ where: (e.role || 'Role') + ' at ' + (e.company || 'company'), text: b })));
+  (resume.projects || []).concat(resume.personal || []).forEach((p) => (p.bullets || []).forEach((b) => bulletsOf.push({ where: p.name, text: b })));
+  const skillsText = (resume.skills || []).join(', ') + ' ' + (resume.summary || '');
+  const add = (id, optional) => {
+    const entry = SKILL_RES.find((s) => s.id === id); if (!entry) return;
+    const inSkills = entry.res.some((r) => r.test(skillsText));
+    const evidence = bulletsOf.filter((b) => entry.res.some((r) => r.test(b.text))).slice(0, 3);
+    const status = evidence.length ? 'shown' : inSkills ? 'listed' : 'missing';
+    rows.push({ id, label: entry.label, optional: !!optional, status, evidence });
+  };
+  jd.required.forEach((id) => add(id, false));
+  jd.nice.forEach((id) => add(id, true));
+  // "Snowflake or BigQuery": one of them is enough, so a missing alternative is not a gap.
+  (jd.groups || []).forEach((g) => {
+    const members = rows.filter((r) => g.includes(r.id));
+    if (members.length < 2) return;
+    const best = members.find((r) => r.status === 'shown') || members.find((r) => r.status === 'listed');
+    if (best) members.forEach((r) => { if (r !== best && r.status === 'missing') { r.status = 'alt'; r.altOf = best.label; } });
+  });
+  const req = rows.filter((r) => !r.optional && r.status !== 'alt');
+  const score = req.length ? Math.round(req.reduce((n, r) => n + (r.status === 'shown' ? 1 : r.status === 'listed' ? 0.6 : 0), 0) / req.length * 100) : null;
+  const resumeSkills = skillsIn(resumeText(resume));
+  const extras = resumeSkills.filter((id) => !jd.required.includes(id) && !jd.nice.includes(id)).map(skillLabel);
+  const suggestions = [];
+  rows.forEach((r) => {
+    if (r.status === 'missing' && !r.optional) suggestions.push('The role asks for ' + r.label + ' and your resume does not show it. If you have used it, add it to a bullet with what you did and the result. If not, prepare an honest answer about how you would learn it.');
+    else if (r.status === 'listed') suggestions.push(r.label + ' is only in your skills list. Add it to a bullet so the reader can see where you used it.');
+  });
+  if (jd.years && resume.years && resume.years < jd.years) suggestions.push('The role asks for ' + jd.years + '+ years and your resume shows about ' + resume.years + '. Be ready to explain how your depth makes up for it.');
+  return { rows, score, extras, suggestions };
+}
+
+/* ---- core/ats.js ---- */
+// Resume readability checks: what an automated parser or a quick human skim will trip on. These are rules of thumb,
+// not a real ATS score, and the UI says so.
+
+
+const WEAK = [
+  [/\bresponsible for\b/i, 'Replace "responsible for" with what you did: "Owned", "Ran", "Built".'],
+  [/\bworked (?:on|with)\b/i, '"Worked on" hides your part. Say what you did and what changed.'],
+  [/\bhelped (?:with|to)?\b/i, '"Helped" understates your role. Name your contribution.'],
+  [/\bduties (?:include|included)\b/i, 'List results, not duties.'],
+  [/\bassisted (?:with|in)\b/i, '"Assisted" reads as a minor role. Say what you delivered.'],
+  [/\bsupported\b/i, '"Supported" is vague. Say what you produced or improved.'],
+];
+const ACTION = /^(?:built|led|ran|drove|wrote|made|cut|grew|won|set up|designed|developed|created|launched|delivered|automated|reduced|increased|improved|owned|managed|analysed|analyzed|presented|forecast|mentored|migrated|implemented|introduced|streamlined|negotiated|defined|established|trained|identified|combined|visualised|visualized|published|cleaned|prepared|replaced|raised|scaled|rebuilt|produced|partnered|collaborated|coordinated|reviewed|tested|optimised|optimized|simplified|standardised|standardized|transformed|supported|helped|worked|used|maintained)\b/i;
+const HAS_NUMBER = /\d|%|£|\$|€|₹/;
+
+function checkResume(r, rawText) {
+  const items = [];
+  const add = (id, area, level, title, detail) => items.push({ id, area, level, title, detail });
+  const c = r.contact || {};
+  const bullets = [];
+  (r.experience || []).forEach((e) => (e.bullets || []).forEach((b) => bullets.push({ b, where: e.company || e.role || 'a job' })));
+  (r.projects || []).concat(r.personal || []).forEach((p) => (p.bullets || []).forEach((b) => bullets.push({ b, where: p.name })));
+  const text = rawText || resumeText(r);
+  const wc = wordCount(text);
+
+  // Contact
+  add('email', 'Contact', c.email ? 'pass' : 'fail', c.email ? 'Email address found' : 'No email address', c.email ? '' : 'Recruiters and ATS forms look for an email near the top.');
+  add('phone', 'Contact', c.phone ? 'pass' : 'warn', c.phone ? 'Phone number found' : 'No phone number', c.phone ? '' : 'Add a phone number unless you prefer email only.');
+  add('links', 'Contact', (c.links || []).length ? 'pass' : 'info', (c.links || []).length ? 'Profile link found' : 'No LinkedIn or portfolio link', (c.links || []).length ? '' : 'A LinkedIn or GitHub link helps for analyst and engineering roles.');
+  if (/\b(date of birth|dob|marital status|nationality|passport)\b/i.test(text)) add('personal', 'Contact', 'warn', 'Personal details that are usually left out', 'Date of birth, marital status and nationality are usually omitted for US, UK and EU roles. Keep them only if the employer asks.');
+
+  // Structure
+  add('summary', 'Structure', r.summary ? 'pass' : 'warn', r.summary ? 'Summary found' : 'No summary', r.summary ? '' : 'Two or three lines at the top say who you are and what you offer.');
+  add('experience', 'Structure', (r.experience || []).length ? 'pass' : 'fail', (r.experience || []).length ? (r.experience.length + ' jobs with dates found') : 'No dated jobs found', (r.experience || []).length ? '' : 'Use a clear job header with a date range for each role.');
+  add('skills', 'Structure', (r.skills || []).length >= 6 ? 'pass' : (r.skills || []).length ? 'warn' : 'fail', (r.skills || []).length ? (r.skills.length + ' skills listed') : 'No skills section', (r.skills || []).length >= 6 ? '' : 'List at least six relevant tools and methods so keyword searches can find you.');
+  add('education', 'Structure', (r.education || []).length ? 'pass' : 'warn', (r.education || []).length ? 'Education found' : 'No education section', '');
+
+  // Dates and gaps
+  const jobs = r.experience || [];
+  const bad = jobs.filter((e) => !parseDate(e.start) || !parseDate(e.end, true));
+  add('dates', 'Dates', !jobs.length ? 'info' : bad.length ? 'warn' : 'pass', bad.length ? bad.length + ' job(s) with unclear dates' : 'Dates are readable', bad.length ? 'Use "Mon YYYY - Mon YYYY" for every role.' : '');
+  const gaps = [];
+  const dated = jobs.map((e) => ({ e, s: parseDate(e.start), t: parseDate(e.end, true) })).filter((x) => x.s && x.t).sort((a, b) => (a.s.y * 12 + a.s.m) - (b.s.y * 12 + b.s.m));
+  for (let i = 1; i < dated.length; i++) { const g = monthsBetween(dated[i - 1].t, dated[i].s); if (g > 6) gaps.push((dated[i - 1].e.company || 'job') + ' to ' + (dated[i].e.company || 'job') + ' (' + g + ' months)'); }
+  add('gaps', 'Dates', gaps.length ? 'info' : 'pass', gaps.length ? 'Gap between jobs: ' + gaps.join('; ') : 'No gaps over six months', gaps.length ? 'Gaps are normal. Add a one-line reason if it was study, caring, travel or freelance work.' : '');
+
+  // Bullets
+  const long = bullets.filter((x) => wordCount(x.b) > 38);
+  const withNum = bullets.filter((x) => HAS_NUMBER.test(x.b));
+  const withAction = bullets.filter((x) => ACTION.test(x.b));
+  const share = bullets.length ? withNum.length / bullets.length : 0;
+  add('metrics', 'Impact', !bullets.length ? 'info' : share >= 0.4 ? 'pass' : share >= 0.2 ? 'warn' : 'fail', bullets.length ? withNum.length + ' of ' + bullets.length + ' bullets include a number' : 'No bullets found', share >= 0.4 ? '' : 'Aim for a number in at least four bullets in ten: money, time, volume, accuracy or people affected.');
+  add('verbs', 'Impact', !bullets.length ? 'info' : withAction.length / bullets.length >= 0.7 ? 'pass' : 'warn', bullets.length ? withAction.length + ' of ' + bullets.length + ' bullets start with an action verb' : '', 'Start each bullet with what you did: Built, Led, Cut, Automated.');
+  add('long', 'Impact', long.length ? 'warn' : 'pass', long.length ? long.length + ' bullet(s) are long' : 'Bullets are a good length', long.length ? 'Keep bullets under about two lines. Split long ones into action and result.' : '');
+  const jobBullets = jobs.map((e) => (e.bullets || []).length);
+  add('depth', 'Impact', jobs.length && jobBullets.some((n) => n < 2) ? 'warn' : 'pass', jobs.length && jobBullets.some((n) => n < 2) ? 'A job has fewer than two bullets' : 'Each job has enough detail', '');
+
+  // Wording
+  const weak = [];
+  bullets.forEach((x) => WEAK.forEach(([rx, tip]) => { if (rx.test(x.b)) weak.push({ where: x.where, bullet: x.b, tip }); }));
+  add('weak', 'Wording', weak.length ? 'warn' : 'pass', weak.length ? weak.length + ' bullet(s) use weak phrasing' : 'No weak phrasing found', weak.length ? 'See the suggestions list for each one.' : '');
+  const first = bullets.filter((x) => /\b(I|my)\b/.test(x.b));
+  add('pronouns', 'Wording', first.length ? 'warn' : 'pass', first.length ? first.length + ' bullet(s) use "I" or "my"' : 'No first-person pronouns', first.length ? 'Resume bullets usually drop "I" and start with the verb.' : '');
+  add('length', 'Length', wc < 250 ? 'warn' : wc > 1000 ? 'warn' : 'pass', wc + ' words', wc < 250 ? 'Short for a senior resume. Add detail on results.' : wc > 1000 ? 'Long. Two pages is usually the limit.' : '');
+  add('chars', 'Format', /[─-╿�■-◿]/.test(text.replace(/[▪●◦■○]/g, '')) ? 'warn' : 'pass', 'Characters', 'Avoid boxes, icons and decorative characters. Parsers may drop them or turn them into noise.');
+
+  const suggestions = [];
+  weak.forEach((w) => suggestions.push({ kind: 'wording', where: w.where, text: w.tip, bullet: w.bullet }));
+  bullets.filter((x) => !HAS_NUMBER.test(x.b)).slice(0, 8).forEach((x) => suggestions.push({ kind: 'metric', where: x.where, text: 'Add a number or result: how many, how much, how often, or what changed?', bullet: x.b }));
+  long.slice(0, 4).forEach((x) => suggestions.push({ kind: 'length', where: x.where, text: 'Shorten to one idea: the action, then the result.', bullet: x.b }));
+
+  const counts = items.reduce((a, i) => { a[i.level] = (a[i.level] || 0) + 1; return a; }, {});
+  const scored = items.filter((i) => i.level !== 'info');
+  return { items, suggestions, passed: scored.filter((i) => i.level === 'pass').length, total: scored.length, counts };
+}
+
+/* ---- core/answers.js ---- */
+// Quick, explainable checks on a typed answer: length, structure, ownership, numbers and hedging.
+
+const HEDGES = /\b(maybe|kind of|sort of|i think|i guess|probably|just|a bit|somewhat|hopefully|i suppose|basically|actually|honestly)\b/gi;
+const RESULT = /\b(result(?:ed)?|led to|so that|which (?:meant|saved|raised|cut|reduced|increased)|saved|reduced|increased|improved|cut|grew|raised|delivered|outcome|impact|as a result|adopted)\b/i;
+const ACT_RX = /\b(i (?:built|led|ran|wrote|designed|created|decided|proposed|analysed|analyzed|presented|set up|automated|negotiated|investigated|fixed|owned|introduced|worked|asked|spoke|chose|tested|delivered|made))\b/i;
+const SITUATION = /\b(when|at the time|we were|the team was|the problem|the challenge|there was|our|the business|context|situation|needed to|had to)\b/i;
+const TASK = /\b(my (?:job|role|task|goal|responsibility)|i was (?:asked|responsible|tasked)|i needed to|i had to|the goal)\b/i;
+
+function analyseAnswer(text, targetSeconds) {
+  const t = String(text || '');
+  const wc = wordCount(t);
+  const sec = speakSeconds(t);
+  const we = (t.match(/\bwe\b/gi) || []).length, i = (t.match(/\bI\b/g) || []).length;
+  const hedges = (t.match(HEDGES) || []).length;
+  const hasNumber = /\d|%/.test(t.replace(/\[add:[^\]]*\]/gi, ''));
+  const gaps = (t.match(/\[add:[^\]]*\]/gi) || []).length;
+  const star = { situation: SITUATION.test(t), task: TASK.test(t), action: ACT_RX.test(t), result: RESULT.test(t) };
+  const checks = [
+    { id: 'gaps', ok: gaps === 0 && wc > 0, text: gaps ? gaps + ' gap(s) still marked [add: ...]' : 'No unfilled gaps' },
+    { id: 'length', ok: !targetSeconds || (sec >= targetSeconds * 0.5 && sec <= targetSeconds * 1.4), text: targetSeconds ? 'Speaking time about ' + sec + ' s (target ' + targetSeconds + ' s)' : 'Speaking time about ' + sec + ' s' },
+    { id: 'result', ok: star.result, text: star.result ? 'Names a result' : 'No clear result yet' },
+    { id: 'number', ok: hasNumber, text: hasNumber ? 'Includes a number' : 'No number yet' },
+    { id: 'owner', ok: i >= we || we === 0, text: i >= we ? 'Clear about what you did' : 'Many "we": say what you did' },
+    { id: 'hedge', ok: hedges <= 1, text: hedges > 1 ? hedges + ' hedging words (' + (t.match(HEDGES) || []).slice(0, 3).join(', ') + ')' : 'Confident wording' },
+  ];
+  return { words: wc, seconds: sec, star, checks, gaps };
+}
+
+/* ---- core/questions.js ---- */
+// Turns a structured resume (and optionally a JD analysis) into interview questions with starter answers.
+// Starter answers use only facts from the resume. Anything the resume does not say is left as a visible gap:
+// "[add: ...]". Nothing is invented.
+
+
+const CATS = {
+  intro: { label: 'Introduction', hue: 'blue' },
+  role: { label: 'Role', hue: 'yellow' },
+  project: { label: 'Project', hue: 'green' },
+  personal: { label: 'Personal project', hue: 'purple' },
+  story: { label: 'Career story', hue: 'orange' },
+  general: { label: 'Common question', hue: 'slate' },
+  jd: { label: 'This job', hue: 'pink' },
+  collected: { label: 'Collected', hue: 'teal' },
+};
+
+const GAP = (s) => '[add: ' + s + ']';
+
+// What the interviewer is really testing, what a good answer holds, what to avoid, and likely follow-ups.
+const COACH = {
+  yourself: { test: 'Can you give a clear, relevant summary of your career in about a minute and a half?', include: ['Present: who you are and what you do now', 'Past: two or three proof points with numbers', 'Future: why this role is the next step'], avoid: ['Reading your resume aloud', 'Personal life details', 'Going past two minutes'], followups: ['What are you proudest of?', 'Why are you looking to move?'], seconds: 90 },
+  walkthrough: { test: 'Is there a logical story behind your moves, and did you choose each step?', include: ['One line per job: what you did and what you learned', 'Why each move happened', 'Growth in scope over time'], avoid: ['Listing duties', 'Apologising for short stints'], followups: ['Which job taught you the most?', 'Why did you leave the last one?'], seconds: 120 },
+  looking: { test: 'Are you moving towards something, or running away from something?', include: ['A positive reason', 'What you want to learn or own next', 'A link to this role'], avoid: ['Criticising a past employer', 'Money as the only reason'], followups: ['What would make you stay?'], seconds: 45 },
+  strengths: { test: 'Do you know your strengths, and can you prove them?', include: ['Two strengths that this job needs', 'A short example for each'], avoid: ['Generic words like "hard-working" with no proof'], followups: ['Give me an example.'], seconds: 45 },
+  weakness: { test: 'Are you self-aware and working on it?', include: ['A real, small weakness', 'What you do about it', 'Progress so far'], avoid: ['A fake weakness such as "I work too hard"', 'A weakness the job depends on'], followups: ['How do you know it is improving?'], seconds: 45 },
+  achievement: { test: 'What does "good" look like to you, and how big was your part?', include: ['Situation and your goal', 'What you personally did', 'A measurable result'], avoid: ['Saying "we" throughout', 'No numbers'], followups: ['What would you do differently?', 'Who else was involved?'], seconds: 90 },
+  challenge: { test: 'How do you handle difficulty, and what do you learn from it?', include: ['The problem and why it was hard', 'Your options and why you chose one', 'The result and what you learned'], avoid: ['Blaming others', 'A problem that was easy'], followups: ['What would you do if it happened again?'], seconds: 90 },
+  conflict: { test: 'Can you disagree with someone and still get to a good result?', include: ['The disagreement in neutral words', 'How you listened and what you proposed', 'The outcome and the relationship afterwards'], avoid: ['Painting the other person as the villain'], followups: ['What did you learn about yourself?'], seconds: 90 },
+  failure: { test: 'Do you take responsibility and learn?', include: ['A real mistake that you owned', 'What you did to fix it', 'What you changed afterwards'], avoid: ['A story with no cost', 'Blame'], followups: ['How do you stop it happening again?'], seconds: 75 },
+  pressure: { test: 'How do you prioritise and communicate when time is short?', include: ['How you decided what mattered', 'Who you told and when', 'The outcome'], avoid: ['Heroics with no planning'], followups: ['What did you say no to?'], seconds: 75 },
+  influence: { test: 'Can you change a decision without having authority?', include: ['The decision and the people involved', 'The evidence you used', 'How you handled push-back'], avoid: ['Saying you just told them'], followups: ['What if they had still said no?'], seconds: 90 },
+  salary: { test: 'Have you done your homework, and are you flexible and realistic?', include: ['A researched range', 'Flexibility based on the whole package', 'Interest in the role first'], avoid: ['A single fixed number too early'], followups: ['What is your current salary?'], seconds: 30 },
+  notice: { test: 'Can you start when they need, and are you leaving professionally?', include: ['Your actual notice period', 'Willingness to hand over well'], avoid: ['Vague answers'], followups: [], seconds: 20 },
+  ask: { test: 'Are you curious and have you thought about the job?', include: ['Two or three real questions', 'One about the team and how success is measured'], avoid: ['"No questions"', 'Asking only about pay and leave'], followups: [], seconds: 45 },
+  roleOverview: { test: 'Do you understand your role and its scope?', include: ['Your title and reporting line', 'Who you worked with and for', 'The two or three things you owned'], avoid: ['A list of tasks with no outcome'], followups: ['What did your typical week look like?'], seconds: 60 },
+  tools: { test: 'Do you choose tools for a reason, and how deep is your use?', include: ['What each tool was for', 'Why you chose it over another', 'One thing you know that a beginner does not'], avoid: ['Naming tools you only touched once'], followups: ['What would you use instead?'], seconds: 60 },
+  stakeholders: { test: 'Can you work with non-technical people and manage expectations?', include: ['Who the stakeholders were', 'How you gathered requirements', 'How you reported back'], avoid: ['Jargon', 'Only describing meetings'], followups: ['Tell me about a difficult stakeholder.'], seconds: 60 },
+  deepdive: { test: 'Is this bullet true, and do you understand how it worked?', include: ['The starting problem', 'The steps you took', 'The result and how you measured it'], avoid: ['Vague answers', 'Claiming the team’s work as yours'], followups: ['How did you check it was right?', 'What went wrong?'], seconds: 90 },
+  leaving: { test: 'Why do people leave you, and how do you talk about past employers?', include: ['A calm, positive reason', 'What you gained there'], avoid: ['Criticism of managers or colleagues'], followups: ['What would have made you stay?'], seconds: 45 },
+  leading: { test: 'Can you raise other people’s work, not just your own?', include: ['Who you helped and what they struggled with', 'What you did', 'How they improved'], avoid: ['Taking credit for their results'], followups: ['Tell me about someone who did not improve.'], seconds: 75 },
+  projEnd: { test: 'Can you tell a whole project story, from the problem to the result?', include: ['The business problem', 'The data and method', 'The result and who used it'], avoid: ['Only talking about tools'], followups: ['What would you change?'], seconds: 120 },
+  projPart: { test: 'What was your part, as opposed to the team’s?', include: ['Your specific tasks', 'Decisions you made', 'What others did'], avoid: ['"We" for everything'], followups: ['Who disagreed with you?'], seconds: 60 },
+  projTrade: { test: 'Do you understand trade-offs and can you justify choices?', include: ['Two options you considered', 'Why you chose one', 'What you gave up'], avoid: ['Pretending there was only one way'], followups: ['What if the data had been ten times bigger?'], seconds: 90 },
+  projRedo: { test: 'Do you reflect honestly?', include: ['One specific change', 'Why it would be better'], avoid: ['"Nothing, it was perfect"'], followups: [], seconds: 60 },
+  personalWhy: { test: 'Do you learn on your own and care about the craft?', include: ['What sparked it', 'What you wanted to learn', 'What you built'], avoid: ['Apologising that it is "just" a side project'], followups: ['What was the hardest part?'], seconds: 60 },
+  gap: { test: 'Is there a reason for the gap, and are you ready to work now?', include: ['A short, honest reason', 'What you did or learned', 'Why you are ready'], avoid: ['Long explanations', 'Defensiveness'], followups: [], seconds: 45 },
+  short: { test: 'Is there a pattern of leaving early?', include: ['A clear, neutral reason', 'What you took from it'], avoid: ['Blame'], followups: ['Would you stay in this role?'], seconds: 45 },
+  progress: { test: 'Is your career moving upward in scope?', include: ['What grew: scope, people, impact', 'What you chose to take on'], avoid: ['Titles only'], followups: [], seconds: 60 },
+  whyCompany: { test: 'Have you researched them, and is your interest real?', include: ['Something specific about the company', 'How it connects to your work', 'What you would add'], avoid: ['Copying the careers page', 'Only mentioning benefits'], followups: ['What do you know about our product?'], seconds: 60 },
+  whyRole: { test: 'Do you understand the role, and does it fit your direction?', include: ['What attracts you in the description', 'Evidence that you can do it', 'What you want to grow into'], avoid: ['Generic enthusiasm'], followups: ['What worries you about the role?'], seconds: 60 },
+  skillShown: { test: 'Can you prove this required skill with a real example?', include: ['One strong, recent example', 'What you personally did', 'A measurable result'], avoid: ['Listing the tool without a story'], followups: ['How would you do it differently now?'], seconds: 90 },
+  skillListed: { test: 'Is this skill real, or only on the resume?', include: ['Where you used it', 'How deep your use went'], avoid: ['Overclaiming'], followups: ['What is a mistake people make with it?'], seconds: 60 },
+  skillGap: { test: 'How do you handle a gap honestly, and can you learn quickly?', include: ['What you have done that is closest', 'A concrete plan to close the gap', 'An example of learning fast'], avoid: ['Pretending you have the skill', 'Saying "I am a fast learner" with no proof'], followups: ['How long would it take you?'], seconds: 75 },
+  respHow: { test: 'Have you done this kind of work before?', include: ['A closest example', 'What was similar and what was different'], avoid: ['A generic answer'], followups: [], seconds: 75 },
+  first90: { test: 'Do you have a sensible plan to get useful quickly?', include: ['Listening first', 'One early win', 'How you would learn the data and the people'], avoid: ['Promising to change everything'], followups: [], seconds: 75 },
+};
+
+const GENERIC_COACH = { test: 'Can you answer clearly, with an example, in a reasonable time?', include: ['A direct first sentence', 'One example', 'A result or lesson'], avoid: ['Rambling', 'No example'], followups: ['Can you give another example?'], seconds: 75 };
+const COLLECTED_COACH = {
+  sql: { test: 'Do you know the concept and can you apply it to a real query?', include: ['A one-line definition', 'A small example query or table', 'When it goes wrong or is slow'], avoid: ['Reciting a definition with no example'], followups: ['How would you make it faster?'], seconds: 90 },
+  python: { test: 'Do you understand the language beyond copying snippets?', include: ['The idea in plain words', 'A short code example', 'A trade-off or gotcha'], avoid: ['Only naming libraries'], followups: ['What would you do with ten times more data?'], seconds: 90 },
+  bi: { test: 'Can you build and explain reports that people use?', include: ['The concept and where you used it', 'A real example', 'A common mistake'], avoid: ['Only describing buttons'], followups: ['How would you check it is right?'], seconds: 90 },
+  excel: { test: 'How deep is your spreadsheet skill?', include: ['The function or feature', 'A real use', 'A limit and what you use instead'], avoid: [], followups: [], seconds: 60 },
+  stats: { test: 'Do you reason correctly about data?', include: ['The idea in plain words', 'A concrete example', 'A pitfall'], avoid: ['Formulas with no meaning'], followups: ['How would you explain it to a manager?'], seconds: 90 },
+  behavioural: { test: 'What does your past behaviour say about how you will work?', include: ['A specific situation', 'What you did', 'The result and a lesson'], avoid: ['Generalities', 'Blame'], followups: ['What would you do differently?'], seconds: 90 },
+  leadership: { test: 'Can you lead and develop others?', include: ['The people and the goal', 'What you did', 'How they changed'], avoid: ['Credit-taking'], followups: [], seconds: 75 },
+  hr: { test: 'Are you realistic, professional and a good fit for the terms?', include: ['A short, honest answer', 'Flexibility where true'], avoid: ['Evasion'], followups: [], seconds: 30 },
+  general: GENERIC_COACH,
+};
+
+function coachFor(card) {
+  if (!card) return GENERIC_COACH;
+  if (card.source === 'collected') return COLLECTED_COACH[card.topic] || GENERIC_COACH;
+  return COACH[card.tid] || GENERIC_COACH;
+}
+
+// ---------- helpers ----------
+const PAST = /^(?:built|led|ran|drove|wrote|made|cut|grew|won|set up|took|brought|began|got|gave|found|taught|spoke|held|kept|sold|saw|put|chose|rebuilt|\w+ed)\b/i;
+const article = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
+const periodOf = (e) => [e.start, e.end].filter(Boolean).join(' to ');
+const clean = (s) => norm(s).replace(/[.;:]+$/, '');
+/** "Built a dashboard..." -> "I built a dashboard..."; otherwise quote the bullet so the sentence still reads. */
+function sayBullet(b) {
+  const t = clean(b);
+  if (!t) return '';
+  return PAST.test(t) ? 'I ' + lcFirst(t) : 'one thing I did was this: "' + trunc(t, 140) + '"';
+}
+const hasNum = (s) => /\d|%/.test(s);
+function topBullets(bullets, n) {
+  return (bullets || []).map((b, i) => ({ b, i, score: (hasNum(b) ? 100 : 0) + Math.min(b.length, 120) / 2 - i })).sort((a, b) => b.score - a.score).slice(0, n).sort((a, b) => a.i - b.i).map((x) => x.b);
+}
+const label = (e) => e.company || e.role || 'this job';
+const jobKey = (e) => 'co:' + slug(e.company) + '-' + slug(e.role);
+
+function endOf(e) { return parseDate(e.end, true); }
+function latestJob(r) {
+  const jobs = (r.experience || []).slice();
+  jobs.sort((a, b) => { const x = endOf(a), y = endOf(b); return (y ? y.y * 12 + y.m : 0) - (x ? x.y * 12 + x.m : 0); });
+  return jobs[0] || null;
+}
+function topSkills(r, n) { return (r.skills || []).slice(0, n).join(', '); }
+function isCurrent(e) { return /present|current|now/i.test(e.end || ''); }
+
+// ---------- resume cards ----------
+function buildResumeCards(r) {
+  const out = [];
+  const add = (sec, tid, cat, key, q, a) => out.push({ key, sec, cat, tid, q, a, seconds: (COACH[tid] || GENERIC_COACH).seconds });
+  const jobs = r.experience || [];
+  const latest = latestJob(r);
+  const name = (r.contact && r.contact.name) || '';
+
+  // Start here
+  const S1 = { key: 'intro', title: 'Start here', kind: 'resume', order: 10 };
+  const prior = jobs.filter((e) => e !== latest)[0];
+  const proof = latest ? topBullets(latest.bullets, 1)[0] : '';
+  const proof2 = prior ? topBullets(prior.bullets, 1)[0] : '';
+  const who = (r.contact && r.contact.headline) || (latest && latest.role) || GAP('your job title');
+  const yrs = r.years ? 'about ' + Math.round(r.years) + ' years' : GAP('number of years');
+  const sk = topSkills(r, 3) || GAP('your three main skills');
+  add(S1, 'yourself', 'intro', 'intro:yourself', 'Tell me about yourself.',
+    'I am ' + article(who) + ' with ' + yrs + ' of experience in ' + sk + '. ' +
+    (latest && proof ? 'Most recently at ' + label(latest) + ', ' + sayBullet(proof) + '. ' : '') +
+    (prior && proof2 ? 'Before that, at ' + label(prior) + ', ' + sayBullet(proof2) + '. ' : '') +
+    GAP('one line on what you are best known for') + ' ' +
+    'I am now looking for a role where I can ' + GAP('what you want to do next') + '.');
+  add(S1, 'walkthrough', 'intro', 'intro:walkthrough', 'Walk me through your resume.',
+    jobs.length ? jobs.slice().reverse().map((e) => 'At ' + label(e) + ' (' + periodOf(e) + ') I worked as ' + (e.role ? article(e.role) : GAP('role')) + '. ' + (topBullets(e.bullets, 1)[0] ? sayBullet(topBullets(e.bullets, 1)[0]) + '. ' : '') + GAP('why you moved on, or what you learned')).join('\n\n')
+      : GAP('one line per job: what you did and why you moved'));
+  add(S1, 'looking', 'intro', 'intro:looking', 'Why are you looking for a new role?',
+    latest ? 'I have learned a lot at ' + label(latest) + ', in particular ' + GAP('one thing you learned') + '. ' + GAP('the positive reason you want to move: scope, learning, domain') + '. This role looks like the right next step because ' + GAP('link to the job') + '.' : GAP('a positive reason'));
+
+  // Common questions
+  const S2 = { key: 'general', title: 'Common questions', kind: 'resume', order: 20 };
+  const bestAch = latest ? topBullets(latest.bullets, 1)[0] : '';
+  add(S2, 'strengths', 'general', 'gen:strengths', 'What are your strengths?', 'My strengths are ' + GAP('strength 1') + ' and ' + GAP('strength 2') + '. For example, ' + (bestAch ? sayBullet(bestAch) : GAP('a short example')) + '.');
+  add(S2, 'weakness', 'general', 'gen:weakness', 'What is your biggest weakness?', 'I have found that ' + GAP('a real, small weakness') + '. To work on it I ' + GAP('what you do about it') + ', and ' + GAP('a sign that it is improving') + '.');
+  add(S2, 'achievement', 'general', 'gen:proud', 'What achievement are you most proud of?',
+    bestAch ? 'The thing I am proudest of is this. ' + GAP('the situation and goal') + '. ' + sayBullet(bestAch) + '. ' + GAP('what you personally did that others might not have') + '. ' + GAP('the result, with a number if you have one') : GAP('situation, what you did, result'));
+  add(S2, 'conflict', 'general', 'gen:conflict', 'Tell me about a time you disagreed with a colleague or manager.', 'The situation was ' + GAP('what the disagreement was about') + '. I ' + GAP('how you listened and what you proposed') + '. The outcome was ' + GAP('result and relationship afterwards') + '.');
+  add(S2, 'failure', 'general', 'gen:failure', 'Tell me about a time you made a mistake.', 'I ' + GAP('the mistake, in one sentence') + '. I told ' + GAP('who and when') + ' and fixed it by ' + GAP('what you did') + '. Since then I ' + GAP('what you changed') + '.');
+  add(S2, 'pressure', 'general', 'gen:deadline', 'How do you handle tight deadlines and competing priorities?', 'I start by ' + GAP('how you decide what matters most') + '. An example was ' + GAP('a real deadline') + ', where I ' + GAP('what you did and who you told') + '.');
+  add(S2, 'influence', 'general', 'gen:influence', 'Tell me about a time you changed someone’s mind with data.', 'The decision was ' + GAP('the decision') + '. I showed ' + GAP('the evidence you used') + ', and when ' + GAP('the push-back') + ', I ' + GAP('how you handled it') + '. The result was ' + GAP('outcome') + '.');
+  add(S2, 'salary', 'general', 'gen:salary', 'What are your salary expectations?', 'I would like to understand the full role first. Based on my research for ' + GAP('role and location') + ', I am looking at ' + GAP('your researched range') + ', and I am flexible depending on the whole package.');
+  add(S2, 'notice', 'general', 'gen:notice', 'What is your notice period?', 'My notice period is ' + GAP('your notice period') + '. I would hand over ' + GAP('what you would hand over') + ' properly before leaving.');
+  add(S2, 'ask', 'general', 'gen:ask', 'What questions do you have for us?', '1. How is success measured for this role in the first year?\n2. ' + GAP('a question about the team or data') + '\n3. ' + GAP('a question about the business problem you would work on'));
+
+  // One section per job
+  jobs.forEach((e, i) => {
+    const S = { key: jobKey(e), title: (e.role || 'Role') + ' at ' + label(e), sub: periodOf(e), kind: 'resume', order: 30 + i };
+    const bl = e.bullets || [];
+    const tb = topBullets(bl, 2);
+    add(S, 'roleOverview', 'role', S.key + ':overview', 'Tell me about your role at ' + label(e) + '.',
+      'At ' + label(e) + ' I was ' + (e.role ? article(e.role) : GAP('your role')) + ' from ' + periodOf(e) + '. ' + tb.map((b) => sayBullet(b) + '.').join(' ') + ' ' + GAP('team size and who you worked with'));
+    const ach = topBullets(bl.filter(hasNum), 1)[0] || topBullets(bl, 1)[0];
+    add(S, 'achievement', 'role', S.key + ':achievement', 'What was your biggest achievement at ' + label(e) + '?',
+      GAP('situation: what was wrong or needed') + ' ' + (ach ? sayBullet(ach) + '.' : GAP('what you did')) + ' ' + GAP('the result, with a number if you have one') + ' ' + GAP('why it mattered to the business'));
+    add(S, 'challenge', 'role', S.key + ':challenge', 'What was the hardest problem you solved at ' + label(e) + '?',
+      'The problem was ' + GAP('the problem and why it was hard') + '. I considered ' + GAP('two options') + ' and chose ' + GAP('which and why') + '. ' + GAP('the result and what you learned'));
+    const used = skillsIn(bl.join(' ')).map(skillLabel);
+    add(S, 'tools', 'role', S.key + ':tools', 'Which tools and methods did you use at ' + label(e) + ', and why?',
+      used.length ? 'I mainly used ' + used.join(', ') + '. ' + GAP('what each was used for and why you chose it') : GAP('the tools you used and why'));
+    add(S, 'stakeholders', 'role', S.key + ':stakeholders', 'Who did you work with at ' + label(e) + ' and how did you handle requests?',
+      'I worked with ' + GAP('teams and seniority') + '. When a request came in, I ' + GAP('how you clarified the need and agreed scope') + '. I reported back by ' + GAP('how and how often') + '.');
+    tb.forEach((b) => add(S, 'deepdive', 'role', S.key + ':b-' + hash(b), 'You wrote: “' + trunc(clean(b), 150) + '”. Walk me through how you did that.',
+      'The starting point was ' + GAP('the problem or request') + '. ' + sayBullet(b) + '. The steps were ' + GAP('step 1, step 2, step 3') + '. I checked it by ' + GAP('how you validated it') + '. The result was ' + GAP('measured result') + '.'));
+    if (bl.some((b) => /\b(mentor|coach|train|led|lead|managed|supervis)/i.test(b))) {
+      const lb = bl.find((b) => /\b(mentor|coach|train|led|lead|managed|supervis)/i.test(b));
+      add(S, 'leading', 'role', S.key + ':leading', 'Tell me about a time you led or mentored someone at ' + label(e) + '.', sayBullet(lb) + '. ' + GAP('who they were and what they struggled with') + ' ' + GAP('what changed for them'));
+    }
+    add(S, 'leaving', 'role', S.key + ':leaving', isCurrent(e) ? 'Why are you looking to leave ' + label(e) + '?' : 'Why did you leave ' + label(e) + '?',
+      'I gained ' + GAP('what you gained') + ' at ' + label(e) + '. ' + GAP('a calm, positive reason for moving on') + '.');
+  });
+
+  // Projects
+  (r.projects || []).forEach((p, i) => {
+    const S = { key: 'pr:' + slug(p.name), title: 'Project: ' + p.name, sub: p.tech || '', kind: 'resume', order: 60 + i };
+    const tb = topBullets(p.bullets, 2);
+    add(S, 'projEnd', 'project', S.key + ':end', 'Describe the project “' + p.name + '” from start to finish.',
+      'The problem was ' + GAP('the business problem') + '. ' + tb.map((b) => sayBullet(b) + '.').join(' ') + (p.tech ? ' I used ' + p.tech + '.' : '') + ' ' + GAP('the result and who used it'));
+    add(S, 'projPart', 'project', S.key + ':part', 'What exactly was your contribution to “' + p.name + '”?', 'I personally ' + GAP('your tasks and decisions') + '. Others ' + GAP('what others did') + '.');
+    add(S, 'projTrade', 'project', S.key + ':tradeoff', 'What trade-offs did you make in “' + p.name + '”?', 'I considered ' + GAP('option A and option B') + ' and chose ' + GAP('which') + ' because ' + GAP('why') + '. I gave up ' + GAP('what you gave up') + '.');
+    add(S, 'projRedo', 'project', S.key + ':redo', 'What would you do differently on “' + p.name + '”?', 'I would ' + GAP('one specific change') + ', because ' + GAP('why it would be better') + '.');
+  });
+  (r.personal || []).forEach((p, i) => {
+    const S = { key: 'pp:' + slug(p.name), title: 'Personal project: ' + p.name, sub: p.tech || '', kind: 'resume', order: 80 + i };
+    const tb = topBullets(p.bullets, 2);
+    add(S, 'personalWhy', 'personal', S.key + ':why', 'Why did you build “' + p.name + '”?', 'I wanted to ' + GAP('what you wanted to learn or solve') + '. ' + tb.map((b) => sayBullet(b) + '.').join(' '));
+    add(S, 'personalWhy', 'personal', S.key + ':learned', 'What did you learn from “' + p.name + '”?', 'The main thing I learned was ' + GAP('lesson') + '. It changed how I ' + GAP('how it changed your work') + '.');
+    add(S, 'projTrade', 'personal', S.key + ':scale', 'How would you scale or improve “' + p.name + '”?', 'First I would ' + GAP('first improvement') + ', then ' + GAP('second improvement') + '.');
+  });
+
+  // Career story: gaps, short stints, progression
+  const S4 = { key: 'story', title: 'Career story', kind: 'resume', order: 90 };
+  const dated = jobs.map((e) => ({ e, s: parseDate(e.start), t: parseDate(e.end, true) })).filter((x) => x.s && x.t).sort((a, b) => (a.s.y * 12 + a.s.m) - (b.s.y * 12 + b.s.m));
+  for (let i = 1; i < dated.length; i++) {
+    const g = monthsBetween(dated[i - 1].t, dated[i].s);
+    if (g > 6) add(S4, 'gap', 'story', 'story:gap-' + slug(dated[i - 1].e.company) + '-' + slug(dated[i].e.company), 'Can you explain the gap between ' + label(dated[i - 1].e) + ' and ' + label(dated[i].e) + '?', 'Between ' + dated[i - 1].e.end + ' and ' + dated[i].e.start + ' I ' + GAP('what you did: study, caring, travel, freelance') + '. During that time I ' + GAP('what you learned or kept up') + '. I was ready to return because ' + GAP('why') + '.');
+  }
+  dated.forEach((x) => { const m = monthsBetween(x.s, x.t); if (m !== null && m < 12 && !isCurrent(x.e)) add(S4, 'short', 'story', 'story:short-' + slug(x.e.company), 'Why was your time at ' + label(x.e) + ' short?', 'I joined ' + label(x.e) + ' to ' + GAP('why you joined') + '. After ' + m + ' months ' + GAP('a neutral reason it changed') + '. What I took from it was ' + GAP('lesson') + '.'); });
+  if (jobs.length > 1) add(S4, 'progress', 'story', 'story:progress', 'How has your career progressed?', 'I started as ' + (jobs[jobs.length - 1].role ? article(jobs[jobs.length - 1].role) : GAP('first role')) + ' and I am now ' + (jobs[0].role ? article(jobs[0].role) : GAP('current role')) + '. The scope grew from ' + GAP('what you owned then') + ' to ' + GAP('what you own now') + '.');
+  return out;
+}
+
+// ---------- JD cards ----------
+function buildJdCards(jd, resume, match, jdKey) {
+  const out = [];
+  if (!jd) return out;
+  const company = jd.company || 'the company';
+  const title = jd.title || 'this role';
+  const SEC = { key: 'jd:' + (jdKey || 'current'), title: 'For this job: ' + title + (jd.company ? ' at ' + jd.company : ''), kind: 'jd', order: 100 };
+  const add = (tid, key, q, a) => out.push({ key: SEC.key + ':' + key, sec: SEC, cat: 'jd', tid, q, a, seconds: (COACH[tid] || GENERIC_COACH).seconds });
+  add('whyCompany', 'why-company', 'Why do you want to work at ' + company + '?', 'What attracted me to ' + company + ' is ' + GAP('something specific you found about them') + '. It connects to my work on ' + GAP('your relevant experience') + '. I would add ' + GAP('what you would bring') + '.');
+  add('whyRole', 'why-role', 'Why are you interested in the ' + title + ' role?', 'The description stood out to me because ' + GAP('what attracted you') + '. I have done similar work: ' + GAP('closest example from your resume') + '. Next I want to ' + GAP('what you want to grow into') + '.');
+  const rows = (match && match.rows) || [];
+  rows.filter((r) => !r.optional && r.status !== 'alt').slice(0, 10).forEach((r) => {
+    if (r.status === 'shown') {
+      add('skillShown', 'skill-' + r.id, 'The role asks for ' + r.label + '. Tell me about your strongest example.', (r.evidence[0] ? sayBullet(r.evidence[0].text) + ' (' + r.evidence[0].where + '). ' : '') + GAP('the situation, what you personally did, and the result'));
+    } else if (r.status === 'listed') {
+      add('skillListed', 'skill-' + r.id, 'You list ' + r.label + '. Where have you used it?', 'I used ' + r.label + ' ' + GAP('where, for what, and how deep'));
+    } else {
+      add('skillGap', 'skill-' + r.id, 'The role asks for ' + r.label + ', and your resume does not show it. How would you approach that?', 'I have not used ' + r.label + ' in a job yet. The closest thing I have done is ' + GAP('your closest experience') + '. To close the gap I would ' + GAP('a concrete plan with a timeline') + '. For example, I learned ' + GAP('something you learned quickly') + ' by ' + GAP('how') + '.');
+    }
+  });
+  (jd.responsibilities || []).slice(0, 3).forEach((t) => add('respHow', 'resp-' + hash(t), 'This role involves: “' + trunc(t, 120) + '”. How have you done this before?', 'The closest thing I have done is ' + GAP('your example') + '. What was similar was ' + GAP('what was similar') + ', and what would be new is ' + GAP('what would be new') + '.'));
+  if (jd.seniority === 'senior' || jd.seniority === 'lead') add('leading', 'mentor', 'How do you raise the standard of analysis across a team?', GAP('how you review work, share methods and coach people') + '. For example ' + GAP('a real case') + '.');
+  add('first90', 'first-90', 'What would you do in your first 90 days in this role?', 'In the first month I would listen and learn ' + GAP('the data, the main stakeholders and how decisions are made') + '. By day sixty I would ' + GAP('a first useful piece of work') + '. By day ninety I would ' + GAP('what you would own'));
+  add('ask', 'ask-them', 'What questions do you have about ' + company + '?', '1. ' + GAP('a question about the data and tools used by the team') + '\n2. ' + GAP('a question about how analysis changes decisions') + '\n3. What does success look like in the first year?');
+  return out;
+}
+
+// ---------- collected questions ----------
+const TOPIC_RULES = [
+  ['sql', /\b(sql|join|group by|window function|query|index|cte|subquery|stored procedure|normali[sz]ation|primary key|database)\b/i],
+  ['python', /\b(python|pandas|numpy|dataframe|list comprehension|decorator|lambda|pyspark)\b/i],
+  ['bi', /\b(power bi|dax|tableau|dashboard|power query|looker|measure|semantic model|data model|report)\b/i],
+  ['excel', /\b(excel|vlookup|xlookup|pivot|spreadsheet|macro|vba)\b/i],
+  ['stats', /\b(statistic|p-value|hypothesis|regression|a\/b|probability|standard deviation|correlation|confidence interval|bias|variance)\b/i],
+  ['leadership', /\b(lead|mentor|manage a team|delegate|coach)\b/i],
+  ['hr', /\b(salary|notice period|relocat|visa|expected ctc|current ctc|notice|joining)\b/i],
+  ['behavioural', /\b(tell me about a time|describe a situation|conflict|strength|weakness|why do you want|why should we|yourself|failure|mistake|disagree|challenge|proud)\b/i],
+];
+function categorise(q) {
+  for (const [t, rx] of TOPIC_RULES) if (rx.test(q)) return t;
+  return 'general';
+}
+const TOPIC_LABEL = { sql: 'SQL', python: 'Python', bi: 'BI and modelling', excel: 'Excel', stats: 'Statistics', behavioural: 'Behavioural', leadership: 'Leadership', hr: 'HR and terms', general: 'General' };
+
+function scaffoldFor(topic) {
+  const g = (s) => '[add: ' + s + ']';
+  switch (topic) {
+    case 'sql': return g('a one-line definition') + '\n' + g('a small example query') + '\n' + g('when it is slow or goes wrong');
+    case 'python': return g('the idea in plain words') + '\n' + g('a short code example') + '\n' + g('a trade-off');
+    case 'bi': return g('the concept and where you used it') + '\n' + g('a real example') + '\n' + g('a common mistake');
+    case 'stats': return g('the idea in plain words') + '\n' + g('a concrete example') + '\n' + g('a pitfall');
+    case 'behavioural': case 'leadership': return 'Situation: ' + g('what was happening') + '\nWhat I did: ' + g('your actions') + '\nResult: ' + g('outcome with a number') + '\nWhat I learned: ' + g('lesson');
+    case 'hr': return g('a short, honest answer');
+    default: return g('your answer');
+  }
+}
+
+/* ---- core/extract.js ---- */
+// Pulls interview questions (and answers, when present) out of pasted text: notes, emails, forum threads, documents.
+// Rule based and deliberately forgiving. Each item carries a confidence so the UI can flag splits worth checking.
+
+const QWORD = /^(?:what|why|how|when|where|who|which|whom|whose|can you|could you|would you|will you|have you|has the|do you|does|did you|are you|is there|is it|was there|should)\b/i;
+const IMPERATIVE = /^(?:tell me|explain|describe|walk me through|give me|give an example|write (?:a|an|the)|compare|differentiate|define|discuss|talk (?:me )?through|talk about|share (?:an|a)|list|name (?:a|an|the|some)|outline|illustrate|demonstrate|justify)\b/i;
+const Q_MARK = /^\s*(?:q(?:uestion)?\s*\d*\s*[:.)\-]|\d{1,3}\s*[.)]\s*(?:q(?:uestion)?\s*[:.)-])?)\s*/i;
+const A_MARK = /^\s*(?:a(?:ns(?:wer)?)?\s*\d*\s*[:.)\-])\s*/i;
+
+function isQuestionLine(raw) {
+  const t = norm(stripBullet(raw).replace(Q_MARK, ''));
+  if (!t || t.length > 320) return null;
+  if (/[?]\s*[)"'”]*$/.test(t)) return { text: t, strong: true };
+  if (IMPERATIVE.test(t) && t.length <= 240) return { text: t, strong: false };
+  // A numbered or bulleted short line starting with a question word, even without a question mark.
+  if ((isBullet(raw) || /^\s*\d{1,3}[.)]/.test(raw)) && QWORD.test(t) && t.length <= 200) return { text: t, strong: false };
+  return null;
+}
+
+function extractQA(text) {
+  const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
+  const items = [];
+  let cur = null; let inCode = false;
+  let prevBlank = true;
+  const flush = () => { if (cur) { cur.lines = cur.a.length; cur.a = cur.a.join('\n').replace(/\n{3,}/g, '\n\n').trim(); items.push(cur); cur = null; } };
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    if (/^\s*```/.test(raw)) { inCode = !inCode; if (cur) cur.a.push(raw); continue; }
+    if (inCode) { if (cur) cur.a.push(raw); continue; }
+    const t = norm(raw);
+    if (!t) { if (cur && cur.a.length) cur.a.push(''); prevBlank = true; continue; }
+    const wasBlank = prevBlank; prevBlank = false;
+    const explicitA = A_MARK.test(raw) && cur;
+    if (explicitA) { cur.a.push(norm(raw.replace(A_MARK, ''))); continue; }
+    const explicitQ = Q_MARK.test(raw) && /^\s*q/i.test(raw);
+    const qLine = isQuestionLine(raw);
+    // Inside an answer, only a clear marker or a real question line starts a new question.
+    if (qLine && (qLine.strong || explicitQ || wasBlank || !cur || !cur.a.length || /^\s*(?:\d{1,3}[.)]|[•*-])\s/.test(raw))) {
+      flush();
+      let q = qLine.text;
+      // A question wrapped onto the next line: current line has no end mark, next starts lowercase.
+      while (i + 1 < lines.length && !/[?.]$/.test(q) && /^\s*[a-z(]/.test(lines[i + 1]) && norm(lines[i + 1]).length < 160 && !isQuestionLine(lines[i + 1])) { q += ' ' + norm(lines[i + 1]); i++; }
+      cur = { q, a: [], confidence: qLine.strong || explicitQ ? 'high' : 'low' };
+      continue;
+    }
+    if (cur) cur.a.push(isBullet(raw) ? '- ' + stripBullet(raw) : t);
+  }
+  flush();
+  return items.map((it) => ({ q: it.q, a: it.a, confidence: it.confidence === 'high' && it.lines < 40 ? 'high' : 'low' })).filter((it) => it.q.length >= 8);
+}
+
+/* ---- sample.js ---- */
+// Fictional sample data shown until the visitor adds their own. The person and every company are invented.
+/** Dates are relative to today so the sample always reads as roughly eight years of experience. */
+function sampleResume(now) {
+  const Y = (now || new Date()).getFullYear();
+  return `Jordan Avery
+Senior Data Analyst
+Leeds, United Kingdom | jordan.avery@example.com | +44 7700 900123 | linkedin.com/in/jordan-avery-sample
+
+SUMMARY
+Senior data analyst with 8 years of experience turning messy operational data into decisions for retail and logistics teams. Strong in SQL, Python and Power BI, and comfortable presenting findings to senior stakeholders.
+
+EXPERIENCE
+Senior Data Analyst | Brightleaf Analytics | Mar ${Y - 3} - Present
+- Built a self-service sales dashboard in Power BI used by 40 regional managers, replacing 12 manual weekly reports
+- Designed SQL models on Snowflake that cut monthly reporting time from 3 days to 4 hours
+- Led an A/B testing programme on checkout changes that raised conversion by 6.2%
+- Mentored two junior analysts and ran weekly office hours on SQL and data storytelling
+- Responsible for data quality checks across 15 source tables
+
+Data Analyst | Harborline Logistics | Jun ${Y - 6} - Feb ${Y - 3}
+- Automated delivery performance reporting in Python, saving the operations team 10 hours a week
+- Forecast weekly parcel volumes with a seasonal model that reached 92% accuracy
+- Worked with warehouse managers to define on-time delivery KPIs
+- Built Excel and Power BI reports for the finance team
+
+Junior Analyst | Pinecrest Retail | Sep ${Y - 8} - May ${Y - 6}
+- Cleaned and joined store sales data from 3 systems in SQL Server
+- Helped with monthly category performance packs
+- Supported the pricing team with ad hoc analysis
+
+PROJECTS
+Customer Churn Analysis | Python, SQL, Power BI
+- Combined billing and support data to find the three behaviours that most often came before a cancellation
+- Presented a retention plan to the commercial director that was adopted for the next quarter
+
+Store Footfall Dashboard
+- Visualised hourly footfall against staffing levels for 60 stores
+- Used the results to propose a new rota pattern for peak hours
+
+PERSONAL PROJECTS
+Cycling Route Planner | Python, SQLite
+- Built a small tool that ranks local cycling routes by elevation, surface and traffic from open data
+- Published the code on GitHub and wrote a short post about the scoring method
+
+SKILLS
+Languages: SQL, Python, R, DAX
+BI and data: Power BI, Excel, Snowflake, SQL Server, dbt, Git
+Practice: A/B testing, forecasting, stakeholder management, data storytelling, mentoring
+
+EDUCATION
+BSc Mathematics and Statistics, University of Northfield, ${Y - 8}
+
+CERTIFICATIONS
+Microsoft Certified: Power BI Data Analyst Associate
+`;
+}
+
+const SAMPLE_JD = `Senior Data Analyst
+Fernwood Mobility
+Location: Manchester, hybrid
+
+About Fernwood Mobility
+Fernwood Mobility runs shared bikes and scooters in 20 cities. Our analytics team helps city operations and product teams decide where to put vehicles and what to build next.
+
+The role
+We are looking for a Senior Data Analyst to own reporting and analysis for our city operations teams.
+
+Responsibilities
+- Build and maintain dashboards in Power BI for city managers and the product team
+- Write clear, well-tested SQL against our Snowflake warehouse
+- Design and analyse A/B tests with product managers
+- Present findings and recommendations to senior stakeholders
+- Mentor junior analysts and raise the standard of analysis across the team
+
+Requirements
+- 6+ years of experience in an analytics role
+- Strong SQL and experience with a cloud data warehouse such as Snowflake or BigQuery
+- Experience building dashboards in Power BI or Tableau
+- Python or R for analysis
+- Experience designing and analysing experiments
+- Excellent stakeholder management and communication skills
+
+Nice to have
+- Experience with dbt
+- Forecasting or demand modelling
+- Knowledge of geospatial data
+
+To apply, send your CV to talent@fernwoodmobility.example
+`;
+
+/* ---- app/store.js ---- */
+// State and persistence. One localStorage key holds everything, so the owner sync can copy it as a single document.
+// Sample data lives in memory only: it is never written to storage, so it can never overwrite real data.
+
+
+
+
+
+
+
+const KEY = 'rehearsal-desk-v1';
+const VERSION = 1;
+const MAX_HISTORY = 5;
+let S = null;
+const UI = { route: 'home', focusCard: null, ret: null, notice: '', resumeTab: 'content', filter: 'all', search: '', selected: new Set(), openMenu: null, practice: null };
+
+const defaultUi = () => ({ template: 'classic', paper: 'a4', autofit: true, include: { projects: true, personal: true, certifications: true, education: true } });
+
+function blank() {
+  return { v: VERSION, sample: false, seq: 0, resumeText: '', resume: null, resumeAt: 0, jds: {}, activeJd: null, sections: {}, cards: {}, batches: [], ui: defaultUi() };
+}
+
+function migrate(s) {
+  const out = Object.assign(blank(), s || {});
+  out.ui = Object.assign(defaultUi(), out.ui || {}); out.ui.include = Object.assign(defaultUi().include, (s && s.ui && s.ui.include) || {});
+  out.jds = out.jds || {}; out.sections = out.sections || {}; out.cards = out.cards || {}; out.batches = out.batches || [];
+  out.seq = Math.max(out.seq || 0, ...Object.values(out.cards).map((c) => c.seq || 0), 0);
+  out.v = VERSION;
+  return out;
+}
+
+function isAdmin() { try { return !!(window.appChrome && window.appChrome.isOwner()); } catch (e) { return false; } }
+
+// ---------- persistence ----------
+let saveTimer = null;
+function persistNow() {
+  if (!S || S.sample) return;
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage unavailable: work in memory */ }
+}
+function save() { if (!S || S.sample) return; clearTimeout(saveTimer); saveTimer = setTimeout(persistNow, 250); }
+function flush() { clearTimeout(saveTimer); persistNow(); }
+
+function load(now) {
+  let raw = null;
+  try { raw = localStorage.getItem(KEY); } catch (e) { /* ignore */ }
+  if (raw) { try { S = migrate(JSON.parse(raw)); return S; } catch (e) { /* fall through to the sample */ } }
+  S = sampleState(now);
+  return S;
+}
+function reloadFromStorage() { S = null; return load(); }
+const state = () => S;
+const ui = () => UI;
+
+// ---------- sample ----------
+function sampleState(now) {
+  const s = blank();
+  s.sample = true;
+  s.resumeText = sampleResume(now);
+  s.resume = parseResume(s.resumeText, now);
+  s.resumeAt = Date.now();
+  const id = 'current';
+  const analysis = analyseJd(SAMPLE_JD);
+  s.jds[id] = { id, text: SAMPLE_JD, analysis, company: analysis.company, title: analysis.title, hr: { name: '', email: (analysis.emails || [])[0] || '', phone: '' }, link: '', status: 'saved', notes: '', createdAt: Date.now(), analysedAt: Date.now() };
+  s.activeJd = id;
+  S = s;
+  applyResumeCards();
+  applyJdCards(id);
+  return s;
+}
+function useSampleAgain(now) { UI.selected.clear(); S = sampleState(now); return S; }
+
+// ---------- merging generated cards ----------
+function ensureSection(def, extra) {
+  const id = 'sec:' + def.key;
+  const cur = S.sections[id];
+  if (!cur) S.sections[id] = Object.assign({ id, key: def.key, title: def.title, sub: def.sub || '', kind: def.kind, order: def.order, createdAt: Date.now() }, extra || {});
+  else { if (!cur.renamed) cur.title = def.title; cur.sub = def.sub || ''; if (!cur.moved) cur.order = def.order; }
+  return id;
+}
+
+function mergeDrafts(drafts, source, jdId) {
+  const existing = Object.values(S.cards).filter((c) => c.source === source && (jdId ? c.jdId === jdId : !c.jdId));
+  const byKey = new Map(existing.map((c) => [c.key, c]));
+  const seen = new Set();
+  const added = [], archived = [], kept = [];
+  for (const d of drafts) {
+    const secId = ensureSection(d.sec);
+    const cur = byKey.get(d.key);
+    seen.add(d.key);
+    if (cur) {
+      cur.archived = false;
+      const unedited = cur.a === cur.gen || !norm(cur.a);
+      cur.q = d.q; cur.cat = d.cat; cur.tid = d.tid; cur.seconds = d.seconds;
+      if (!cur.seq) cur.seq = ++S.seq;
+      if (unedited) cur.a = d.a;
+      cur.gen = d.a;
+      if (!cur.secMoved) cur.secId = secId;
+      kept.push(cur.id);
+    } else {
+      const id = uid('c');
+      S.cards[id] = { id, key: d.key, seq: ++S.seq, source, jdId: jdId || null, secId, cat: d.cat, tid: d.tid, q: d.q, a: d.a, gen: d.a, seconds: d.seconds, status: 'draft', history: [], archived: false, askedCount: 1, practice: null, createdAt: Date.now() };
+      added.push(id);
+    }
+  }
+  existing.forEach((c) => { if (!seen.has(c.key) && !c.archived) { c.archived = true; archived.push(c.id); } });
+  return { added, archived, kept };
+}
+
+function applyResumeCards() {
+  if (!S.resume) return { added: [], archived: [], kept: [] };
+  return mergeDrafts(buildResumeCards(S.resume), 'resume', null);
+}
+function applyJdCards(jdId) {
+  const jd = S.jds[jdId];
+  if (!jd || !jd.analysis || !S.resume) return { added: [], archived: [], kept: [] };
+  const match = matchJd(jd.analysis, S.resume);
+  return mergeDrafts(buildJdCards(jd.analysis, S.resume, match, jdId), 'jd', jdId);
+}
+
+// ---------- analyse ----------
+/** Runs the whole process on pasted text. Keeps the answers the user already wrote for unchanged facts. */
+function analyse({ resumeText, jdText, now }) {
+  const isSampleText = resumeText === sampleResume(now) && (jdText || '') === SAMPLE_JD;
+  if (S.sample && !isSampleText) { S = blank(); }
+  if (S.sample && isSampleText) return { sample: true };
+  const out = {};
+  if (norm(resumeText)) {
+    S.resumeText = resumeText; S.resume = parseResume(resumeText, now); S.resumeAt = Date.now();
+    out.resume = applyResumeCards();
+  }
+  if (norm(jdText)) {
+    const id = isAdmin() && S.activeJd && S.activeJd !== 'current' && S.jds[S.activeJd] && S.jds[S.activeJd].text === jdText ? S.activeJd : (S.activeJd === 'current' || !isAdmin() ? 'current' : newJdId());
+    out.jd = analyseJdInto(id, jdText);
+    S.activeJd = id;
+  }
+  S.sample = false;
+  save();
+  return out;
+}
+
+function newJdId() { return 'jd' + Date.now().toString(36); }
+
+function analyseJdInto(id, text) {
+  const analysis = analyseJd(text);
+  const cur = S.jds[id] || { id, hr: { name: '', email: '', phone: '' }, link: '', status: 'saved', notes: '', createdAt: Date.now() };
+  cur.text = text; cur.analysis = analysis; cur.analysedAt = Date.now();
+  if (!cur.company || cur.autoCompany) { cur.company = analysis.company; cur.autoCompany = true; }
+  if (!cur.title || cur.autoTitle) { cur.title = analysis.title; cur.autoTitle = true; }
+  if (!cur.hr.email && analysis.emails[0]) cur.hr.email = analysis.emails[0];
+  if (!cur.hr.phone && analysis.phones[0]) cur.hr.phone = analysis.phones[0];
+  S.jds[id] = cur;
+  return applyJdCards(id);
+}
+
+// ---------- resume editing ----------
+function updateResume(mutator) { mutator(S.resume); save(); }
+function saveResumeChanges() {
+  const res = applyResumeCards();
+  Object.keys(S.jds).forEach((id) => { if (S.jds[id].analysis) applyJdCards(id); });
+  S.resumeAt = Date.now(); save();
+  return res;
+}
+function checks() { return S.resume ? checkResume(S.resume) : null; }
+function matchFor(jdId) { const jd = S.jds[jdId]; return jd && jd.analysis && S.resume ? matchJd(jd.analysis, S.resume) : null; }
+
+// ---------- cards ----------
+const getCard = (id) => S.cards[id];
+function setAnswer(id, text) { const c = S.cards[id]; if (!c) return; c.a = text; save(); }
+function commitVersion(id, previous) {
+  const c = S.cards[id]; if (!c) return;
+  if (previous !== undefined && norm(previous) && previous !== c.a && !(c.history[0] && c.history[0].a === previous)) {
+    c.history.unshift({ a: previous, at: Date.now() });
+    c.history = c.history.slice(0, MAX_HISTORY);
+    save();
+  }
+}
+function restoreVersion(id, i) { const c = S.cards[id]; if (!c || !c.history[i]) return; const cur = c.a; c.a = c.history[i].a; c.history.splice(i, 1); commitVersion(id, cur); save(); }
+function resetToStarter(id) { const c = S.cards[id]; if (!c) return; const cur = c.a; c.a = c.gen || ''; commitVersion(id, cur); c.status = 'draft'; save(); }
+function togglePerfected(id) { const c = S.cards[id]; if (!c) return; c.status = c.status === 'perfected' ? 'draft' : 'perfected'; c.perfectedAt = c.status === 'perfected' ? Date.now() : null; save(); return c.status; }
+function rateCard(id, ok) { const c = S.cards[id]; if (!c) return; c.practice = { n: ((c.practice && c.practice.n) || 0) + 1, last: Date.now(), ok: !!ok }; save(); }
+function deleteCard(id) { delete S.cards[id]; UI.selected.delete(id); save(); }
+
+// ---------- sections ----------
+function sectionsInOrder() {
+  const adminView = isAdmin();
+  const list = Object.values(S.sections).filter((s) => {
+    if (s.kind === 'jd') return s.key === 'jd:' + S.activeJd;
+    return true;
+  });
+  const withCards = list.map((s) => ({ s, cards: cardsIn(s.id) })).filter((x) => x.cards.length || (adminView && s_custom(x.s)));
+  withCards.sort((a, b) => (a.s.order - b.s.order) || (a.s.createdAt - b.s.createdAt));
+  return withCards;
+}
+const s_custom = (s) => s.kind === 'collected' || s.kind === 'custom';
+function cardsIn(secId) {
+  return Object.values(S.cards).filter((c) => c.secId === secId && !c.archived && (c.source !== 'jd' || c.jdId === S.activeJd));
+}
+function archivedCards() { return Object.values(S.cards).filter((c) => c.archived); }
+function createSection(title, label) {
+  const id = 'sec:custom:' + uid('s');
+  const maxOrder = Math.max(...Object.values(S.sections).map((s) => s.order), 100);
+  S.sections[id] = { id, key: id.slice(4), title: norm(title) || 'New section', sub: label || '', kind: 'custom', order: maxOrder + 1, createdAt: Date.now(), renamed: true, moved: true };
+  save(); return id;
+}
+function renameSection(id, title) { const s = S.sections[id]; if (!s) return; s.title = norm(title) || s.title; s.renamed = true; save(); }
+function moveSection(id, dir) {
+  const list = sectionsInOrder().map((x) => x.s);
+  const i = list.findIndex((s) => s.id === id); const j = i + dir;
+  if (i < 0 || j < 0 || j >= list.length) return;
+  const a = list[i], b = list[j]; const t = a.order; a.order = b.order; b.order = t === b.order ? t + dir * 0.5 : t;
+  a.moved = b.moved = true; save();
+}
+function deleteSection(id) {
+  const s = S.sections[id]; if (!s) return false;
+  if (cardsIn(id).length) return false;
+  delete S.sections[id]; save(); return true;
+}
+function moveCards(ids, secId) {
+  ids.forEach((id) => { const c = S.cards[id]; if (c) { c.secId = secId; c.secMoved = true; c.archived = false; } });
+  UI.selected.clear(); save();
+}
+
+// ---------- collected questions (admin) ----------
+function dateLabel(d) { const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return d.getDate() + ' ' + m[d.getMonth()] + ' ' + d.getFullYear(); }
+function importCollected(text, label, now) {
+  const items = extractQA(text);
+  if (!items.length) return null;
+  const when = now || new Date();
+  const base = 'Added ' + dateLabel(when);
+  const sameDay = Object.values(S.sections).filter((s) => s.kind === 'collected' && s.title.startsWith(base)).length;
+  const batch = uid('b');
+  const secId = 'sec:col:' + batch;
+  const minOrder = Math.min(...Object.values(S.sections).filter((s) => s.kind === 'collected').map((s) => s.order), 500);
+  S.sections[secId] = { id: secId, key: 'col:' + batch, title: base + (sameDay ? ' (' + (sameDay + 1) + ')' : ''), sub: norm(label || ''), kind: 'collected', order: minOrder - 1, createdAt: Date.now(), batch, renamed: true, moved: true };
+  const existing = Object.values(S.cards).filter((c) => !c.archived);
+  let dupes = 0;
+  items.forEach((it, i) => {
+    const topic = categorise(it.q);
+    const sim = existing.map((c) => ({ c, j: jaccard(c.q, it.q) })).sort((a, b) => b.j - a.j)[0];
+    const similar = sim && sim.j >= 0.6 ? sim.c : null;
+    if (similar) { similar.askedCount = (similar.askedCount || 1) + 1; dupes++; }
+    const id = uid('c');
+    const a = it.a || scaffoldFor(topic);
+    S.cards[id] = { id, key: 'col:' + batch + ':' + i, seq: ++S.seq, source: 'collected', jdId: null, secId, cat: 'collected', tid: null, topic, q: it.q, a, gen: it.a ? '' : a, seconds: 90, status: 'draft', history: [], archived: false, askedCount: 1, practice: null, createdAt: Date.now(), lowConf: it.confidence === 'low', hasAnswer: !!it.a, similarTo: similar ? similar.id : null, batch };
+  });
+  S.batches.unshift({ batch, secId, at: Date.now(), label: norm(label || ''), count: items.length });
+  save();
+  return { secId, count: items.length, dupes, batch };
+}
+function undoImport(batch) {
+  const b = S.batches.find((x) => x.batch === batch); if (!b) return 0;
+  let n = 0;
+  Object.values(S.cards).forEach((c) => { if (c.batch === batch && c.secId === b.secId) { if (c.similarTo && S.cards[c.similarTo] && S.cards[c.similarTo].askedCount > 1) S.cards[c.similarTo].askedCount--; delete S.cards[c.id]; n++; } });
+  if (!cardsIn(b.secId).length) delete S.sections[b.secId];
+  S.batches = S.batches.filter((x) => x.batch !== batch); save();
+  return n;
+}
+function mergeCardInto(id) { // a flagged duplicate: remove it, give its answer to the original if the original has none
+  const c = S.cards[id]; if (!c) return; const o = c.similarTo && S.cards[c.similarTo];
+  if (o && c.hasAnswer && !norm(o.a)) { o.a = c.a; }
+  deleteCard(id);
+}
+function splitCard(id) { // break a collected card into two at the first blank line of its answer
+  const c = S.cards[id]; if (!c) return null;
+  const parts = c.a.split(/\n\s*\n/);
+  if (parts.length < 2) return null;
+  const q2 = parts[1].split('\n')[0];
+  c.a = parts[0].trim();
+  const nid = uid('c');
+  S.cards[nid] = Object.assign({}, c, { id: nid, seq: (c.seq || 0) + 0.5, key: c.key + '-s', q: q2, a: parts.slice(1).join('\n\n').split('\n').slice(1).join('\n').trim() || scaffoldFor(c.topic), gen: '', history: [], lowConf: true, status: 'draft' });
+  save(); return nid;
+}
+function mergeNext(id) { // join a collected card with the next card in the same section
+  const c = S.cards[id]; if (!c) return false;
+  const list = cardsIn(c.secId).sort((a, b) => (a.seq || 0) - (b.seq || 0));
+  const i = list.findIndex((x) => x.id === id); const n = list[i + 1];
+  if (!n) return false;
+  c.q = c.q + ' ' + n.q; c.a = [c.a, n.a].filter(Boolean).join('\n'); c.lowConf = false;
+  delete S.cards[n.id]; save(); return true;
+}
+
+// ---------- JD library (admin) ----------
+function jdList() { return Object.values(S.jds).filter((j) => j.id !== 'current' || isAdmin() === false || true).sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)); }
+function saveJdToLibrary(fields) {
+  const cur = S.jds[S.activeJd];
+  const id = cur && cur.id !== 'current' ? cur.id : newJdId();
+  const base = cur || {};
+  const jd = Object.assign({ hr: { name: '', email: '', phone: '' }, status: 'saved', notes: '', link: '', createdAt: Date.now() }, base, fields, { id });
+  jd.hr = Object.assign({ name: '', email: '', phone: '' }, base.hr, fields.hr || {});
+  jd.updatedAt = Date.now(); jd.autoCompany = false; jd.autoTitle = false;
+  const wasCurrent = cur && cur.id === 'current';
+  S.jds[id] = jd;
+  if (wasCurrent) { Object.values(S.cards).forEach((c) => { if (c.jdId === 'current') { c.jdId = id; c.key = c.key.replace('jd:current', 'jd:' + id); } }); Object.values(S.sections).forEach((s) => { if (s.key === 'jd:current') { delete S.sections[s.id]; s.id = 'sec:jd:' + id; s.key = 'jd:' + id; S.sections[s.id] = s; } }); Object.values(S.cards).forEach((c) => { if (c.jdId === id) c.secId = 'sec:jd:' + id; }); delete S.jds.current; }
+  S.activeJd = id; S.sample = false; save();
+  return id;
+}
+function newJdDraft() { const id = newJdId(); S.jds[id] = { id, text: '', analysis: null, company: '', title: '', hr: { name: '', email: '', phone: '' }, link: '', status: 'saved', notes: '', createdAt: Date.now() }; S.activeJd = id; S.sample = false; save(); return id; }
+function updateJdFields(id, fields) { const j = S.jds[id]; if (!j) return; const { hr, ...rest } = fields; Object.assign(j, rest); if (hr) j.hr = Object.assign({}, j.hr, hr); j.updatedAt = Date.now(); if ('company' in fields) j.autoCompany = false; if ('title' in fields) j.autoTitle = false; save(); }
+function setActiveJd(id) { if (S.jds[id]) { S.activeJd = id; save(); } }
+function deleteJd(id) {
+  delete S.jds[id];
+  Object.values(S.cards).forEach((c) => { if (c.jdId === id) delete S.cards[c.id]; });
+  Object.values(S.sections).forEach((s) => { if (s.key === 'jd:' + id) delete S.sections[s.id]; });
+  if (S.activeJd === id) S.activeJd = Object.keys(S.jds)[0] || null;
+  save();
+}
+function rerunJd(id) { const j = S.jds[id]; if (!j || !norm(j.text)) return null; const r = analyseJdInto(id, j.text); j.updatedAt = Date.now(); save(); return r; }
+
+function setUi(patch) { Object.assign(S.ui, patch); if (!S.sample) save(); }
+function resetAll() { try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } UI.selected.clear(); S = sampleState(); return S; }
+function exportJson() { return JSON.stringify(Object.assign({ app: 'rehearsal-desk' }, S), null, 1); }
+function importJson(text) {
+  const d = JSON.parse(text);
+  if (!d || d.app !== 'rehearsal-desk' || typeof d.cards !== 'object') throw new Error('bad');
+  delete d.app; S = migrate(d); S.sample = false; flush(); return S;
+}
+const helpers = { slug, hash };
+
+/* ---- app/board.js ---- */
+// The Q&A board: sections stacked, cards wrapping in rows, a focus bar that follows the section in view,
+// and auto-fit scrolling. Uses the shared state (S, UI) from store.js and the helpers from core/.
+
+const HUE = { intro: 'blue', role: 'yellow', project: 'green', personal: 'purple', story: 'orange', general: 'slate', jd: 'pink', collected: 'teal' };
+
+function markGaps(text) {
+  return esc(text).replace(/\[add:([^\]]*)\]/g, '<mark class="gap">[add:$1]</mark>').replace(/\n/g, '<br>');
+}
+
+function cardHtml(c, admin) {
+  const done = c.status === 'perfected';
+  const a = norm(c.a);
+  const an = analyseAnswer(c.a, c.seconds);
+  const hue = HUE[c.cat] || 'slate';
+  const flags = [];
+  if (c.lowConf) flags.push('<span class="flag" title="The split between question and answer may be wrong">Check this split</span>');
+  if (c.similarTo && S.cards[c.similarTo]) flags.push('<span class="flag">Similar to an existing card</span>');
+  if (c.askedCount > 1) flags.push('<span class="flag">Asked ' + c.askedCount + ' times</span>');
+  if (c.source === 'collected' && !c.hasAnswer && c.gen) flags.push('<span class="flag need">No answer yet</span>');
+  const topic = c.source === 'collected' && c.topic ? '<span class="chip">' + esc(TOPIC_LABEL[c.topic] || c.topic) + '</span>' : '';
+  return '<article class="card hue-' + hue + (done ? ' perfected' : '') + (UI.selected.has(c.id) ? ' selected' : '') + '" data-card="' + esc(c.id) + '" tabindex="-1" aria-label="' + esc(c.q) + '">' +
+    '<div class="card-top"><span class="cat">' + esc((CATS[c.cat] || {}).label || '') + '</span>' + topic +
+    (done ? '<span class="badge-done"><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.2"/></svg> Perfected</span>' : '') + '</div>' +
+    '<h3 class="q">' + esc(c.q) + '</h3>' +
+    '<div class="a">' + (a ? markGaps(c.a) : '<span class="muted">No answer yet. Open the editor to write one.</span>') + '</div>' +
+    '<div class="card-meta"><span>~' + an.seconds + ' s</span><span>' + an.words + ' words</span>' + (an.gaps ? '<span>' + an.gaps + ' to fill</span>' : '') + flags.join('') + '</div>' +
+    '<div class="card-actions">' +
+    (admin ? '<label class="sel"><input type="checkbox" data-action="select" data-id="' + esc(c.id) + '"' + (UI.selected.has(c.id) ? ' checked' : '') + '> <span>Select</span></label>' : '') +
+    '<button class="btn small" data-action="edit" data-id="' + esc(c.id) + '">Edit</button>' +
+    '<button class="btn small' + (done ? ' on' : '') + '" data-action="perfect" data-id="' + esc(c.id) + '" aria-pressed="' + done + '">' + (done ? 'Perfected' : 'Mark perfected') + '</button>' +
+    (admin && c.similarTo ? '<button class="btn small" data-action="merge-dup" data-id="' + esc(c.id) + '">Merge duplicate</button>' : '') +
+    (admin && c.source === 'collected' ? '<button class="btn small" data-action="merge-next" data-id="' + esc(c.id) + '" title="Join this card with the next one">Join next</button><button class="btn small" data-action="split-card" data-id="' + esc(c.id) + '" title="Split at the first blank line of the answer">Split</button>' : '') +
+    '</div></article>';
+}
+
+function matches(c) {
+  if (UI.filter === 'draft' && c.status === 'perfected') return false;
+  if (UI.filter === 'perfected' && c.status !== 'perfected') return false;
+  if (UI.filter === 'noanswer' && norm(c.a) && !/\[add:/.test(c.a)) return false;
+  if (UI.filter === 'collected' && c.source !== 'collected') return false;
+  const q = norm(UI.search).toLowerCase();
+  return !q || (c.q + ' ' + c.a).toLowerCase().includes(q);
+}
+
+function renderBoard() {
+  const admin = isAdmin();
+  const secs = sectionsInOrder();
+  const total = secs.reduce((n, x) => n + x.cards.length, 0);
+  const done = secs.reduce((n, x) => n + x.cards.filter((c) => c.status === 'perfected').length, 0);
+  const filters = [['all', 'All'], ['draft', 'Needs work'], ['perfected', 'Perfected'], ['noanswer', 'Has gaps to fill']].concat(admin ? [['collected', 'Collected']] : []);
+  const targets = secs.map((x) => x.s);
+  let html = '<div class="board">' +
+    (S.sample ? '<div class="notice">This is a fictional sample. Edits here are not saved. Paste your own resume on <a href="#/home">Home</a> to start saving.</div>' : '') +
+    '<div class="board-tools"><div class="seg" role="group" aria-label="Show">' + filters.map(([v, l]) => '<button class="seg-btn" data-action="filter" data-v="' + v + '" aria-pressed="' + (UI.filter === v) + '">' + l + '</button>').join('') + '</div>' +
+    '<label class="search"><span class="sr">Search cards</span><input type="search" id="board-search" placeholder="Search questions and answers" value="' + esc(UI.search) + '"></label>' +
+    '<span class="muted">' + done + ' of ' + total + ' perfected</span></div>';
+  if (admin) {
+    html += '<div class="admin-bar" role="region" aria-label="Move cards"><span class="pill">Admin</span><span id="sel-count">' + UI.selected.size + ' selected</span>' +
+      '<div class="menu-wrap"><button class="btn small" data-action="move-menu" ' + (UI.selected.size ? '' : 'disabled') + ' aria-haspopup="true" aria-expanded="' + (UI.openMenu === 'move') + '">Move to…</button>' +
+      (UI.openMenu === 'move' ? '<div class="menu" role="menu">' + targets.map((s) => '<button role="menuitem" data-action="move-to" data-sec="' + esc(s.id) + '">' + esc(s.title) + '</button>').join('') + '<button role="menuitem" class="newsec" data-action="move-new">New section…</button></div>' : '') + '</div>' +
+      '<button class="btn small" data-action="clear-sel" ' + (UI.selected.size ? '' : 'disabled') + '>Clear selection</button>' +
+      '<button class="btn small" data-action="new-section">New section</button></div>';
+  }
+  const visible = secs.map((x) => ({ s: x.s, cards: x.cards.filter(matches).sort(byOrder) })).filter((x) => x.cards.length || (admin && !UI.search && UI.filter === 'all' && (x.s.kind === 'custom' || x.s.kind === 'collected')));
+  if (!visible.length) html += '<div class="empty"><strong>No cards match.</strong><p>Change the filter or search, or analyse a resume on Home.</p></div>';
+  visible.forEach((x, i) => {
+    const s = x.s; const all = secs.find((y) => y.s.id === s.id).cards; const p = all.filter((c) => c.status === 'perfected').length;
+    const batch = S.batches.find((b) => b.secId === s.id);
+    html += '<section class="sec" id="' + esc(s.id.replace(/[^a-z0-9]/gi, '_')) + '" data-sec="' + esc(s.id) + '" aria-labelledby="h-' + i + '">' +
+      '<header class="sec-head"><div><h2 id="h-' + i + '">' + esc(s.title) + '</h2>' + (s.sub ? '<p class="sub">' + esc(s.sub) + '</p>' : '') + '</div>' +
+      '<div class="sec-side"><span class="ring" role="img" aria-label="' + p + ' of ' + all.length + ' perfected"><span style="--p:' + (all.length ? Math.round(p / all.length * 100) : 0) + '"></span><b>' + p + '/' + all.length + '</b></span>' +
+      (admin ? '<div class="menu-wrap"><button class="btn small" data-action="sec-menu" data-sec="' + esc(s.id) + '" aria-haspopup="true" aria-expanded="' + (UI.openMenu === s.id) + '" aria-label="Section options for ' + esc(s.title) + '">Section</button>' +
+        (UI.openMenu === s.id ? '<div class="menu right" role="menu"><button role="menuitem" data-action="sec-rename" data-sec="' + esc(s.id) + '">Rename</button><button role="menuitem" data-action="sec-up" data-sec="' + esc(s.id) + '">Move up</button><button role="menuitem" data-action="sec-down" data-sec="' + esc(s.id) + '">Move down</button><button role="menuitem" data-action="sec-select" data-sec="' + esc(s.id) + '">Select all cards</button>' + (batch ? '<button role="menuitem" data-action="undo-import" data-batch="' + esc(batch.batch) + '">Undo this import</button>' : '') + '<button role="menuitem" data-action="sec-delete" data-sec="' + esc(s.id) + '">Delete (if empty)</button></div>' : '') + '</div>' : '') +
+      '</div></header>' +
+      '<div class="cards">' + (x.cards.length ? x.cards.map((c) => cardHtml(c, admin)).join('') : '<p class="muted">No cards in this section yet. Select cards elsewhere and use "Move to".</p>') + '</div></section>';
+  });
+  const arch = archivedCards();
+  if (arch.length) html += '<details class="archived"><summary>' + arch.length + ' archived card(s): their source is gone from the resume</summary><div class="cards">' + arch.map((c) => cardHtml(c, admin)).join('') + '</div></details>';
+  html += '<div class="board-end" aria-hidden="true"></div></div>';
+  return '<div id="focusbar" class="focusbar" role="navigation" aria-label="Sections"><div class="fb-main"><button class="btn small" data-action="sec-prev" aria-label="Previous section">←</button>' +
+    '<div class="fb-title" aria-live="polite"><span class="fb-kicker">In focus</span><strong id="fb-name">' + esc(visible[0] ? visible[0].s.title : '') + '</strong><span id="fb-count" class="muted"></span></div>' +
+    '<button class="btn small" data-action="sec-next" aria-label="Next section">→</button></div>' +
+    '<div class="fb-side"><button class="btn small" data-action="autofit" aria-pressed="' + S.ui.autofit + '" title="Scroll so that each section fits the screen">Auto-fit sections: ' + (S.ui.autofit ? 'on' : 'off') + '</button></div>' +
+    '<ol class="rail" aria-label="Jump to a section">' + visible.map((x, i) => '<li><button data-action="jump" data-sec="' + esc(x.s.id) + '" aria-label="' + esc(x.s.title) + '" title="' + esc(x.s.title) + '"></button></li>').join('') + '</ol></div>' + html;
+}
+const byOrder = (a, b) => ((a.seq || 0) - (b.seq || 0)) || a.key.localeCompare(b.key);
+
+// ---------- focus bar and auto-fit scrolling ----------
+let scrollBound = false, snapTimer = null, lastY = 0, dir = 0, programmatic = false, pointerDown = false, progTimer = null;
+const reduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function offsetTop() {
+  const h = document.querySelector('.topbar'), f = document.getElementById('focusbar');
+  return (h ? h.getBoundingClientRect().height : 0) + (f ? f.getBoundingClientRect().height : 0) + 6;
+}
+function secEls() { return Array.prototype.slice.call(document.querySelectorAll('.board .sec')); }
+function geometry() {
+  const off = offsetTop(); const vh = window.innerHeight;
+  return secEls().map((el) => { const r = el.getBoundingClientRect(); return { el, top: r.top, bottom: r.bottom, h: r.height, off, vh }; });
+}
+function updateFocus() {
+  const g = geometry(); if (!g.length) return;
+  const off = g[0].off;
+  let cur = g[0];
+  for (const x of g) if (x.top <= off + 40) cur = x;
+  const name = document.getElementById('fb-name'); if (!name) return;
+  const title = cur.el.querySelector('h2').textContent;
+  if (name.textContent !== title) name.textContent = title;
+  const idx = g.indexOf(cur);
+  const cnt = document.getElementById('fb-count'); if (cnt) cnt.textContent = 'Section ' + (idx + 1) + ' of ' + g.length;
+  document.querySelectorAll('.rail button').forEach((b, i) => { b.classList.toggle('on', i === idx); b.setAttribute('aria-current', i === idx ? 'true' : 'false'); });
+  document.documentElement.style.setProperty('--board-offset', off + 'px');
+  return { cur, idx, g };
+}
+function scrollToY(y) {
+  programmatic = true; clearTimeout(progTimer);
+  window.scrollTo({ top: Math.max(0, y), behavior: reduced() ? 'auto' : 'smooth' });
+  progTimer = setTimeout(() => { programmatic = false; }, reduced() ? 120 : 700);
+}
+function scrollToSection(i) {
+  const g = geometry(); if (!g[i]) return;
+  scrollToY(window.scrollY + g[i].top - g[i].off);
+}
+function stepSection(delta) {
+  const f = updateFocus(); if (!f) return;
+  const i = Math.max(0, Math.min(f.g.length - 1, f.idx + delta));
+  // If the current section is partly above the bar, "previous" first returns to its own top.
+  if (delta < 0 && f.cur.top < f.cur.off - 30) return scrollToSection(f.idx);
+  scrollToSection(i);
+}
+/** Snap rule: when the section above is >= 90% out of view, align the new section; going up, do the mirror image.
+ * A section taller than the screen is only aligned at its top and then scrolls freely. */
+function maybeSnap() {
+  if (!S.ui.autofit || programmatic || pointerDown || UI.route !== 'board') return;
+  const g = geometry(); if (g.length < 2) return;
+  const off = g[0].off, vh = window.innerHeight;
+  if (dir > 0) {
+    // first section whose bottom is still below the bar
+    const i = g.findIndex((x) => x.bottom > off + 40);
+    if (i < 1) return;
+    const cur = g[i], prev = g[i - 1];
+    const prevVisible = Math.max(0, Math.min(prev.bottom, vh) - Math.max(prev.top, off));
+    if (cur.top > off + 24 && cur.top < vh - 40 && prevVisible <= prev.h * 0.1) scrollToY(window.scrollY + cur.top - off);
+  } else if (dir < 0) {
+    // the section that owns the top of the screen; if the next one has left the screen, show this one whole
+    const i = g.findIndex((x) => x.bottom > off + 40 && x.top <= off + 40);
+    if (i < 0 || i >= g.length - 1) return;
+    const cur = g[i], next = g[i + 1];
+    const nextVisible = Math.max(0, Math.min(next.bottom, vh) - Math.max(next.top, off));
+    if (cur.top < off - 24 && cur.h <= vh - off && nextVisible <= next.h * 0.1) scrollToY(window.scrollY + cur.top - off);
+  }
+}
+function onScroll() {
+  const y = window.scrollY; if (y !== lastY) dir = y > lastY ? 1 : -1; lastY = y;
+  if (UI.route !== 'board') return;
+  updateFocus();
+  clearTimeout(snapTimer); snapTimer = setTimeout(maybeSnap, 160);
+}
+function bindBoardScroll() {
+  lastY = window.scrollY; dir = 0;
+  if (scrollBound) return;
+  scrollBound = true;
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', () => { if (UI.route === 'board') updateFocus(); });
+  window.addEventListener('pointerdown', () => { pointerDown = true; }, { passive: true });
+  const up = () => { if (pointerDown) { pointerDown = false; clearTimeout(snapTimer); snapTimer = setTimeout(maybeSnap, 160); } };
+  window.addEventListener('pointerup', up, { passive: true }); window.addEventListener('pointercancel', up, { passive: true });
+}
+function flashCard(id) {
+  const el = document.querySelector('[data-card="' + CSS.escape(id) + '"]'); if (!el) return false;
+  const off = offsetTop();
+  window.scrollTo({ top: Math.max(0, window.scrollY + el.getBoundingClientRect().top - off - 12), behavior: 'auto' });
+  el.classList.add('flash'); try { el.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+  setTimeout(() => el.classList.remove('flash'), 2200);
+  return true;
+}
+
+/* ---- app/views.js ---- */
+// Views other than the board: Home, Resume (content, checks, design), Match, Editor, Practice, and the admin views.
+// Uses the shared state (S, UI) from store.js and helpers from core/.
+
+const LEVEL_TXT = { pass: 'Pass', warn: 'Check', fail: 'Fix', info: 'Note' };
+const STATUS_LABEL = { saved: 'Saved', applied: 'Applied', interview: 'Interview', offer: 'Offer', rejected: 'Rejected', closed: 'Closed' };
+
+const fld = (id, label, val, attrs) => '<label class="field"><span>' + esc(label) + '</span><input id="' + id + '" value="' + esc(val || '') + '" ' + (attrs || '') + '></label>';
+const area = (id, label, val, rows, attrs) => '<label class="field"><span>' + esc(label) + '</span><textarea id="' + id + '" rows="' + (rows || 4) + '" ' + (attrs || '') + '>' + esc(val || '') + '</textarea></label>';
+
+// ---------- Home ----------
+function renderHome() {
+  const admin = isAdmin();
+  const jd = S.jds[S.activeJd];
+  const r = S.resume;
+  const cardsN = Object.values(S.cards).filter((c) => !c.archived).length;
+  const ch = r ? checks() : null;
+  const tiles = r ? '<div class="tiles">' +
+    '<div class="tile"><b>' + (r.experience || []).length + '</b><span>jobs found</span></div>' +
+    '<div class="tile"><b>' + ((r.projects || []).length + (r.personal || []).length) + '</b><span>projects found</span></div>' +
+    '<div class="tile"><b>' + (r.skills || []).length + '</b><span>skills found</span></div>' +
+    '<div class="tile"><b>' + cardsN + '</b><span>question cards</span></div>' +
+    '<div class="tile"><b>' + (ch ? ch.passed + '/' + ch.total : '-') + '</b><span>readability checks passed</span></div></div>' : '';
+  return '<section class="home">' +
+    '<div class="hero"><h1>Rehearse the answers you will actually give.</h1>' +
+    '<p>Paste your resume. Rehearsal Desk finds your jobs and projects, writes starter answers from your own facts, and turns them into cards you can edit, perfect and practise. Add a job description for questions about that role.</p>' +
+    '<p class="privacy"><strong>Private by design.</strong> Your resume and answers stay in this browser. Nothing is uploaded.</p></div>' +
+    (S.sample ? '<div class="notice">Showing a fictional sample (Jordan Avery, a senior data analyst). Replace the text below with your own and press Analyse. Nothing here is saved until then.</div>' : '') +
+    '<div class="two">' +
+    '<div class="panel"><h2>Your resume</h2><textarea id="resume-in" rows="16" spellcheck="false" aria-label="Resume text">' + esc(S.resumeText) + '</textarea>' +
+    '<div class="row"><label class="btn small file">Upload .docx, .txt or .md<input type="file" id="resume-file" accept=".docx,.txt,.md,.text" hidden></label><button class="btn small" data-action="clear-resume">Clear</button></div>' +
+    '<p class="hint">For a PDF, copy its text and paste it here. Re-reading the text replaces the changes you made on the Resume tab, but answers you wrote for unchanged facts are kept.</p></div>' +
+    '<div class="panel"><h2>Job description <span class="opt">optional</span></h2><textarea id="jd-in" rows="16" spellcheck="false" aria-label="Job description text">' + esc(jd ? jd.text : '') + '</textarea>' +
+    '<div class="row"><label class="btn small file">Upload .docx, .txt or .md<input type="file" id="jd-file" accept=".docx,.txt,.md,.text" hidden></label><button class="btn small" data-action="clear-jd">Clear</button>' +
+    (admin ? '<button class="btn small" data-action="save-jd-lib">Save to my JD library</button>' : '') + '</div></div></div>' +
+    '<div class="row actions"><button class="btn primary big" data-action="analyse">Analyse resume and job description</button>' +
+    (S.sample ? '' : '<button class="btn" data-action="use-sample">Use the sample again</button>') + '</div>' +
+    (UI.notice ? '<p class="status" role="status">' + esc(UI.notice) + '</p>' : '') + tiles +
+    (r && r.warnings && r.warnings.length ? '<div class="warns"><strong>Please check:</strong><ul>' + r.warnings.map((w) => '<li>' + esc(w) + '</li>').join('') + '</ul><a class="btn small" href="#/resume">Review what was found</a></div>' : '') +
+    (r ? '<div class="row"><a class="btn" href="#/resume">What we found in your resume</a><a class="btn" href="#/board">Open the question cards</a>' + (jd && jd.analysis ? '<a class="btn" href="#/match">Resume and job match</a>' : '') + '</div>' : '') +
+    '</section>';
+}
+
+// ---------- Resume ----------
+function jobEditor(e, i) {
+  return '<div class="entry" data-kind="job" data-i="' + i + '"><div class="entry-head"><h4>' + esc(e.role || 'Role') + ' at ' + esc(e.company || 'company') + '</h4>' + (e.confidence === 'low' ? '<span class="flag">Please check</span>' : '') + '<button class="btn small" data-action="del-entry" data-kind="job" data-i="' + i + '">Remove</button></div>' +
+    '<div class="grid2">' + fld('job-' + i + '-role', 'Role', e.role, 'data-f="role"') + fld('job-' + i + '-company', 'Company', e.company, 'data-f="company"') + fld('job-' + i + '-start', 'Start', e.start, 'data-f="start"') + fld('job-' + i + '-end', 'End', e.end, 'data-f="end"') + '</div>' +
+    area('job-' + i + '-bullets', 'Bullets (one per line)', (e.bullets || []).join('\n'), 6, 'data-f="bullets"') + '</div>';
+}
+function projEditor(p, i, kind) {
+  return '<div class="entry" data-kind="' + kind + '" data-i="' + i + '"><div class="entry-head"><h4>' + esc(p.name || 'Project') + '</h4><button class="btn small" data-action="del-entry" data-kind="' + kind + '" data-i="' + i + '">Remove</button></div>' +
+    '<div class="grid2">' + fld(kind + '-' + i + '-name', 'Name', p.name, 'data-f="name"') + fld(kind + '-' + i + '-tech', 'Tools', p.tech, 'data-f="tech"') + '</div>' +
+    area(kind + '-' + i + '-bullets', 'Bullets (one per line)', (p.bullets || []).join('\n'), 4, 'data-f="bullets"') + '</div>';
+}
+function renderResumeContent() {
+  const r = S.resume; const c = r.contact || {};
+  return '<div class="editor">' +
+    (r.warnings && r.warnings.length ? '<div class="warns"><strong>Please check:</strong><ul>' + r.warnings.map((w) => '<li>' + esc(w) + '</li>').join('') + '</ul></div>' : '') +
+    '<fieldset><legend>Contact</legend><div class="grid2">' + fld('c-name', 'Name', c.name, 'data-f="name"') + fld('c-headline', 'Headline', c.headline, 'data-f="headline"') + fld('c-email', 'Email', c.email, 'data-f="email"') + fld('c-phone', 'Phone', c.phone, 'data-f="phone"') + fld('c-location', 'Location', c.location, 'data-f="location"') + '</div>' +
+    area('c-links', 'Links (one per line)', (c.links || []).join('\n'), 2, 'data-f="links"') + '</fieldset>' +
+    '<fieldset><legend>Summary</legend>' + area('r-summary', 'Summary', r.summary, 4, 'data-f="summary"') + '</fieldset>' +
+    '<fieldset><legend>Experience</legend>' + (r.experience || []).map(jobEditor).join('') + '<button class="btn small" data-action="add-entry" data-kind="job">Add a job</button></fieldset>' +
+    '<fieldset><legend>Projects</legend>' + (r.projects || []).map((p, i) => projEditor(p, i, 'project')).join('') + '<button class="btn small" data-action="add-entry" data-kind="project">Add a project</button></fieldset>' +
+    '<fieldset><legend>Personal projects</legend>' + (r.personal || []).map((p, i) => projEditor(p, i, 'personal')).join('') + '<button class="btn small" data-action="add-entry" data-kind="personal">Add a personal project</button></fieldset>' +
+    '<fieldset><legend>Skills, education and certifications</legend>' + area('r-skills', 'Skills (separate with commas)', (r.skills || []).join(', '), 3, 'data-f="skills"') + area('r-education', 'Education (one per line)', (r.education || []).join('\n'), 3, 'data-f="education"') + area('r-certs', 'Certifications (one per line)', (r.certifications || []).join('\n'), 2, 'data-f="certifications"') + '</fieldset>' +
+    '<div class="sticky-actions"><button class="btn primary" data-action="save-resume">Save and refresh questions</button><span class="muted" id="resume-dirty"></span></div></div>';
+}
+function renderResumeChecks() {
+  const ch = checks();
+  const areas = [...new Set(ch.items.map((i) => i.area))];
+  return '<div class="checks"><p class="hint">These are readability checks, the things an automated reader or a quick skim trips on. They are not a real ATS score, and every employer’s system differs.</p>' +
+    '<div class="meter-line"><strong>' + ch.passed + ' of ' + ch.total + '</strong> checks passed</div>' +
+    areas.map((a) => '<section><h3>' + esc(a) + '</h3><ul class="checklist">' + ch.items.filter((i) => i.area === a).map((i) => '<li class="lvl-' + i.level + '"><span class="lvl">' + LEVEL_TXT[i.level] + '</span><div><strong>' + esc(i.title) + '</strong>' + (i.detail ? '<p>' + esc(i.detail) + '</p>' : '') + '</div></li>').join('') + '</ul></section>').join('') +
+    '<section><h3>Suggestions for your bullets</h3>' + (ch.suggestions.length ? '<ul class="sugg">' + ch.suggestions.map((s) => '<li><span class="chip">' + esc(s.where) + '</span><q>' + esc(trunc(s.bullet, 140)) + '</q><p>' + esc(s.text) + '</p></li>').join('') + '</ul>' : '<p class="muted">Nothing to suggest.</p>') + '</section></div>';
+}
+
+// ---------- Resume print templates ----------
+const TEMPLATES = [
+  { id: 'classic', name: 'Classic', note: 'Serif, single column, thin rules. Safest for ATS.', ats: true },
+  { id: 'modern', name: 'Modern', note: 'Clean sans-serif with a coloured name bar.', ats: true },
+  { id: 'compact', name: 'Compact', note: 'Dense, fits more on one page.', ats: true },
+  { id: 'editorial', name: 'Editorial', note: 'Large name, generous spacing.', ats: true },
+  { id: 'technical', name: 'Technical', note: 'Skills grid up front, for analyst and engineering roles.', ats: true },
+];
+function resumeHtml(r, tpl, inc) {
+  const c = r.contact || {};
+  inc = inc || {};
+  const contact = [c.email, c.phone, c.location].concat(c.links || []).filter(Boolean).map((x) => '<span>' + esc(x) + '</span>').join('');
+  const job = (e) => '<div class="r-entry"><div class="r-head"><strong>' + esc(e.role || '') + '</strong>' + (e.company ? '<span class="r-co">' + esc(e.company) + (e.location ? ', ' + esc(e.location) : '') + '</span>' : '') + '<span class="r-date">' + esc([e.start, e.end].filter(Boolean).join(' – ')) + '</span></div>' + ((e.bullets || []).length ? '<ul>' + e.bullets.map((b) => '<li>' + esc(b) + '</li>').join('') + '</ul>' : '') + '</div>';
+  const proj = (p) => '<div class="r-entry"><div class="r-head"><strong>' + esc(p.name || '') + '</strong>' + (p.tech ? '<span class="r-co">' + esc(p.tech) + '</span>' : '') + '</div>' + ((p.bullets || []).length ? '<ul>' + p.bullets.map((b) => '<li>' + esc(b) + '</li>').join('') + '</ul>' : '') + '</div>';
+  const skills = (r.skills || []).length ? '<section class="r-sec r-skills"><h2>Skills</h2>' + (tpl === 'technical' ? '<ul class="r-grid">' + r.skills.map((s) => '<li>' + esc(s) + '</li>').join('') + '</ul>' : '<p>' + r.skills.map(esc).join(' · ') + '</p>') + '</section>' : '';
+  return '<div class="resume tpl-' + tpl + '"><header class="r-top"><h1>' + esc(c.name || '') + '</h1>' + (c.headline ? '<p class="r-headline">' + esc(c.headline) + '</p>' : '') + '<p class="r-contact">' + contact + '</p></header>' +
+    (r.summary ? '<section class="r-sec"><h2>Summary</h2><p>' + esc(r.summary) + '</p></section>' : '') +
+    (tpl === 'technical' ? skills : '') +
+    ((r.experience || []).length ? '<section class="r-sec"><h2>Experience</h2>' + r.experience.map(job).join('') + '</section>' : '') +
+    (inc.projects !== false && (r.projects || []).length ? '<section class="r-sec"><h2>Projects</h2>' + r.projects.map(proj).join('') + '</section>' : '') +
+    (inc.personal !== false && (r.personal || []).length ? '<section class="r-sec"><h2>Personal projects</h2>' + r.personal.map(proj).join('') + '</section>' : '') +
+    (tpl !== 'technical' ? skills : '') +
+    (inc.education !== false && (r.education || []).length ? '<section class="r-sec"><h2>Education</h2><ul class="plain">' + r.education.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul></section>' : '') +
+    (inc.certifications !== false && (r.certifications || []).length ? '<section class="r-sec"><h2>Certifications</h2><ul class="plain">' + r.certifications.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul></section>' : '') + '</div>';
+}
+function renderResumeDesign() {
+  const t = S.ui.template; const inc = S.ui.include;
+  return '<div class="design"><div class="design-side"><h3>Style</h3><div class="tpls" role="radiogroup" aria-label="Resume style">' +
+    TEMPLATES.map((x) => '<button class="tpl" role="radio" aria-checked="' + (t === x.id) + '" data-action="template" data-v="' + x.id + '"><strong>' + x.name + '</strong><span>' + esc(x.note) + '</span><em>ATS-friendly: single column, real text</em></button>').join('') + '</div>' +
+    '<h3>Page</h3><div class="seg" role="group" aria-label="Paper size"><button class="seg-btn" data-action="paper" data-v="a4" aria-pressed="' + (S.ui.paper === 'a4') + '">A4</button><button class="seg-btn" data-action="paper" data-v="letter" aria-pressed="' + (S.ui.paper === 'letter') + '">Letter</button></div>' +
+    '<h3>Include</h3>' + [['projects', 'Projects'], ['personal', 'Personal projects'], ['education', 'Education'], ['certifications', 'Certifications']].map(([k, l]) => '<label class="check"><input type="checkbox" data-action="include" data-k="' + k + '"' + (inc[k] ? ' checked' : '') + '> ' + l + '</label>').join('') +
+    '<button class="btn primary big" data-action="print">Download as PDF</button><p class="hint">This opens your browser’s print window. Choose "Save as PDF" as the destination and turn off "Headers and footers" for a clean page. The PDF keeps real, selectable text.</p></div>' +
+    '<div class="design-view"><div class="paper-wrap"><div class="paper ' + S.ui.paper + '" id="paper-preview">' + resumeHtml(S.resume, t, inc) + '</div></div></div></div>';
+}
+function renderResume() {
+  if (!S.resume) return '<div class="empty"><strong>No resume yet.</strong><p>Paste one on <a href="#/home">Home</a>.</p></div>';
+  const tabs = [['content', 'What we found'], ['checks', 'Checks and suggestions'], ['design', 'Design and PDF']];
+  return '<section class="resume-view"><div class="tabs2" role="tablist">' + tabs.map(([v, l]) => '<button role="tab" class="tab2" aria-selected="' + (UI.resumeTab === v) + '" data-action="resume-tab" data-v="' + v + '">' + l + '</button>').join('') + '</div>' +
+    (S.sample ? '<div class="notice">Sample resume: changes are not saved.</div>' : '') +
+    (UI.resumeTab === 'content' ? renderResumeContent() : UI.resumeTab === 'checks' ? renderResumeChecks() : renderResumeDesign()) + '</section>';
+}
+
+// ---------- Match ----------
+function renderMatch() {
+  const jd = S.jds[S.activeJd];
+  if (!jd || !jd.analysis) return '<div class="empty"><strong>No job description yet.</strong><p>Paste one on <a href="#/home">Home</a>' + (isAdmin() ? ' or choose one in <a href="#/jds">My JDs</a>' : '') + '.</p></div>';
+  const m = matchFor(jd.id); const a = jd.analysis;
+  const lab = { shown: 'Shown in your resume', listed: 'Only in your skills list', missing: 'Not found', alt: 'Covered by an alternative' };
+  return '<section class="match">' + (S.sample ? '<div class="notice">Fictional sample job. Changes are not saved.</div>' : '') +
+    '<div class="match-head"><div><h2>' + esc(jd.title || a.title || 'Job') + '</h2><p class="sub">' + esc([jd.company || a.company, a.location, a.seniority ? a.seniority + ' level' : '', a.years ? a.years + '+ years asked' : ''].filter(Boolean).join(' · ')) + '</p></div>' +
+    (m && m.score !== null ? '<div class="score"><b>' + m.score + '%</b><span>of required skills shown</span></div>' : '') + '</div>' +
+    (isAdmin() ? '<div class="row"><button class="btn primary" data-action="rerun-jd" data-id="' + esc(jd.id) + '">Analyse this JD again</button><span class="muted">Re-reads the text, updates this JD’s cards and saves. Cards you edited or perfected are kept.</span></div>' + (UI.notice ? '<p class="status" role="status">' + esc(UI.notice) + '</p>' : '') : '') +
+    '<div class="two"><div class="panel"><h3>Skills the job asks for</h3><table class="tbl"><thead><tr><th>Skill</th><th>Where you stand</th></tr></thead><tbody>' + m.rows.map((r) => '<tr class="st-' + r.status + '"><td>' + esc(r.label) + (r.optional ? ' <span class="chip">nice to have</span>' : '') + '</td><td><strong>' + lab[r.status] + '</strong>' + (r.altOf ? ' (' + esc(r.altOf) + ')' : '') + (r.evidence[0] ? '<br><span class="muted">' + esc(r.evidence[0].where) + ': ' + esc(trunc(r.evidence[0].text, 90)) + '</span>' : '') + '</td></tr>').join('') + '</tbody></table></div>' +
+    '<div class="panel"><h3>What the recruiter is testing</h3><ul>' + (a.themes.length ? a.themes.map((t) => '<li>' + esc(t) + '</li>').join('') : '<li>Fit for the role and clear communication.</li>') + '</ul>' +
+    '<h3>What to do about it</h3><ul>' + (m.suggestions.length ? m.suggestions.map((t) => '<li>' + esc(t) + '</li>').join('') : '<li>Your resume covers what the job asks for. Rehearse the examples.</li>') + '</ul>' +
+    (m.extras.length ? '<h3>Your strengths the job did not mention</h3><p>' + m.extras.map(esc).join(', ') + '</p>' : '') + '</div></div>' +
+    (a.responsibilities.length ? '<div class="panel"><h3>Main responsibilities</h3><ul>' + a.responsibilities.map((t) => '<li>' + esc(t) + '</li>').join('') + '</ul></div>' : '') +
+    '<div class="row"><a class="btn" href="#/board">See the questions for this job</a></div></section>';
+}
+
+// ---------- Editor ----------
+function renderEdit(id) {
+  const c = getCard(id);
+  if (!c) return '<div class="empty"><strong>That card no longer exists.</strong><p><a href="#/board">Back to the cards</a></p></div>';
+  const coach = coachFor(c); const an = analyseAnswer(c.a, coach.seconds || c.seconds);
+  const sec = S.sections[c.secId];
+  const done = c.status === 'perfected';
+  return '<section class="edit hue-' + (HUE_OF[c.cat] || 'slate') + '"><div class="edit-top"><button class="btn" data-action="back-to-card" data-id="' + esc(c.id) + '">← Back to the card</button><span class="muted">' + esc(sec ? sec.title : '') + '</span><span id="save-state" class="muted" role="status"></span></div>' +
+    (S.sample ? '<div class="notice">Sample card: edits are not saved. Add your own resume on Home to start saving.</div>' : '') +
+    '<div class="edit-grid"><div class="edit-main"><h1 class="q">' + esc(c.q) + '</h1>' +
+    '<label class="field"><span>Your answer</span><textarea id="answer" rows="14" data-id="' + esc(c.id) + '" aria-describedby="live-checks">' + esc(c.a) + '</textarea></label>' +
+    '<p class="hint">Replace each <mark class="gap">[add: ...]</mark> with your own fact. Starter answers use only what your resume says.</p>' +
+    '<div class="row"><button class="btn primary' + (done ? ' on' : '') + '" data-action="perfect" data-id="' + esc(c.id) + '" aria-pressed="' + done + '">' + (done ? 'Perfected. Click to reopen' : 'Mark as perfected') + '</button><button class="btn" data-action="reset-answer" data-id="' + esc(c.id) + '">Reset to the starter answer</button>' + (isAdmin() ? '<button class="btn" data-action="delete-card" data-id="' + esc(c.id) + '">Delete card</button>' : '') + '</div></div>' +
+    '<aside class="edit-side"><div class="panel" id="live-checks">' + liveChecks(an, coach) + '</div>' +
+    '<div class="panel"><h3>What they are really testing</h3><p>' + esc(coach.test) + '</p><h3>A good answer includes</h3><ul>' + coach.include.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul><h3>Avoid</h3><ul>' + coach.avoid.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul>' + (coach.followups.length ? '<h3>Likely follow-ups</h3><ul>' + coach.followups.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '') + '</div>' +
+    '<div class="panel"><h3>Earlier versions</h3>' + (c.history.length ? '<ul class="hist">' + c.history.map((h, i) => '<li><span class="muted">' + new Date(h.at).toLocaleString() + '</span><p>' + esc(trunc(h.a, 160)) + '</p><button class="btn small" data-action="restore" data-id="' + esc(c.id) + '" data-i="' + i + '">Restore</button></li>').join('') + '</ul>' : '<p class="muted">Earlier versions appear here when you change an answer.</p>') + '</div></aside></div></section>';
+}
+const HUE_OF = { intro: 'blue', role: 'yellow', project: 'green', personal: 'purple', story: 'orange', general: 'slate', jd: 'pink', collected: 'teal' };
+function liveChecks(an, coach) {
+  return '<h3>Checks as you write</h3><p class="stat"><b>' + an.words + '</b> words · about <b>' + an.seconds + ' s</b> spoken' + (coach.seconds ? ' (aim for about ' + coach.seconds + ' s)' : '') + '</p><ul class="checklist">' + an.checks.map((k) => '<li class="lvl-' + (k.ok ? 'pass' : 'warn') + '"><span class="lvl">' + (k.ok ? 'Pass' : 'Check') + '</span><div>' + esc(k.text) + '</div></li>').join('') + '</ul>' +
+    '<p class="muted">Situation ' + (an.star.situation ? 'yes' : 'not yet') + ' · Task ' + (an.star.task ? 'yes' : 'not yet') + ' · Action ' + (an.star.action ? 'yes' : 'not yet') + ' · Result ' + (an.star.result ? 'yes' : 'not yet') + '</p>';
+}
+
+// ---------- Practice ----------
+function practicePool() {
+  const sc = UI.practice && UI.practice.scope || 'draft';
+  const all = sectionsInOrder().flatMap((x) => x.cards);
+  const now = Date.now();
+  return all.filter((c) => sc === 'all' ? true : sc === 'draft' ? c.status !== 'perfected' : sc === 'perfected' ? c.status === 'perfected' : sc === 'due' ? (!c.practice || now - c.practice.last > 7 * 864e5) : c.secId === sc);
+}
+function renderPractice() {
+  const p = UI.practice || (UI.practice = { scope: 'draft', deck: null, i: 0, reveal: false, t0: 0 });
+  const secs = sectionsInOrder();
+  const head = '<div class="row"><label class="field inline"><span>Practise</span><select id="pr-scope" data-action="pr-scope">' +
+    [['draft', 'Answers that need work'], ['due', 'Not practised this week'], ['perfected', 'Perfected answers'], ['all', 'Everything']].map(([v, l]) => '<option value="' + v + '"' + (p.scope === v ? ' selected' : '') + '>' + l + '</option>').join('') +
+    secs.map((x) => '<option value="' + esc(x.s.id) + '"' + (p.scope === x.s.id ? ' selected' : '') + '>' + esc(x.s.title) + '</option>').join('') + '</select></label><button class="btn primary" data-action="pr-start">Start</button></div>';
+  if (!p.deck) return '<section class="practice">' + head + '<div class="empty"><strong>Choose what to practise and press Start.</strong><p>You see the question first. Answer out loud, then reveal your saved answer and rate yourself.</p></div></section>';
+  const c = getCard(p.deck[p.i]);
+  if (!c) return '<section class="practice">' + head + '<div class="empty"><strong>Round finished.</strong><p>' + p.deck.length + ' questions. <button class="btn small" data-action="pr-start">Go again</button></p></div></section>';
+  const target = coachFor(c).seconds || c.seconds;
+  return '<section class="practice">' + head + '<div class="pr-card card hue-' + (HUE_OF[c.cat] || 'slate') + '"><div class="card-top"><span class="cat">' + esc((CATS[c.cat] || {}).label || '') + '</span><span class="muted">Question ' + (p.i + 1) + ' of ' + p.deck.length + '</span><span class="timer" id="pr-timer" data-t0="' + p.t0 + '" data-target="' + target + '">0:00 / ' + Math.floor(target / 60) + ':' + String(target % 60).padStart(2, '0') + '</span></div>' +
+    '<h2 class="q">' + esc(c.q) + '</h2>' +
+    (p.reveal ? '<div class="a">' + (norm(c.a) ? markGaps(c.a) : '<span class="muted">No answer written yet.</span>') + '</div><div class="row"><button class="btn" data-action="pr-rate" data-ok="0">Needs work</button><button class="btn primary" data-action="pr-rate" data-ok="1">Nailed it</button><button class="btn small" data-action="edit" data-id="' + esc(c.id) + '">Edit this answer</button></div>'
+      : '<p class="hint">Say your answer out loud first.</p><div class="row"><button class="btn primary" data-action="pr-reveal">Show my answer</button><button class="btn" data-action="pr-skip">Skip</button></div>') + '</div></section>';
+}
+
+// ---------- Admin: JD library ----------
+function renderJds() {
+  const list = Object.values(S.jds).sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
+  const q = norm(UI.jdSearch || '').toLowerCase();
+  const rows = list.filter((j) => !q || [j.company, j.title, j.hr && j.hr.name, j.hr && j.hr.email, j.notes].join(' ').toLowerCase().includes(q));
+  const cur = S.jds[S.activeJd];
+  return '<section class="jds"><div class="row"><h2>My job descriptions</h2><span class="pill">Admin</span><button class="btn" data-action="new-jd">New JD</button><label class="search"><span class="sr">Search JDs</span><input type="search" id="jd-search" placeholder="Search company, role, contact" value="' + esc(UI.jdSearch || '') + '"></label></div>' +
+    (rows.length ? '<ul class="jdlist">' + rows.map((j) => '<li class="' + (j.id === S.activeJd ? 'active' : '') + '"><button class="jd-open" data-action="open-jd" data-id="' + esc(j.id) + '"><strong>' + esc(j.company || 'Company not set') + '</strong><span>' + esc(j.title || 'Role not set') + '</span><span class="chip st-' + esc(j.status) + '">' + esc(STATUS_LABEL[j.status] || j.status) + '</span>' + (j.interviewDate ? '<span class="chip">Interview ' + esc(j.interviewDate) + countdown(j.interviewDate) + '</span>' : '') + '</button></li>').join('') + '</ul>' : '<div class="empty"><strong>No job descriptions yet.</strong><p>Press New JD, or paste one on Home and choose "Save to my JD library".</p></div>') +
+    (cur ? jdDetail(cur) : '') + '</section>';
+}
+function countdown(d) { const t = new Date(d + 'T00:00:00').getTime(); if (isNaN(t)) return ''; const n = Math.ceil((t - Date.now()) / 864e5); return n === 0 ? ' (today)' : n > 0 ? ' (in ' + n + ' d)' : ''; }
+function jdDetail(j) {
+  return '<div class="panel jd-detail" data-id="' + esc(j.id) + '"><h3>' + esc(j.company || 'New job description') + '</h3>' +
+    '<div class="grid2">' + fld('jd-company', 'Company', j.company, 'data-f="company"') + fld('jd-title', 'Role', j.title, 'data-f="title"') + fld('jd-hr-name', 'HR or recruiter name', j.hr && j.hr.name, 'data-f="hr.name"') + fld('jd-hr-email', 'HR email', j.hr && j.hr.email, 'data-f="hr.email" type="email"') + fld('jd-hr-phone', 'HR phone', j.hr && j.hr.phone, 'data-f="hr.phone"') + fld('jd-link', 'Job link', j.link, 'data-f="link"') +
+    '<label class="field"><span>Status</span><select id="jd-status" data-f="status">' + Object.keys(STATUS_LABEL).map((k) => '<option value="' + k + '"' + (j.status === k ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>').join('') + '</select></label>' + fld('jd-date', 'Interview date', j.interviewDate, 'data-f="interviewDate" type="date"') + '</div>' +
+    area('jd-notes', 'Notes', j.notes, 3, 'data-f="notes"') + area('jd-text', 'Job description text', j.text, 10, 'data-f="text"') +
+    '<div class="row"><button class="btn primary" data-action="rerun-jd" data-id="' + esc(j.id) + '">Analyse this JD</button><a class="btn" href="#/match">See the match</a><a class="btn" href="#/board">See the cards</a><button class="btn danger" data-action="delete-jd" data-id="' + esc(j.id) + '">Delete this JD</button></div>' +
+    (UI.notice ? '<p class="status" role="status">' + esc(UI.notice) + '</p>' : '') + (j.analysedAt ? '<p class="muted">Last analysed ' + new Date(j.analysedAt).toLocaleString() + '</p>' : '') + '</div>';
+}
+
+// ---------- Admin: collected questions ----------
+function renderCollected() {
+  return '<section class="collected"><div class="row"><h2>Collected questions</h2><span class="pill">Admin</span></div>' +
+    '<p class="hint">Paste questions you found yourself, with answers if you have them: notes, an email, a forum thread, a document. Press Extract. A new section named with today’s date is created, and you can move the cards to other sections yourself.</p>' +
+    '<label class="field"><span>Label (optional), for example the company or the round</span><input id="col-label" placeholder="Round 1 notes" autocomplete="off"></label>' +
+    '<label class="field"><span>Pasted text</span><textarea id="col-text" rows="14" placeholder="1. What is the difference between INNER JOIN and LEFT JOIN?&#10;Inner returns only matching rows...&#10;&#10;Q: How do you handle missing data?&#10;A: ..."></textarea></label>' +
+    '<div class="row"><button class="btn primary" data-action="extract">Extract questions</button><label class="btn file">Load a .txt, .md or .docx<input type="file" id="col-file" accept=".docx,.txt,.md,.text" hidden></label></div>' +
+    (UI.notice ? '<p class="status" role="status">' + esc(UI.notice) + '</p>' : '') +
+    '<h3>Earlier imports</h3>' + (S.batches.length ? '<ul class="batches">' + S.batches.map((b) => '<li><strong>' + esc((S.sections[b.secId] || {}).title || 'Section moved or deleted') + '</strong>' + (b.label ? ' <span class="chip">' + esc(b.label) + '</span>' : '') + ' <span class="muted">' + b.count + ' questions</span></li>').join('') + '</ul>' : '<p class="muted">None yet.</p>') + '</section>';
+}
+
+/* ---- app/main.js ---- */
+// Router, events and boot. Uses the shared state (S, UI) from store.js.
+
+const $ = (sel, root) => (root || document).querySelector(sel);
+const NAV = [['home', 'Home'], ['resume', 'Resume'], ['match', 'Job match'], ['board', 'Question cards'], ['practice', 'Practice']];
+const NAV_ADMIN = [['jds', 'My JDs'], ['collected', 'Collected']];
+let lastAdmin = false;
+let editStart = '';
+
+// ---------- small dialogs (window.prompt and confirm are blocked in some embedded pages) ----------
+function askDialog(title, opts, done) {
+  const dlg = document.createElement('dialog'); dlg.className = 'dlg';
+  const input = opts.value !== undefined;
+  dlg.innerHTML = '<form method="dialog"><h2>' + esc(title) + '</h2>' + (opts.text ? '<p>' + esc(opts.text) + '</p>' : '') + (input ? '<label class="field"><span class="sr">' + esc(title) + '</span><input id="dlg-in" value="' + esc(opts.value) + '" autocomplete="off"></label>' : '') + '<div class="row end"><button class="btn" value="cancel" type="button" data-x>Cancel</button><button class="btn primary" value="ok">' + esc(opts.ok || 'OK') + '</button></div></form>';
+  document.body.appendChild(dlg);
+  const close = () => { try { dlg.close(); } catch (e) { /* ignore */ } dlg.remove(); };
+  dlg.querySelector('[data-x]').addEventListener('click', close);
+  dlg.addEventListener('cancel', () => { dlg.remove(); });
+  dlg.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); const v = input ? dlg.querySelector('#dlg-in').value : true; close(); done(v); });
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+  const f = dlg.querySelector('input'); if (f) { f.focus(); f.select(); }
+}
+
+// ---------- reading files ----------
+async function readDocx(file) {
+  const buf = new Uint8Array(await file.arrayBuffer());
+  const dv = new DataView(buf.buffer);
+  let end = -1;
+  for (let i = buf.length - 22; i >= Math.max(0, buf.length - 66000); i--) { if (dv.getUint32(i, true) === 0x06054b50) { end = i; break; } }
+  if (end < 0) throw new Error('This does not look like a .docx file.');
+  const count = dv.getUint16(end + 10, true); let p = dv.getUint32(end + 16, true);
+  let entry = null;
+  for (let i = 0; i < count; i++) {
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nlen = dv.getUint16(p + 28, true), xlen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    const name = new TextDecoder().decode(buf.subarray(p + 46, p + 46 + nlen));
+    if (name === 'word/document.xml') { entry = { method, csize, off }; break; }
+    p += 46 + nlen + xlen + clen;
+  }
+  if (!entry) throw new Error('No document text was found in this file.');
+  const nlen = dv.getUint16(entry.off + 26, true), xlen = dv.getUint16(entry.off + 28, true);
+  const start = entry.off + 30 + nlen + xlen;
+  const data = buf.subarray(start, start + entry.csize);
+  let xml;
+  if (entry.method === 0) xml = new TextDecoder().decode(data);
+  else {
+    if (typeof DecompressionStream === 'undefined') throw new Error('This browser cannot open .docx files. Paste the text instead.');
+    xml = await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+  }
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  const out = [];
+  doc.querySelectorAll('w\\:p, p').forEach((para) => {
+    let line = '';
+    para.querySelectorAll('w\\:t, w\\:tab, w\\:br, t, tab, br').forEach((n) => { const ln = n.localName; line += ln === 't' ? n.textContent : ln === 'tab' ? '\t' : '\n'; });
+    const listed = para.querySelector('w\\:numPr, numPr');
+    if (line.trim()) out.push((listed ? '- ' : '') + line.replace(/[ \t]+$/, ''));
+  });
+  return out.join('\n');
+}
+async function readFileText(file) {
+  const n = (file.name || '').toLowerCase();
+  if (n.endsWith('.docx')) return readDocx(file);
+  if (n.endsWith('.pdf')) throw new Error('PDF files cannot be read here. Open the PDF, copy its text and paste it into the box.');
+  return file.text();
+}
+
+// ---------- shell ----------
+function renderNav() {
+  const admin = isAdmin();
+  const items = NAV.concat(admin ? NAV_ADMIN : []);
+  $('#nav').innerHTML = items.map(([id, l]) => '<a href="#/' + id + '" class="nav-a' + (UI.route === id || (id === 'board' && UI.route === 'edit') ? ' on' : '') + '"' + ((UI.route === id) ? ' aria-current="page"' : '') + '>' + l + '</a>').join('');
+  $('#admin-pill').hidden = !admin;
+}
+function routeFromHash() {
+  const h = (location.hash || '#/home').replace(/^#\/?/, '').split('?')[0];
+  const [r, id] = h.split('/');
+  const ok = NAV.concat(NAV_ADMIN).map((x) => x[0]).concat(['edit']);
+  let route = ok.includes(r) ? r : 'home';
+  if ((route === 'jds' || route === 'collected') && !isAdmin()) route = 'home';
+  return { route, id };
+}
+
+function render() {
+  const { route, id } = routeFromHash();
+  const prev = UI.route;
+  if (prev === 'edit' && route !== 'edit') leaveEditor();
+  UI.route = route; UI.editId = id;
+  renderNav();
+  const main = $('#main');
+  const html = route === 'home' ? renderHome() : route === 'resume' ? renderResume() : route === 'match' ? renderMatch() : route === 'board' ? renderBoard() : route === 'edit' ? renderEdit(id) : route === 'practice' ? renderPractice() : route === 'jds' ? renderJds() : renderCollected();
+  main.innerHTML = html;
+  main.className = 'main route-' + route;
+  document.title = 'Rehearsal Desk';
+  if (route === 'board') {
+    bindBoardScroll();
+    const y = UI.ret ? UI.ret.y : 0;
+    requestAnimationFrame(() => {
+      if (UI.focusCard) { const ok = flashCard(UI.focusCard); UI.focusCard = null; if (!ok && y) window.scrollTo(0, y); }
+      else if (UI.scrollSec) { const el = document.getElementById(UI.scrollSec.replace(/[^a-z0-9]/gi, '_')); UI.scrollSec = null; if (el) window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - offsetTopSafe(), behavior: 'auto' }); }
+      updateFocus();
+    });
+  } else if (prev !== route) window.scrollTo(0, 0);
+  if (route === 'practice') startTimer();
+  if (route === 'edit') { const c = getCard(id); editStart = c ? c.a : ''; }
+}
+const offsetTopSafe = () => { const h = $('.topbar'), f = $('#focusbar'); return (h ? h.offsetHeight : 0) + (f ? f.offsetHeight : 0) + 8; };
+
+function leaveEditor() { const c = getCard(UI.editId); if (c) commitVersion(c.id, editStart); flush(); }
+
+let timerHandle = null;
+function startTimer() {
+  clearInterval(timerHandle);
+  timerHandle = setInterval(() => {
+    const el = $('#pr-timer'); if (!el) { clearInterval(timerHandle); return; }
+    const t0 = +el.dataset.t0; if (!t0) return;
+    const s = Math.floor((Date.now() - t0) / 1000), tg = +el.dataset.target;
+    el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' / ' + Math.floor(tg / 60) + ':' + String(tg % 60).padStart(2, '0');
+    el.classList.toggle('over', s > tg);
+  }, 500);
+}
+
+// ---------- actions ----------
+const go = (hash) => { if (location.hash === hash) render(); else location.hash = hash; };
+function pageSizeCss() { let st = $('#page-style'); if (!st) { st = document.createElement('style'); st.id = 'page-style'; document.head.appendChild(st); } st.textContent = '@page{size:' + (S.ui.paper === 'letter' ? 'Letter' : 'A4') + ';margin:0}'; }
+function fillPrint() {
+  if (!S.resume) return;
+  pageSizeCss();
+  $('#print-root').innerHTML = '<table class="pt"><thead><tr><td><div class="pad"></div></td></tr></thead><tbody><tr><td class="pc">' + resumeHtml(S.resume, S.ui.template, S.ui.include) + '</td></tr></tbody><tfoot><tr><td><div class="pad"></div></td></tr></tfoot></table>';
+}
+function doPrint() { document.body.classList.add('printing-resume'); fillPrint(); setTimeout(() => window.print(), 50); }
+window.addEventListener('afterprint', () => document.body.classList.remove('printing-resume'));
+window.addEventListener('beforeprint', () => { if (UI.route === 'resume' && UI.resumeTab === 'design') document.body.classList.add('printing-resume'); fillPrint(); });
+
+function entryList(kind) { return kind === 'job' ? S.resume.experience : kind === 'project' ? S.resume.projects : S.resume.personal; }
+
+async function onClick(e) {
+  const t = e.target.closest('[data-action]');
+  if (!t) { if (UI.openMenu && !e.target.closest('.menu-wrap')) { UI.openMenu = null; if (UI.route === 'board') rerenderBoardKeepScroll(); } return; }
+  const a = t.dataset.action;
+  if (t.tagName === 'INPUT' || t.tagName === 'SELECT') return; // handled by change
+  const id = t.dataset.id;
+  switch (a) {
+    case 'analyse': {
+      const r = $('#resume-in').value, j = $('#jd-in').value;
+      if (!norm(r)) { UI.notice = 'Paste your resume first.'; render(); break; }
+      const res = analyse({ resumeText: r, jdText: j, now: new Date() });
+      UI.notice = res.sample ? 'This is the sample text, so nothing was saved. Replace it with your own to start.' : 'Done. ' + Object.values(S.cards).filter((c) => !c.archived).length + ' question cards are ready.';
+      render(); window.scrollTo({ top: 0 }); break;
+    }
+    case 'clear-resume': $('#resume-in').value = ''; $('#resume-in').focus(); break;
+    case 'clear-jd': $('#jd-in').value = ''; $('#jd-in').focus(); break;
+    case 'use-sample': askDialog('Replace your data with the sample?', { text: 'This clears what is saved in this browser. Download a backup first if you want to keep it.', ok: 'Use the sample' }, () => { resetAll(); UI.notice = ''; render(); }); break;
+    case 'save-jd-lib': {
+      const text = $('#jd-in').value; if (!norm(text)) { UI.notice = 'Paste a job description first.'; render(); break; }
+      if (S.sample) { analyse({ resumeText: S.resumeText, jdText: text, now: new Date() }); }
+      const cur = S.jds[S.activeJd];
+      if (!cur || cur.text !== text) analyseJdInto(S.activeJd && S.jds[S.activeJd] ? S.activeJd : 'current', text);
+      const jid = saveJdToLibrary({ text, company: S.jds[S.activeJd].company, title: S.jds[S.activeJd].title });
+      UI.notice = 'Saved to your JD library.'; go('#/jds'); break;
+    }
+    case 'resume-tab': UI.resumeTab = t.dataset.v; render(); break;
+    case 'add-entry': { const k = t.dataset.kind; const list = entryList(k); list.push(k === 'job' ? { kind: 'job', company: '', role: '', start: '', end: '', location: '', bullets: [], confidence: 'high' } : { kind: k, name: '', tech: '', bullets: [], confidence: 'medium' }); save(); render(); break; }
+    case 'del-entry': { entryList(t.dataset.kind).splice(+t.dataset.i, 1); save(); render(); break; }
+    case 'save-resume': {
+      const r = saveResumeChanges();
+      UI.notice = 'Saved. Questions refreshed: ' + r.added.length + ' new, ' + r.archived.length + ' archived. Your answers for unchanged facts were kept.';
+      UI.resumeTab = 'content'; render();
+      const d = $('#resume-dirty'); if (d) d.textContent = UI.notice; break;
+    }
+    case 'template': setUi({ template: t.dataset.v }); render(); break;
+    case 'paper': setUi({ paper: t.dataset.v }); render(); break;
+    case 'print': doPrint(); break;
+    case 'rerun-jd': { const r = rerunJd(id); UI.notice = r ? 'Analysed and saved. ' + r.added.length + ' new cards, ' + r.kept.length + ' kept (your edits and perfected answers are untouched).' : 'Add the job description text first.'; render(); break; }
+    case 'open-jd': setActiveJd(id); UI.notice = ''; render(); break;
+    case 'new-jd': newJdDraft(); UI.notice = ''; render(); setTimeout(() => { const f = $('#jd-company'); if (f) f.focus(); }, 0); break;
+    case 'delete-jd': askDialog('Delete this job description?', { text: 'Its cards are removed too. This cannot be undone.', ok: 'Delete' }, () => { deleteJd(id); UI.notice = ''; render(); }); break;
+    case 'extract': {
+      const txt = $('#col-text').value; const res = importCollected(txt, $('#col-label').value, new Date());
+      if (!res) { UI.notice = 'No questions were found. Questions end with a question mark, or start with words like "Tell me" or "Explain".'; render(); break; }
+      UI.notice = ''; UI.scrollSec = res.secId; UI.lastImport = res;
+      render(); go('#/board'); break;
+    }
+    case 'filter': UI.filter = t.dataset.v; rerenderBoardKeepScroll(); break;
+    case 'edit': UI.ret = { y: window.scrollY }; UI.focusCard = null; go('#/edit/' + id); break;
+    case 'back-to-card': UI.focusCard = id; go('#/board'); break;
+    case 'perfect': { togglePerfected(id); if (UI.route === 'board') rerenderBoardKeepScroll(); else render(); break; }
+    case 'reset-answer': resetToStarter(id); render(); break;
+    case 'restore': restoreVersion(id, +t.dataset.i); render(); break;
+    case 'delete-card': askDialog('Delete this card?', { text: 'This cannot be undone.', ok: 'Delete' }, () => { deleteCard(id); go('#/board'); }); break;
+    case 'autofit': setUi({ autofit: !S.ui.autofit }); rerenderBoardKeepScroll(); break;
+    case 'sec-prev': stepSection(-1); break;
+    case 'sec-next': stepSection(1); break;
+    case 'jump': { const el = document.getElementById(t.dataset.sec.replace(/[^a-z0-9]/gi, '_')); if (el) { const i = Array.prototype.indexOf.call(document.querySelectorAll('.board .sec'), el); scrollToSection(i); } break; }
+    case 'move-menu': UI.openMenu = UI.openMenu === 'move' ? null : 'move'; rerenderBoardKeepScroll(); break;
+    case 'move-to': { moveCards([...UI.selected], t.dataset.sec); UI.openMenu = null; rerenderBoardKeepScroll(); break; }
+    case 'move-new': askDialog('Name the new section', { value: '', ok: 'Create and move' }, (v) => { const sid = createSection(v); moveCards([...UI.selected], sid); UI.openMenu = null; UI.scrollSec = sid; render(); }); break;
+    case 'new-section': askDialog('Name the new section', { value: '', ok: 'Create' }, (v) => { const sid = createSection(v); UI.scrollSec = sid; render(); }); break;
+    case 'clear-sel': UI.selected.clear(); rerenderBoardKeepScroll(); break;
+    case 'sec-menu': UI.openMenu = UI.openMenu === t.dataset.sec ? null : t.dataset.sec; rerenderBoardKeepScroll(); break;
+    case 'sec-rename': { const s = S.sections[t.dataset.sec]; UI.openMenu = null; askDialog('Rename section', { value: s.title, ok: 'Rename' }, (v) => { renameSection(s.id, v); rerenderBoardKeepScroll(); }); break; }
+    case 'sec-up': moveSection(t.dataset.sec, -1); UI.openMenu = null; rerenderBoardKeepScroll(); break;
+    case 'sec-down': moveSection(t.dataset.sec, 1); UI.openMenu = null; rerenderBoardKeepScroll(); break;
+    case 'sec-select': cardsIn(t.dataset.sec).forEach((c) => UI.selected.add(c.id)); UI.openMenu = null; rerenderBoardKeepScroll(); break;
+    case 'sec-delete': { UI.openMenu = null; const ok = deleteSection(t.dataset.sec); if (!ok) UI.notice = 'Only empty sections can be deleted. Move the cards first.'; rerenderBoardKeepScroll(); break; }
+    case 'undo-import': askDialog('Undo this import?', { text: 'The cards from it that are still in this section are removed.', ok: 'Undo import' }, () => { undoImport(t.dataset.batch); UI.openMenu = null; rerenderBoardKeepScroll(); }); break;
+    case 'merge-dup': mergeCardInto(id); rerenderBoardKeepScroll(); break;
+    case 'merge-next': if (!mergeNext(id)) UI.notice = 'There is no next card to join.'; rerenderBoardKeepScroll(); break;
+    case 'split-card': if (!splitCard(id)) UI.notice = 'Nothing to split: the answer has no blank line.'; rerenderBoardKeepScroll(); break;
+    case 'pr-start': { const pool = practicePool(); const p = UI.practice; p.scope = $('#pr-scope') ? $('#pr-scope').value : p.scope; const deck = practicePool().map((c) => c.id); for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; } p.deck = deck.slice(0, 25); p.i = 0; p.reveal = false; p.t0 = Date.now(); render(); break; }
+    case 'pr-reveal': UI.practice.reveal = true; render(); break;
+    case 'pr-skip': UI.practice.i++; UI.practice.reveal = false; UI.practice.t0 = Date.now(); render(); break;
+    case 'pr-rate': { const p = UI.practice; rateCard(p.deck[p.i], t.dataset.ok === '1'); p.i++; p.reveal = false; p.t0 = Date.now(); render(); break; }
+    case 'backup': { const blob = new Blob([exportJson()], { type: 'application/json' }); const l = document.createElement('a'); l.href = URL.createObjectURL(blob); l.download = 'rehearsal-desk-backup.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); break; }
+    case 'erase': askDialog('Erase all my data?', { text: 'This removes your resume, answers and settings from this browser.', ok: 'Erase everything' }, () => { resetAll(); UI.notice = ''; go('#/home'); render(); }); break;
+    default: break;
+  }
+}
+function rerenderBoardKeepScroll() {
+  const y = window.scrollY; const keep = UI.focusCard;
+  const main = $('#main'); main.innerHTML = renderBoard(); renderNav();
+  window.scrollTo(0, y); updateFocus();
+}
+
+// ---------- inputs ----------
+function onInput(e) {
+  const el = e.target;
+  if (el.id === 'board-search') { UI.search = el.value; const pos = el.selectionStart; rerenderBoardKeepScroll(); const n = $('#board-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
+  if (el.id === 'jd-search') { UI.jdSearch = el.value; const pos = el.selectionStart; render(); const n = $('#jd-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
+  if (el.id === 'answer') {
+    const c = getCard(el.dataset.id); if (!c) return;
+    setAnswer(c.id, el.value);
+    $('#live-checks').innerHTML = liveChecks(analyseAnswer(el.value, coachFor(c).seconds || c.seconds), coachFor(c));
+    const ss = $('#save-state'); if (ss) ss.textContent = S.sample ? 'Sample: not saved' : 'Saved';
+    return;
+  }
+  if (el.closest('.editor') && S.resume) { editResumeField(el); return; }
+  if (el.closest('.jd-detail') && el.dataset.f) {
+    const d = el.closest('.jd-detail'); const f = el.dataset.f; const jid = d.dataset.id;
+    updateJdFields(jid, f.startsWith('hr.') ? { hr: { [f.slice(3)]: el.value } } : { [f]: el.value });
+    return;
+  }
+}
+function onChange(e) {
+  const el = e.target;
+  if (el.dataset.action === 'select') { if (el.checked) UI.selected.add(el.dataset.id); else UI.selected.delete(el.dataset.id); const sc = $('#sel-count'); if (sc) sc.textContent = UI.selected.size + ' selected'; const card = el.closest('.card'); if (card) card.classList.toggle('selected', el.checked); document.querySelectorAll('[data-action=move-menu],[data-action=clear-sel]').forEach((b) => { b.disabled = !UI.selected.size; }); return; }
+  if (el.dataset.action === 'include') { const inc = Object.assign({}, S.ui.include, { [el.dataset.k]: el.checked }); setUi({ include: inc }); render(); return; }
+  if (el.id === 'pr-scope') { UI.practice.scope = el.value; return; }
+  if (el.closest('.jd-detail') && el.dataset.f === 'status') { updateJdFields(el.closest('.jd-detail').dataset.id, { status: el.value }); render(); return; }
+  if (el.closest('.jd-detail') && el.dataset.f === 'interviewDate') { updateJdFields(el.closest('.jd-detail').dataset.id, { interviewDate: el.value }); return; }
+  if (el.type === 'file' && el.files && el.files[0]) {
+    const file = el.files[0]; const target = el.id;
+    readFileText(file).then((text) => {
+      if (target === 'resume-file') $('#resume-in').value = text;
+      else if (target === 'jd-file') $('#jd-in').value = text;
+      else if (target === 'col-file') $('#col-text').value = text;
+      UI.notice = 'Loaded ' + file.name + '. Check the text, then press the button.';
+      const st = $('.status'); if (st) st.textContent = UI.notice;
+    }).catch((err) => { UI.notice = err.message; render(); });
+    el.value = '';
+  }
+}
+function editResumeField(el) {
+  const r = S.resume; const f = el.dataset.f; if (!f) return;
+  const lines = (v) => v.split('\n').map((x) => x.trim()).filter(Boolean);
+  const entry = el.closest('.entry');
+  if (entry) {
+    const item = entryList(entry.dataset.kind)[+entry.dataset.i]; if (!item) return;
+    item[f] = f === 'bullets' ? lines(el.value) : el.value;
+    if (f === 'company' || f === 'role') item.confidence = 'high';
+  } else if (el.id.indexOf('c-') === 0) r.contact[f] = f === 'links' ? lines(el.value) : el.value;
+  else if (f === 'skills') r.skills = el.value.split(/[,;\n]/).map((x) => x.trim()).filter(Boolean);
+  else if (f === 'education' || f === 'certifications') r[f] = lines(el.value);
+  else if (f === 'summary') r.summary = el.value;
+  save();
+  const d = $('#resume-dirty'); if (d) d.textContent = S.sample ? 'Sample: changes are not saved.' : 'Unsaved changes: press Save and refresh questions to update your cards.';
+}
+function onFocusOut(e) { if (e.target.id === 'answer') { const c = getCard(e.target.dataset.id); if (c) { commitVersion(c.id, editStart); editStart = c.a; flush(); } } }
+
+function onKey(e) {
+  if (e.key === 'Escape' && UI.openMenu) { UI.openMenu = null; if (UI.route === 'board') rerenderBoardKeepScroll(); }
+}
+
+// ---------- boot ----------
+function boot() {
+  load(new Date());
+  lastAdmin = isAdmin();
+  document.addEventListener('click', onClick);
+  document.addEventListener('input', onInput);
+  document.addEventListener('change', onChange);
+  document.addEventListener('focusout', onFocusOut);
+  document.addEventListener('keydown', onKey);
+  window.addEventListener('hashchange', () => { render(); });
+  window.addEventListener('pagehide', () => flush());
+  window.addEventListener('appchrome:owner', () => { const now = isAdmin(); if (now !== lastAdmin) { lastAdmin = now; render(); } });
+  $('#theme-btn').addEventListener('click', () => { const cur = document.documentElement.getAttribute('data-theme'); const next = cur === 'dark' ? 'light' : cur === 'light' ? '' : 'dark'; if (next) document.documentElement.setAttribute('data-theme', next); else document.documentElement.removeAttribute('data-theme'); $('#theme-btn').textContent = 'Theme: ' + (next || 'system'); });
+  $('#backup-in').addEventListener('change', (e) => { const f = e.target.files[0]; if (!f) return; f.text().then((t) => { try { importJson(t); UI.notice = 'Backup imported.'; go('#/home'); render(); } catch (x) { UI.notice = 'That file is not a Rehearsal Desk backup.'; render(); } }); e.target.value = ''; });
+  render();
+}
+boot();
+
+})();
+</script>
+</body>
+</html>
