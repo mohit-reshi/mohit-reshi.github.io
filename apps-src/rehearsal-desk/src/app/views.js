@@ -42,7 +42,7 @@ export function renderHome() {
   return '<section class="home">' +
     '<div class="hero"><h1>Rehearse the answers you will actually give.</h1>' +
     '<p>Paste your resume. Rehearsal Desk finds your jobs and projects, writes starter answers from your own facts, and turns them into cards you can edit, perfect and practise. Add a job description for questions about that role.</p>' +
-    '<p class="privacy"><strong>Private by design.</strong> Your resume and answers stay in this browser. Nothing is uploaded.</p></div>' +
+    '<p class="privacy"><strong>Private by design.</strong> Your resume and answers are saved in this browser only, so they are here when you come back. Nothing is uploaded. You can clear everything at any time with <em>Clear my data</em>.</p></div>' +
     stepper(rd) + nudge +
     (S.sample ? '<div class="notice">Showing a fictional sample (Jordan Avery, a senior data analyst). Replace the text below with your own and press Analyse. Nothing here is saved until then.</div>' : '') +
     readinessPanel(rd) +
@@ -54,7 +54,7 @@ export function renderHome() {
     '<div class="row"><label class="btn small file">Upload .docx, .txt or .md<input type="file" id="jd-file" accept=".docx,.txt,.md,.text" hidden></label><button class="btn small" data-action="clear-jd">Clear</button>' +
     (admin ? '<button class="btn small" data-action="save-jd-lib">Save to my JD library</button>' : '') + '</div></div></div>' +
     '<div class="row actions"><button class="btn primary big" data-action="analyse">Analyse resume and job description</button>' +
-    (S.sample ? '' : '<button class="btn" data-action="use-sample">Use the sample again</button>') + '</div>' +
+    (S.sample ? '' : '<button class="btn danger" data-action="erase">Clear my data</button>') + '</div>' +
     (UI.notice ? '<p class="status" role="status">' + esc(UI.notice) + '</p>' : '') + tiles +
     (r && r.warnings && r.warnings.length ? '<div class="warns"><strong>Please check:</strong><ul>' + r.warnings.map((w) => '<li>' + esc(w) + '</li>').join('') + '</ul><a class="btn small" href="#/resume">Review what was found</a></div>' : '') +
     (r ? '<div class="row"><a class="btn" href="#/resume">What we found in your resume</a><a class="btn" href="#/board">Open the question cards</a>' + (jd && jd.analysis ? '<a class="btn" href="#/match">Resume and job match</a>' : '') + '</div>' : '') +

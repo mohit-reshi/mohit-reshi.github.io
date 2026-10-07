@@ -262,7 +262,7 @@ async function onClick(e) {
     case 'apply-rewrite': { if (applyRewrite({ kind: t.dataset.kind, i: +t.dataset.i, line: +t.dataset.line }, t.dataset.text)) { UI.notice = 'Changed. Press "Save and refresh questions" on the first tab when you are happy.'; } render(); break; }
     case 'add-skill': { addSkill(t.dataset.label); UI.notice = 'Added to your skills. Press "Save and refresh questions" on the Resume tab to update your cards.'; render(); break; }
     case 'backup': { markBackup(); if (UI.route === 'home') setTimeout(render, 0); const blob = new Blob([exportJson()], { type: 'application/json' }); const l = document.createElement('a'); l.href = URL.createObjectURL(blob); l.download = 'rehearsal-desk-backup.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); break; }
-    case 'erase': askDialog('Erase all my data?', { text: 'This removes your resume, answers and settings from this browser.', ok: 'Erase everything' }, () => { resetAll(); UI.notice = ''; go('#/home'); render(); }); break;
+    case 'erase': askDialog('Clear all my data?', { text: 'This removes your resume, answers and settings from this browser and brings back the sample. Download a backup first if you may want them again.', ok: 'Clear my data' }, () => { resetAll(); UI.notice = ''; go('#/home'); render(); }); break;
     default: break;
   }
 }

@@ -165,6 +165,18 @@ try {
     // reload keeps everything
     await page.goto(URL0 + '#/board'); await page.reload(); await settle(page, 500);
     ok('persist: perfected card survives reload', await page.locator('.card.perfected').count() === 1);
+    // clearing data: the button is on Home, asks first, and brings back the sample
+    await page.goto(URL0 + '#/home'); await settle(page, 300);
+    ok('clear: Home offers "Clear my data" once real data exists', await page.locator('.actions [data-action=erase]').count() === 1);
+    await page.click('.actions [data-action=erase]'); await settle(page, 150);
+    ok('clear: it asks for confirmation first', await page.locator('dialog.dlg').count() === 1 && (await page.locator('dialog.dlg h2').innerText()).includes('Clear all my data'));
+    await page.click('dialog button[value=cancel]'); await settle(page, 150);
+    ok('clear: cancelling keeps the data', await page.evaluate(() => !!localStorage.getItem('rehearsal-desk-v1')));
+    await page.click('.actions [data-action=erase]'); await page.click('dialog button.primary'); await settle(page, 500);
+    ok('clear: confirming removes the saved data and shows the sample again', await page.evaluate(() => localStorage.getItem('rehearsal-desk-v1') === null) && (await page.locator('#resume-in').inputValue()).includes('Jordan Avery'));
+    await page.reload(); await settle(page, 500);
+    ok('clear: the data stays gone after a reload', (await page.locator('#resume-in').inputValue()).includes('Jordan Avery'));
+    await page.goto(URL0 + '#/home'); await page.fill('#resume-in', MY_RESUME); await page.click('[data-action=analyse]'); await settle(page, 400);
     ok('visitor: no page errors', errs.length === 0, errs);
     await ctx.close();
   }

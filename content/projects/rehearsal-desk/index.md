@@ -53,7 +53,7 @@ Home starts with a fictional sample resume and job description, so the app works
 
 ## Under the hood
 
-One HTML file with no server and no outside requests. Resume text, answers and settings stay in the browser and can be backed up as a file. The parser looks for headings, date ranges and bullets, and handles several layouts. Job skills come from a dictionary with synonyms, and "Snowflake or BigQuery" counts as one requirement. The PDF uses the browser's print engine with a print stylesheet, so the text stays real and selectable. The readability checks are rules of thumb, not an ATS score, and the page says so.
+One HTML file with no server and no outside requests. Resume text, answers and settings stay in the browser and can be backed up as a file or cleared at any time. The parser looks for headings, date ranges and bullets, and handles several layouts. Job skills come from a dictionary with synonyms, and "Snowflake or BigQuery" counts as one requirement. The PDF uses the browser's print engine with a print stylesheet, so the text stays real and selectable. The readability checks are rules of thumb, not an ATS score, and the page says so.
 
 ## Outcome
 
