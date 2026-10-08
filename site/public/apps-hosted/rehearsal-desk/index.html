@@ -201,6 +201,13 @@ kbd { font: 12px var(--mono); border: 1px solid currentColor; border-radius: 4px
   body.printing-resume #print-root { display: block; }
   .pt { width: 100%; border-collapse: collapse; } .pt td { padding: 0; } .pad { height: 14mm; } .pc { padding: 0 16mm !important; }
 }
+/* ---------- My story (admin) ---------- */
+.facts-strip { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 8px 0 0; } .facts-strip div { min-width: 0; } .facts-strip dt { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--ink2); } .facts-strip dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.stack { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.unit-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 14px; margin-top: 12px; } .unit-form .row { grid-column: 1 / -1; }
+.story-a p { margin: 0 0 .5em; } .story-a ul { margin: 0 0 .5em; padding-left: 1.2em; } .story-a li { margin: 0 0 .25em; }
+.card .reveal { margin-top: 4px; }
+.card textarea, .card input { width: 100%; }
 
 </style>
 <script defer src="./app-chrome.js" data-app="rehearsal-desk" data-keys="rehearsal-desk-v1" data-zip="rehearsal-desk-local.zip"></script>
@@ -1201,6 +1208,80 @@ function extractQA(text) {
   return items.map((it) => ({ q: it.q, a: it.a, confidence: it.confidence === 'high' && it.lines < 40 ? 'high' : 'low' })).filter((it) => it.q.length >= 8);
 }
 
+/* ---- core/story.js ---- */
+// "My story": one section per company or project, one card per fact group you want to know by heart.
+// Pure helpers only (no storage, no DOM) so they can be unit tested.
+
+const UNIT_KINDS = { company: 'Company', project: 'Project' };
+
+const COMPANY = [
+  { title: 'Snapshot', hue: 'blue', hint: 'Employer type, dates, location, the client or domain, and what the team did.' },
+  { title: 'My role and team', hue: 'yellow', hint: 'Title, who I reported to, team size, who I worked with every day.' },
+  { title: 'What I owned', hue: 'green', hint: 'The three to five things I was responsible for.' },
+  { title: 'Projects here', hue: 'purple', hint: 'Each project in one line, newest first.' },
+  { title: 'Tech stack', hue: 'orange', hint: 'Tools I used every day and what each was for.' },
+  { title: 'Wins I can prove', hue: 'teal', hint: 'Only facts I can back up. Use a number only if it is true and I remember where it came from.' },
+  { title: 'Hard questions', hue: 'pink', hint: 'Why I left, gaps, anything that needs a calm answer.' },
+  { title: '30-second pitch', hue: 'slate', hint: 'How I introduce this job out loud.' },
+];
+const PROJECT = [
+  { title: 'What it is', hue: 'blue', hint: 'One or two sentences a stranger would understand.' },
+  { title: 'Why it existed', hue: 'yellow', hint: 'The business problem and who needed it.' },
+  { title: 'My role and team', hue: 'green', hint: 'What I did, who else was on it, team size.' },
+  { title: 'Structure', hue: 'purple', hint: 'How it is built: layers, data flow, models, pages. The picture I would draw on a whiteboard.' },
+  { title: 'Tech stack', hue: 'orange', hint: 'Each tool and what it was used for.' },
+  { title: 'The hard parts', hue: 'pink', hint: 'The two or three problems that took thought, and how I solved them.' },
+  { title: 'Results', hue: 'teal', hint: 'What changed because of it. Only facts I can back up.' },
+  { title: 'Likely follow-ups', hue: 'slate', hint: 'What an interviewer will ask next, and my answer.' },
+  { title: '30-second pitch', hue: 'blue', hint: 'How I introduce this project out loud.' },
+];
+const templateFor = (kind) => (kind === 'project' ? PROJECT : COMPANY).map((t) => Object.assign({}, t));
+
+/** The small facts shown in a section header. */
+const UNIT_FIELDS = [
+  ['role', 'Role'], ['period', 'Period'], ['team', 'Team size'], ['domain', 'Domain or client'], ['stack', 'Stack (comma separated)'],
+];
+const PROJECT_FIELDS = [['company', 'Worked on at']];
+
+function blankStory() { return { units: {}, cards: {}, seq: 0 }; }
+function normaliseStory(s) {
+  const out = Object.assign(blankStory(), s || {});
+  out.units = out.units || {}; out.cards = out.cards || {};
+  out.seq = Math.max(out.seq || 0, ...Object.values(out.cards).map((c) => c.seq || 0), ...Object.values(out.units).map((u) => u.order || 0), 0);
+  return out;
+}
+const stackList = (text) => String(text || '').split(/[,;\n]/).map((x) => norm(x)).filter(Boolean);
+
+/** Counts for the readiness line: cards, known, still holding an [add: ...] gap, empty. */
+function storyStats(story, unitId) {
+  const cards = Object.values(story.cards).filter((c) => !unitId || c.unit === unitId);
+  return {
+    total: cards.length,
+    known: cards.filter((c) => c.status === 'known').length,
+    gaps: cards.filter((c) => /\[add:/.test(c.body || '')).length,
+    empty: cards.filter((c) => !norm(c.body)).length,
+  };
+}
+
+/** Checks and cleans an import file. Throws a short, readable message when the file is not usable. */
+function parseStoryImport(text) {
+  let d;
+  try { d = JSON.parse(text); } catch (e) { throw new Error('That file is not valid JSON.'); }
+  if (!d || d.app !== 'rehearsal-desk-story' || !Array.isArray(d.units)) throw new Error('That file is not a Rehearsal Desk story file.');
+  const units = d.units.map((u, i) => {
+    if (!u || typeof u !== 'object') throw new Error('Section ' + (i + 1) + ' is not valid.');
+    const kind = u.kind === 'project' ? 'project' : 'company';
+    const title = norm(u.title);
+    if (!title) throw new Error('Section ' + (i + 1) + ' has no title.');
+    const fields = {};
+    UNIT_FIELDS.concat(PROJECT_FIELDS).forEach(([k]) => { if (u.fields && typeof u.fields[k] === 'string') fields[k] = u.fields[k]; });
+    const cards = (Array.isArray(u.cards) ? u.cards : []).filter((c) => c && norm(c.title)).map((c) => ({ title: norm(c.title), body: String(c.body || ''), hue: typeof c.hue === 'string' ? c.hue : '' }));
+    return { kind, title, fields, cards };
+  });
+  if (!units.length) throw new Error('The file has no sections.');
+  return units;
+}
+
 /* ---- sample.js ---- */
 // Fictional sample data shown until the visitor adds their own. The person and every company are invented.
 /** Dates are relative to today so the sample always reads as roughly eight years of experience. */
@@ -1307,18 +1388,19 @@ const KEY = 'rehearsal-desk-v1';
 const VERSION = 1;
 const MAX_HISTORY = 5;
 let S = null;
-const UI = { route: 'home', focusCard: null, ret: null, notice: '', resumeTab: 'content', filter: 'all', search: '', selected: new Set(), openMenu: null, practice: null };
+const UI = { route: 'home', focusCard: null, ret: null, notice: '', resumeTab: 'content', filter: 'all', search: '', storyFilter: 'all', storySearch: '', storyCover: false, selected: new Set(), openMenu: null, practice: null };
 
 const defaultUi = () => ({ template: 'classic', paper: 'a4', autofit: true, include: { projects: true, personal: true, certifications: true, education: true } });
 
 function blank() {
-  return { v: VERSION, sample: false, seq: 0, lastBackup: 0, resumeText: '', resume: null, resumeAt: 0, jds: {}, activeJd: null, sections: {}, cards: {}, batches: [], ui: defaultUi() };
+  return { v: VERSION, sample: false, seq: 0, lastBackup: 0, resumeText: '', resume: null, resumeAt: 0, jds: {}, activeJd: null, sections: {}, cards: {}, batches: [], story: { units: {}, cards: {}, seq: 0 }, ui: defaultUi() };
 }
 
 function migrate(s) {
   const out = Object.assign(blank(), s || {});
   out.ui = Object.assign(defaultUi(), out.ui || {}); out.ui.include = Object.assign(defaultUi().include, (s && s.ui && s.ui.include) || {});
   out.jds = out.jds || {}; out.sections = out.sections || {}; out.cards = out.cards || {}; out.batches = out.batches || [];
+  out.story = Object.assign({ units: {}, cards: {}, seq: 0 }, out.story || {});
   out.seq = Math.max(out.seq || 0, ...Object.values(out.cards).map((c) => c.seq || 0), 0);
   out.v = VERSION;
   return out;
@@ -1662,6 +1744,7 @@ const helpers = { slug, hash };
 // The Q&A board: sections stacked, cards wrapping in rows, a focus bar that follows the section in view,
 // and auto-fit scrolling. Uses the shared state (S, UI) from store.js and the helpers from core/.
 
+const boardish = () => UI.route === 'board' || UI.route === 'story';
 const HUE = { intro: 'blue', role: 'yellow', project: 'green', personal: 'purple', story: 'orange', general: 'slate', jd: 'pink', collected: 'teal' };
 
 function markGaps(text) {
@@ -1739,11 +1822,7 @@ function renderBoard() {
   const arch = archivedCards();
   if (arch.length) html += '<details class="archived"><summary>' + arch.length + ' archived card(s): their source is gone from the resume</summary><div class="cards">' + arch.map((c) => cardHtml(c, admin)).join('') + '</div></details>';
   html += '<div class="board-end" aria-hidden="true"></div></div>';
-  return '<div id="focusbar" class="focusbar" role="navigation" aria-label="Sections"><div class="fb-main"><button class="btn small" data-action="sec-prev" aria-label="Previous section">←</button>' +
-    '<div class="fb-title" aria-live="polite"><span class="fb-kicker">In focus</span><strong id="fb-name">' + esc(visible[0] ? visible[0].s.title : '') + '</strong><span id="fb-count" class="muted"></span></div>' +
-    '<button class="btn small" data-action="sec-next" aria-label="Next section">→</button></div>' +
-    '<div class="fb-side"><button class="btn small primary" data-action="next-work" title="Jump to the next answer that still needs work">Next to work on</button><button class="btn small" data-action="autofit" aria-pressed="' + S.ui.autofit + '" title="Scroll so that each section fits the screen">Auto-fit sections: ' + (S.ui.autofit ? 'on' : 'off') + '</button></div>' +
-    '<ol class="rail" aria-label="Jump to a section">' + visible.map((x, i) => '<li><button data-action="jump" data-sec="' + esc(x.s.id) + '" aria-label="' + esc(x.s.title) + '" title="' + esc(x.s.title) + '"></button></li>').join('') + '</ol></div>' + html;
+  return focusbarHtml(visible.map((x) => ({ id: x.s.id, title: x.s.title })), true) + html;
 }
 const byOrder = (a, b) => ((a.seq || 0) - (b.seq || 0)) || a.key.localeCompare(b.key);
 
@@ -1792,7 +1871,7 @@ function stepSection(delta) {
 /** Snap rule: when the section above is >= 90% out of view, align the new section; going up, do the mirror image.
  * A section taller than the screen is only aligned at its top and then scrolls freely. */
 function maybeSnap() {
-  if (!S.ui.autofit || programmatic || pointerDown || UI.route !== 'board') return;
+  if (!S.ui.autofit || programmatic || pointerDown || !boardish()) return;
   const g = geometry(); if (g.length < 2) return;
   const off = g[0].off, vh = window.innerHeight;
   if (dir > 0) {
@@ -1819,7 +1898,7 @@ function maybeSnap() {
 }
 function onScroll() {
   const y = window.scrollY; if (y !== lastY) dir = y > lastY ? 1 : -1; lastY = y;
-  if (UI.route !== 'board') return;
+  if (!boardish()) return;
   updateFocus();
   clearTimeout(snapTimer); snapTimer = setTimeout(maybeSnap, 160);
 }
@@ -1828,7 +1907,7 @@ function bindBoardScroll() {
   if (scrollBound) return;
   scrollBound = true;
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', () => { if (UI.route === 'board') updateFocus(); });
+  window.addEventListener('resize', () => { if (boardish()) updateFocus(); });
   window.addEventListener('pointerdown', () => { pointerDown = true; }, { passive: true });
   const up = () => { if (pointerDown) { pointerDown = false; clearTimeout(snapTimer); snapTimer = setTimeout(maybeSnap, 160); } };
   window.addEventListener('pointerup', up, { passive: true }); window.addEventListener('pointercancel', up, { passive: true });
@@ -1840,6 +1919,14 @@ function flashCard(id) {
   el.classList.add('flash'); try { el.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
   setTimeout(() => el.classList.remove('flash'), 2200);
   return true;
+}
+
+function focusbarHtml(items, nextWork) {
+  return '<div id="focusbar" class="focusbar" role="navigation" aria-label="Sections"><div class="fb-main"><button class="btn small" data-action="sec-prev" aria-label="Previous section">←</button>' +
+    '<div class="fb-title" aria-live="polite"><span class="fb-kicker">In focus</span><strong id="fb-name">' + esc(items[0] ? items[0].title : '') + '</strong><span id="fb-count" class="muted"></span></div>' +
+    '<button class="btn small" data-action="sec-next" aria-label="Next section">→</button></div>' +
+    '<div class="fb-side">' + (nextWork ? '<button class="btn small primary" data-action="next-work" title="Jump to the next answer that still needs work">Next to work on</button>' : '') + '<button class="btn small" data-action="autofit" aria-pressed="' + S.ui.autofit + '" title="Scroll so that each section fits the screen">Auto-fit sections: ' + (S.ui.autofit ? 'on' : 'off') + '</button></div>' +
+    '<ol class="rail" aria-label="Jump to a section">' + items.map((t) => '<li><button data-action="jump" data-sec="' + esc(t.id) + '" aria-label="' + esc(t.title) + '" title="' + esc(t.title) + '"></button></li>').join('') + '</ol></div>';
 }
 
 /* ---- app/views.js ---- */
@@ -2121,12 +2208,188 @@ function renderCollected() {
     '<h3>Earlier imports</h3>' + (S.batches.length ? '<ul class="batches">' + S.batches.map((b) => '<li><strong>' + esc((S.sections[b.secId] || {}).title || 'Section moved or deleted') + '</strong>' + (b.label ? ' <span class="chip">' + esc(b.label) + '</span>' : '') + ' <span class="muted">' + b.count + ' questions</span></li>').join('') + '</ul>' : '<p class="muted">None yet.</p>') + '</section>';
 }
 
+/* ---- app/story.js ---- */
+// "My story" tab (admin only): a board like the question cards, but one section per company or project and
+// cards that hold the facts to know by heart. The data lives in S.story, so it is saved, backed up and synced
+// with everything else, and it is never part of the published app.
+
+
+
+const story = () => { S.story = normaliseStory(S.story); return S.story; };
+/** Sample data is never stored, so the first edit starts a real workspace instead of losing the change. */
+function ensureReal() { if (S.sample) S = blank(); story(); }
+
+const storyUnits = () => Object.values(story().units).sort((a, b) => (a.order || 0) - (b.order || 0));
+const storyCards = (unitId) => Object.values(story().cards).filter((c) => c.unit === unitId).sort((a, b) => (a.seq || 0) - (b.seq || 0));
+
+// ---------- changes ----------
+function addUnit(kind, title) {
+  ensureReal(); const st = story();
+  const id = uid('u');
+  st.units[id] = { id, kind: kind === 'project' ? 'project' : 'company', title: norm(title) || (kind === 'project' ? 'New project' : 'New company'), order: ++st.seq, createdAt: Date.now() };
+  templateFor(kind).forEach((t) => { const cid = uid('sc'); st.cards[cid] = { id: cid, unit: id, title: t.title, hint: t.hint, hue: t.hue, body: '', seq: ++st.seq, status: 'draft', practice: null }; });
+  save(); return id;
+}
+function addStoryCard(unitId) {
+  ensureReal(); const st = story(); const cid = uid('sc');
+  st.cards[cid] = { id: cid, unit: unitId, title: 'New card', hint: '', hue: 'slate', body: '', seq: ++st.seq, status: 'draft', practice: null };
+  save(); return cid;
+}
+function removeUnit(id) { const st = story(); delete st.units[id]; Object.values(st.cards).forEach((c) => { if (c.unit === id) delete st.cards[c.id]; }); save(); }
+function removeStoryCard(id) { delete story().cards[id]; save(); }
+function moveUnit(id, dir) {
+  const list = storyUnits(); const i = list.findIndex((u) => u.id === id); const j = i + dir;
+  if (i < 0 || j < 0 || j >= list.length) return;
+  const t = list[i].order; list[i].order = list[j].order; list[j].order = t; save();
+}
+function setUnitField(id, f, v) { const u = story().units[id]; if (u) { u[f] = v; save(); } }
+function setStoryCardField(id, f, v) { const c = story().cards[id]; if (c) { c[f] = v; if (f === 'body') c.status = c.status === 'known' && norm(v) ? 'known' : 'draft'; save(); } }
+function toggleKnown(id) { const c = story().cards[id]; if (c) { c.status = c.status === 'known' ? 'draft' : 'known'; save(); } }
+function rateStoryCard(id, ok) { const c = story().cards[id]; if (!c) return; c.practice = scheduleReview(c.practice, ok, Date.now()); c.status = ok ? 'known' : 'draft'; save(); }
+function exportStoryJson() {
+  const st = story();
+  return JSON.stringify({ app: 'rehearsal-desk-story', units: storyUnits().map((u) => ({ kind: u.kind, title: u.title, fields: Object.fromEntries(UNIT_FIELDS.concat(PROJECT_FIELDS).filter(([k]) => u[k]).map(([k]) => [k, u[k]])), cards: storyCards(u.id).map((c) => ({ title: c.title, body: c.body, hue: c.hue })) })) }, null, 1);
+}
+/** Adds sections from a story file. A section with the same kind and title as one you already have is skipped. */
+function importStoryJson(text) {
+  const units = parseStoryImport(text);
+  ensureReal(); const st = story(); let added = 0, skipped = 0;
+  units.forEach((u) => {
+    if (storyUnits().some((x) => x.kind === u.kind && x.title.toLowerCase() === u.title.toLowerCase())) { skipped++; return; }
+    const id = uid('u');
+    st.units[id] = Object.assign({ id, kind: u.kind, title: u.title, order: ++st.seq, createdAt: Date.now() }, u.fields);
+    u.cards.forEach((c) => { const cid = uid('sc'); st.cards[cid] = { id: cid, unit: id, title: c.title, hint: '', hue: c.hue || 'slate', body: c.body, seq: ++st.seq, status: 'draft', practice: null }; });
+    added++;
+  });
+  save(); return { added, skipped };
+}
+
+// ---------- view ----------
+function bodyHtml(text) {
+  const lines = String(text || '').split('\n'); const out = []; let list = null;
+  const gap = (s) => esc(s).replace(/\[add:([^\]]*)\]/g, '<mark class="gap">[add:$1]</mark>');
+  lines.forEach((ln) => {
+    const m = /^\s*[-*•]\s+(.*)$/.exec(ln);
+    if (m) { if (!list) { list = []; out.push(list); } list.push(m[1]); }
+    else { list = null; if (ln.trim()) out.push(ln); }
+  });
+  return out.map((x) => Array.isArray(x) ? '<ul>' + x.map((i) => '<li>' + gap(i) + '</li>').join('') + '</ul>' : '<p>' + gap(x) + '</p>').join('');
+}
+const shown = () => (UI.storyShown = UI.storyShown || new Set());
+const storyMatches = (c) => {
+  if (UI.storyFilter === 'learning' && c.status === 'known') return false;
+  if (UI.storyFilter === 'known' && c.status !== 'known') return false;
+  if (UI.storyFilter === 'gaps' && !(/\[add:/.test(c.body || '') || !norm(c.body))) return false;
+  const q = norm(UI.storySearch).toLowerCase();
+  return !q || (c.title + ' ' + c.body).toLowerCase().includes(q);
+};
+
+function storyCardHtml(c) {
+  const editing = UI.storyEdit === c.id; const known = c.status === 'known';
+  const covered = UI.storyCover && !shown().has(c.id) && !editing;
+  const hue = c.hue || 'slate';
+  const due = c.practice && isDue(c, Date.now()) ? '<span class="flag">Due for review</span>' : '';
+  let body;
+  if (editing) body = '<label class="field"><span class="sr">Card title</span><input data-sf="card.title" data-id="' + esc(c.id) + '" value="' + esc(c.title) + '" autocomplete="off"></label>' +
+    '<label class="field"><span class="sr">What to know</span><textarea data-sf="card.body" data-id="' + esc(c.id) + '" rows="9" placeholder="' + esc(c.hint || 'Write what you want to know by heart. Start a line with - for a list.') + '">' + esc(c.body) + '</textarea></label>' +
+    '<p class="hint">' + esc(c.hint || '') + ' Write [add: what is missing] where you still need to find a fact.</p>';
+  else if (covered) body = '<h3 class="q">' + esc(c.title) + '</h3><button class="btn small reveal" data-action="st-reveal" data-id="' + esc(c.id) + '">Say it from memory, then reveal</button>';
+  else body = '<h3 class="q">' + esc(c.title) + '</h3><div class="a story-a">' + (norm(c.body) ? bodyHtml(c.body) : '<span class="muted">' + esc(c.hint || 'Nothing written yet.') + '</span>') + '</div>';
+  const actions = editing
+    ? '<button class="btn small primary" data-action="st-done">Done</button><button class="btn small" data-action="st-del-card" data-id="' + esc(c.id) + '">Delete card</button>'
+    : (UI.storyCover && shown().has(c.id) ? '<button class="btn small" data-action="st-rate" data-ok="1" data-id="' + esc(c.id) + '">I knew it</button><button class="btn small" data-action="st-rate" data-ok="0" data-id="' + esc(c.id) + '">Missed</button>' : '') +
+      '<button class="btn small" data-action="st-edit" data-id="' + esc(c.id) + '">Edit</button><button class="btn small' + (known ? ' on' : '') + '" data-action="st-known" data-id="' + esc(c.id) + '" aria-pressed="' + known + '">' + (known ? 'Known by heart' : 'Mark as known') + '</button>';
+  return '<article class="card hue-' + esc(hue) + (known ? ' perfected' : '') + '" data-card="' + esc(c.id) + '" tabindex="-1" aria-label="' + esc(c.title) + '"><div class="card-top"><span class="cat">' + esc((story().units[c.unit] || {}).kind === 'project' ? 'Project' : 'Company') + '</span>' +
+    (known ? '<span class="badge-done">Known</span>' : '') + due + '</div>' + body + '<div class="card-actions">' + actions + '</div></article>';
+}
+
+function unitHeadHtml(u, i, all) {
+  const st = storyStats(story(), u.id);
+  const facts = UNIT_FIELDS.filter(([k]) => k !== 'stack' && norm(u[k])).map(([k, l]) => '<div><dt>' + esc(l) + '</dt><dd>' + esc(u[k]) + '</dd></div>').join('') + (u.kind === 'project' && norm(u.company) ? '<div><dt>Worked on at</dt><dd>' + esc(u.company) + '</dd></div>' : '');
+  const chips = stackList(u.stack).map((x) => '<span class="chip">' + esc(x) + '</span>').join('');
+  const editing = UI.storyUnit === u.id;
+  const form = editing ? '<div class="unit-form"><label class="field"><span>Name</span><input data-sf="unit.title" data-id="' + esc(u.id) + '" value="' + esc(u.title) + '" autocomplete="off"></label>' +
+    UNIT_FIELDS.concat(u.kind === 'project' ? PROJECT_FIELDS : []).map(([k, l]) => '<label class="field"><span>' + esc(l) + '</span><input data-sf="unit.' + k + '" data-id="' + esc(u.id) + '" value="' + esc(u[k] || '') + '" autocomplete="off"></label>').join('') +
+    '<div class="row"><button class="btn small primary" data-action="st-unit-done">Done</button></div></div>' : '';
+  return '<header class="sec-head"><div><h2 id="h-' + i + '">' + esc(u.title) + '</h2><p class="sub"><span class="chip">' + (u.kind === 'project' ? 'Project' : 'Company') + '</span>' + st.known + ' of ' + st.total + ' known by heart' + (st.gaps ? ', ' + st.gaps + ' with gaps to fill' : '') + '</p>' +
+    (facts ? '<dl class="facts-strip">' + facts + '</dl>' : '') + (chips ? '<div class="stack">' + chips + '</div>' : '') + form + '</div>' +
+    '<div class="sec-side"><button class="btn small" data-action="st-unit-edit" data-id="' + esc(u.id) + '">Edit details</button><button class="btn small" data-action="st-add-card" data-id="' + esc(u.id) + '">Add card</button>' +
+    '<button class="btn small" data-action="st-up" data-id="' + esc(u.id) + '" aria-label="Move ' + esc(u.title) + ' up"' + (i === 0 ? ' disabled' : '') + '>Up</button><button class="btn small" data-action="st-down" data-id="' + esc(u.id) + '" aria-label="Move ' + esc(u.title) + ' down"' + (i === all - 1 ? ' disabled' : '') + '>Down</button>' +
+    '<button class="btn small" data-action="st-del-unit" data-id="' + esc(u.id) + '">Delete</button></div></header>';
+}
+
+function renderStory() {
+  if (!isAdmin()) return '<div class="empty"><strong>This tab is for the owner.</strong></div>';
+  const units = storyUnits(); const st = story(); const all = storyStats(st);
+  const filters = [['all', 'All'], ['learning', 'Still learning'], ['known', 'Known by heart'], ['gaps', 'Has gaps to fill']];
+  const vis = units.map((u) => ({ u, cards: storyCards(u.id).filter(storyMatches) })).filter((x) => x.cards.length || (!UI.storySearch && UI.storyFilter === 'all'));
+  let html = '<div class="board story">' +
+    '<div class="board-tools"><div class="seg" role="group" aria-label="Show">' + filters.map(([v, l]) => '<button class="seg-btn" data-action="st-filter" data-v="' + v + '" aria-pressed="' + (UI.storyFilter === v) + '">' + l + '</button>').join('') + '</div>' +
+    '<label class="search"><span class="sr">Search my story</span><input type="search" id="story-search" placeholder="Search companies, projects and facts" value="' + esc(UI.storySearch) + '"></label>' +
+    '<span class="muted">' + all.known + ' of ' + all.total + ' known by heart</span></div>' +
+    '<div class="admin-bar" role="region" aria-label="My story tools"><span class="pill">Admin</span>' +
+    '<button class="btn small primary" data-action="st-add-unit" data-kind="company">Add a company</button><button class="btn small primary" data-action="st-add-unit" data-kind="project">Add a project</button>' +
+    '<button class="btn small" data-action="st-cover" aria-pressed="' + !!UI.storyCover + '" title="Hide the answers so you can say them from memory first">Recall mode: ' + (UI.storyCover ? 'on' : 'off') + '</button>' +
+    '<button class="btn small" data-action="st-export">Download my story</button><label class="btn small file">Import a story file<input type="file" id="story-file" accept=".json,application/json" hidden></label></div>' +
+    (UI.notice ? '<p class="status" role="status">' + esc(UI.notice) + '</p>' : '');
+  if (!units.length) html += '<div class="empty"><strong>Nothing here yet.</strong><p>Add a company or a project, or import a story file. Each one gets cards for the facts you should know by heart: role, team, structure, tech stack, hard parts and a 30-second pitch. This tab is saved only in your browser and your private sync, never in the published app.</p></div>';
+  else if (!vis.length) html += '<div class="empty"><strong>No cards match.</strong><p>Change the filter or the search.</p></div>';
+  vis.forEach((x, i) => {
+    html += '<section class="sec" id="' + esc(x.u.id.replace(/[^a-z0-9]/gi, '_')) + '" data-sec="' + esc(x.u.id) + '" aria-labelledby="h-' + i + '">' + unitHeadHtml(x.u, i, vis.length) +
+      '<div class="cards">' + (x.cards.length ? x.cards.map(storyCardHtml).join('') : '<p class="muted">No cards in this section. Use Add card.</p>') + '</div></section>';
+  });
+  html += '<div class="board-end" aria-hidden="true"></div></div>';
+  return focusbarHtml(vis.map((x) => ({ id: x.u.id, title: x.u.title })), false) + html;
+}
+
+// ---------- events ----------
+function rerenderStory() { const y = window.scrollY; $('#main').innerHTML = renderStory(); renderNav(); window.scrollTo(0, y); updateFocus(); }
+const download = (name, text) => { const b = new Blob([text], { type: 'application/json' }); const l = document.createElement('a'); l.href = URL.createObjectURL(b); l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); };
+
+/** Returns true when it handled the action. */
+function storyAction(a, t) {
+  if (a.indexOf('st-') !== 0) return false;
+  const id = t.dataset.id;
+  switch (a) {
+    case 'st-filter': UI.storyFilter = t.dataset.v; rerenderStory(); break;
+    case 'st-cover': UI.storyCover = !UI.storyCover; shown().clear(); rerenderStory(); break;
+    case 'st-reveal': shown().add(id); rerenderStory(); break;
+    case 'st-rate': rateStoryCard(id, t.dataset.ok === '1'); shown().delete(id); rerenderStory(); break;
+    case 'st-edit': UI.storyEdit = id; rerenderStory(); { const f = $('[data-sf="card.body"]'); if (f) f.focus(); } break;
+    case 'st-done': UI.storyEdit = null; flush(); rerenderStory(); break;
+    case 'st-known': toggleKnown(id); rerenderStory(); break;
+    case 'st-del-card': askDialog('Delete this card?', { text: 'This cannot be undone.', ok: 'Delete' }, () => { removeStoryCard(id); UI.storyEdit = null; rerenderStory(); }); break;
+    case 'st-add-card': { const cid = addStoryCard(id); UI.storyEdit = cid; rerenderStory(); const f = $('[data-sf="card.title"]'); if (f) { f.focus(); f.select(); } break; }
+    case 'st-unit-edit': UI.storyUnit = id; rerenderStory(); break;
+    case 'st-unit-done': UI.storyUnit = null; flush(); rerenderStory(); break;
+    case 'st-up': moveUnit(id, -1); rerenderStory(); break;
+    case 'st-down': moveUnit(id, 1); rerenderStory(); break;
+    case 'st-del-unit': { const u = story().units[id]; askDialog('Delete ' + (u ? u.title : 'this section') + '?', { text: 'Its cards are deleted too. Download your story first if you may want it back.', ok: 'Delete' }, () => { removeUnit(id); rerenderStory(); }); break; }
+    case 'st-add-unit': { const kind = t.dataset.kind; askDialog(kind === 'project' ? 'Name the project' : 'Name the company', { value: '', ok: 'Create' }, (v) => { const uid2 = addUnit(kind, v); UI.storyUnit = uid2; UI.scrollSec = uid2; render(); const el = document.getElementById(uid2.replace(/[^a-z0-9]/gi, '_')); if (el) window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - offsetTopSafe(), behavior: 'auto' }); }); break; }
+    case 'st-export': download('rehearsal-desk-story.json', exportStoryJson()); break;
+    default: return false;
+  }
+  return true;
+}
+function storyInput(el) {
+  const [kind, f] = el.dataset.sf.split('.');
+  if (kind === 'card') setStoryCardField(el.dataset.id, f, el.value);
+  else if (kind === 'unit') setUnitField(el.dataset.id, f, el.value);
+}
+function storyFile(file) {
+  file.text().then((text) => {
+    try { const r = importStoryJson(text); UI.notice = 'Imported ' + r.added + ' section(s)' + (r.skipped ? ', skipped ' + r.skipped + ' you already have' : '') + '.'; }
+    catch (e) { UI.notice = e.message; }
+    go('#/story'); render();
+  });
+}
+
 /* ---- app/main.js ---- */
 // Router, events and boot. Uses the shared state (S, UI) from store.js.
 
 const $ = (sel, root) => (root || document).querySelector(sel);
 const NAV = [['home', 'Home'], ['resume', 'Resume'], ['match', 'Job match'], ['board', 'Question cards'], ['practice', 'Practice']];
-const NAV_ADMIN = [['jds', 'My JDs'], ['collected', 'Collected']];
+const NAV_ADMIN = [['jds', 'My JDs'], ['collected', 'Collected'], ['story', 'My story']];
 let lastAdmin = false;
 let editStart = '';
 
@@ -2198,7 +2461,7 @@ function routeFromHash() {
   const [r, id] = h.split('/');
   const ok = NAV.concat(NAV_ADMIN).map((x) => x[0]).concat(['edit']);
   let route = ok.includes(r) ? r : 'home';
-  if ((route === 'jds' || route === 'collected') && !isAdmin()) route = 'home';
+  if ((route === 'jds' || route === 'collected' || route === 'story') && !isAdmin()) route = 'home';
   return { route, id };
 }
 
@@ -2209,11 +2472,11 @@ function render() {
   UI.route = route; UI.editId = id;
   renderNav();
   const main = $('#main');
-  const html = route === 'home' ? renderHome() : route === 'resume' ? renderResume() : route === 'match' ? renderMatch() : route === 'board' ? renderBoard() : route === 'edit' ? renderEdit(id) : route === 'practice' ? renderPractice() : route === 'jds' ? renderJds() : renderCollected();
+  const html = route === 'home' ? renderHome() : route === 'resume' ? renderResume() : route === 'match' ? renderMatch() : route === 'board' ? renderBoard() : route === 'edit' ? renderEdit(id) : route === 'practice' ? renderPractice() : route === 'jds' ? renderJds() : route === 'story' ? renderStory() : renderCollected();
   main.innerHTML = html;
   main.className = 'main route-' + route;
   document.title = 'Rehearsal Desk';
-  if (route === 'board') {
+  if (route === 'board' || route === 'story') {
     bindBoardScroll();
     const y = UI.ret ? UI.ret.y : 0;
     requestAnimationFrame(() => {
@@ -2295,7 +2558,7 @@ function entryList(kind) { return kind === 'job' ? S.resume.experience : kind ==
 
 async function onClick(e) {
   const t = e.target.closest('[data-action]');
-  if (!t) { if (UI.openMenu && !e.target.closest('.menu-wrap')) { UI.openMenu = null; if (UI.route === 'board') rerenderBoardKeepScroll(); } return; }
+  if (!t) { if (UI.openMenu && !e.target.closest('.menu-wrap')) { UI.openMenu = null; if (UI.route === 'board' || UI.route === 'story') rerenderBoardKeepScroll(); } return; }
   const a = t.dataset.action;
   if (t.tagName === 'INPUT' || t.tagName === 'SELECT') return; // handled by change
   const id = t.dataset.id;
@@ -2386,13 +2649,13 @@ async function onClick(e) {
     case 'apply-rewrite': { if (applyRewrite({ kind: t.dataset.kind, i: +t.dataset.i, line: +t.dataset.line }, t.dataset.text)) { UI.notice = 'Changed. Press "Save and refresh questions" on the first tab when you are happy.'; } render(); break; }
     case 'add-skill': { addSkill(t.dataset.label); UI.notice = 'Added to your skills. Press "Save and refresh questions" on the Resume tab to update your cards.'; render(); break; }
     case 'backup': { markBackup(); if (UI.route === 'home') setTimeout(render, 0); const blob = new Blob([exportJson()], { type: 'application/json' }); const l = document.createElement('a'); l.href = URL.createObjectURL(blob); l.download = 'rehearsal-desk-backup.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); break; }
-    case 'erase': askDialog('Clear all my data?', { text: 'This removes your resume, answers and settings from this browser and brings back the sample. Download a backup first if you may want them again.', ok: 'Clear my data' }, () => { resetAll(); UI.notice = ''; go('#/home'); render(); }); break;
-    default: break;
+    case 'erase': askDialog('Clear all my data?', { text: 'This removes your resume, answers, My story and settings from this browser and brings back the sample. Download a backup first if you may want them again.', ok: 'Clear my data' }, () => { resetAll(); UI.notice = ''; go('#/home'); render(); }); break;
+    default: storyAction(a, t); break;
   }
 }
 function rerenderBoardKeepScroll() {
   const y = window.scrollY; const keep = UI.focusCard;
-  const main = $('#main'); main.innerHTML = renderBoard(); renderNav();
+  const main = $('#main'); main.innerHTML = UI.route === 'story' ? renderStory() : renderBoard(); renderNav();
   window.scrollTo(0, y); updateFocus();
 }
 
@@ -2400,6 +2663,8 @@ function rerenderBoardKeepScroll() {
 function onInput(e) {
   const el = e.target;
   if (el.id === 'board-search') { UI.search = el.value; const pos = el.selectionStart; rerenderBoardKeepScroll(); const n = $('#board-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
+  if (el.dataset && el.dataset.sf) { storyInput(el); return; }
+  if (el.id === 'story-search') { UI.storySearch = el.value; const pos = el.selectionStart; render(); const n = $('#story-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
   if (el.id === 'jd-search') { UI.jdSearch = el.value; const pos = el.selectionStart; render(); const n = $('#jd-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
   if (el.id === 'answer') {
     const c = getCard(el.dataset.id); if (!c) return;
@@ -2424,6 +2689,7 @@ function onChange(e) {
   if (el.dataset.action === 'pr-fact') { const p = UI.practice; const id = p.deck[p.i]; const set = new Set(p.hits[id] || []); if (el.checked) set.add(+el.dataset.i); else set.delete(+el.dataset.i); p.hits[id] = [...set]; const sc = $('#fact-score'); if (sc) sc.textContent = set.size + ' of ' + document.querySelectorAll('.facts input').length; return; }
   if (el.closest('.jd-detail') && el.dataset.f === 'status') { updateJdFields(el.closest('.jd-detail').dataset.id, { status: el.value }); render(); return; }
   if (el.closest('.jd-detail') && el.dataset.f === 'interviewDate') { updateJdFields(el.closest('.jd-detail').dataset.id, { interviewDate: el.value }); return; }
+  if (el.id === 'story-file' && el.files && el.files[0]) { storyFile(el.files[0]); el.value = ''; return; }
   if (el.type === 'file' && el.files && el.files[0]) {
     const file = el.files[0]; const target = el.id;
     readFileText(file).then((text) => {

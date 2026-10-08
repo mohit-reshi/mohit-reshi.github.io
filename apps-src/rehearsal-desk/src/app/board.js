@@ -1,6 +1,7 @@
 // The Q&A board: sections stacked, cards wrapping in rows, a focus bar that follows the section in view,
 // and auto-fit scrolling. Uses the shared state (S, UI) from store.js and the helpers from core/.
 
+const boardish = () => UI.route === 'board' || UI.route === 'story';
 const HUE = { intro: 'blue', role: 'yellow', project: 'green', personal: 'purple', story: 'orange', general: 'slate', jd: 'pink', collected: 'teal' };
 
 export function markGaps(text) {
@@ -78,11 +79,7 @@ export function renderBoard() {
   const arch = archivedCards();
   if (arch.length) html += '<details class="archived"><summary>' + arch.length + ' archived card(s): their source is gone from the resume</summary><div class="cards">' + arch.map((c) => cardHtml(c, admin)).join('') + '</div></details>';
   html += '<div class="board-end" aria-hidden="true"></div></div>';
-  return '<div id="focusbar" class="focusbar" role="navigation" aria-label="Sections"><div class="fb-main"><button class="btn small" data-action="sec-prev" aria-label="Previous section">←</button>' +
-    '<div class="fb-title" aria-live="polite"><span class="fb-kicker">In focus</span><strong id="fb-name">' + esc(visible[0] ? visible[0].s.title : '') + '</strong><span id="fb-count" class="muted"></span></div>' +
-    '<button class="btn small" data-action="sec-next" aria-label="Next section">→</button></div>' +
-    '<div class="fb-side"><button class="btn small primary" data-action="next-work" title="Jump to the next answer that still needs work">Next to work on</button><button class="btn small" data-action="autofit" aria-pressed="' + S.ui.autofit + '" title="Scroll so that each section fits the screen">Auto-fit sections: ' + (S.ui.autofit ? 'on' : 'off') + '</button></div>' +
-    '<ol class="rail" aria-label="Jump to a section">' + visible.map((x, i) => '<li><button data-action="jump" data-sec="' + esc(x.s.id) + '" aria-label="' + esc(x.s.title) + '" title="' + esc(x.s.title) + '"></button></li>').join('') + '</ol></div>' + html;
+  return focusbarHtml(visible.map((x) => ({ id: x.s.id, title: x.s.title })), true) + html;
 }
 const byOrder = (a, b) => ((a.seq || 0) - (b.seq || 0)) || a.key.localeCompare(b.key);
 
@@ -131,7 +128,7 @@ export function stepSection(delta) {
 /** Snap rule: when the section above is >= 90% out of view, align the new section; going up, do the mirror image.
  * A section taller than the screen is only aligned at its top and then scrolls freely. */
 function maybeSnap() {
-  if (!S.ui.autofit || programmatic || pointerDown || UI.route !== 'board') return;
+  if (!S.ui.autofit || programmatic || pointerDown || !boardish()) return;
   const g = geometry(); if (g.length < 2) return;
   const off = g[0].off, vh = window.innerHeight;
   if (dir > 0) {
@@ -158,7 +155,7 @@ function maybeSnap() {
 }
 function onScroll() {
   const y = window.scrollY; if (y !== lastY) dir = y > lastY ? 1 : -1; lastY = y;
-  if (UI.route !== 'board') return;
+  if (!boardish()) return;
   updateFocus();
   clearTimeout(snapTimer); snapTimer = setTimeout(maybeSnap, 160);
 }
@@ -167,7 +164,7 @@ export function bindBoardScroll() {
   if (scrollBound) return;
   scrollBound = true;
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', () => { if (UI.route === 'board') updateFocus(); });
+  window.addEventListener('resize', () => { if (boardish()) updateFocus(); });
   window.addEventListener('pointerdown', () => { pointerDown = true; }, { passive: true });
   const up = () => { if (pointerDown) { pointerDown = false; clearTimeout(snapTimer); snapTimer = setTimeout(maybeSnap, 160); } };
   window.addEventListener('pointerup', up, { passive: true }); window.addEventListener('pointercancel', up, { passive: true });
@@ -179,4 +176,12 @@ export function flashCard(id) {
   el.classList.add('flash'); try { el.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
   setTimeout(() => el.classList.remove('flash'), 2200);
   return true;
+}
+
+export function focusbarHtml(items, nextWork) {
+  return '<div id="focusbar" class="focusbar" role="navigation" aria-label="Sections"><div class="fb-main"><button class="btn small" data-action="sec-prev" aria-label="Previous section">←</button>' +
+    '<div class="fb-title" aria-live="polite"><span class="fb-kicker">In focus</span><strong id="fb-name">' + esc(items[0] ? items[0].title : '') + '</strong><span id="fb-count" class="muted"></span></div>' +
+    '<button class="btn small" data-action="sec-next" aria-label="Next section">→</button></div>' +
+    '<div class="fb-side">' + (nextWork ? '<button class="btn small primary" data-action="next-work" title="Jump to the next answer that still needs work">Next to work on</button>' : '') + '<button class="btn small" data-action="autofit" aria-pressed="' + S.ui.autofit + '" title="Scroll so that each section fits the screen">Auto-fit sections: ' + (S.ui.autofit ? 'on' : 'off') + '</button></div>' +
+    '<ol class="rail" aria-label="Jump to a section">' + items.map((t) => '<li><button data-action="jump" data-sec="' + esc(t.id) + '" aria-label="' + esc(t.title) + '" title="' + esc(t.title) + '"></button></li>').join('') + '</ol></div>';
 }

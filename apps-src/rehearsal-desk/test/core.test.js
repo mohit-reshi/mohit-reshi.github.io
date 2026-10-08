@@ -237,3 +237,34 @@ test('readability suggestions carry a position and a safe rewrite for "responsib
   assert.equal(s.rewrite, 'Owned data quality checks');
   assert.equal(rewriteBullet('Worked on dashboards'), null);
 });
+
+import { templateFor, parseStoryImport, storyStats, normaliseStory, stackList } from '../src/core/story.js';
+
+test('story templates: company and project cards, each with a title, hint and colour', () => {
+  for (const k of ['company', 'project']) {
+    const t = templateFor(k);
+    assert.ok(t.length >= 8);
+    t.forEach((c) => assert.ok(c.title && c.hint && c.hue));
+    assert.ok(t.some((c) => c.title === '30-second pitch'));
+  }
+  assert.ok(templateFor('project').some((c) => c.title === 'Structure'));
+  assert.ok(templateFor('company').some((c) => c.title === 'My role and team'));
+});
+
+test('story import: accepts a valid file, drops cards without titles, and gives readable errors', () => {
+  const ok = parseStoryImport(JSON.stringify({ app: 'rehearsal-desk-story', units: [{ kind: 'project', title: ' Alpha ', fields: { team: '3', junk: 'x' }, cards: [{ title: 'What it is', body: 'A thing' }, { title: '', body: 'no title' }] }, { title: 'Beta', cards: [] }] }));
+  assert.equal(ok.length, 2);
+  assert.deepEqual(ok[0], { kind: 'project', title: 'Alpha', fields: { team: '3' }, cards: [{ title: 'What it is', body: 'A thing', hue: '' }] });
+  assert.equal(ok[1].kind, 'company');
+  assert.throws(() => parseStoryImport('nope'), /not valid JSON/);
+  assert.throws(() => parseStoryImport('{"app":"other","units":[]}'), /not a Rehearsal Desk story file/);
+  assert.throws(() => parseStoryImport('{"app":"rehearsal-desk-story","units":[]}'), /no sections/);
+  assert.throws(() => parseStoryImport('{"app":"rehearsal-desk-story","units":[{"title":""}]}'), /no title/);
+});
+
+test('story stats count known cards, gaps and empty cards, per section or overall', () => {
+  const s = normaliseStory({ units: {}, cards: { a: { id: 'a', unit: 'u1', body: 'x', status: 'known' }, b: { id: 'b', unit: 'u1', body: 'see [add: team size]' }, c: { id: 'c', unit: 'u2', body: '' } } });
+  assert.deepEqual(storyStats(s, 'u1'), { total: 2, known: 1, gaps: 1, empty: 0 });
+  assert.deepEqual(storyStats(s), { total: 3, known: 1, gaps: 1, empty: 1 });
+  assert.deepEqual(stackList('Power BI, DAX; SQL\n'), ['Power BI', 'DAX', 'SQL']);
+});

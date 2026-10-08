@@ -399,6 +399,66 @@ I pushed back on a deadline.
     await ctx.close();
   }
 
+  // ---------- My story (admin only) ----------
+  {
+    const { ctx: vctx, page: vpage } = await mk();
+    await vpage.goto(URL0 + '#/story'); await settle(vpage, 500);
+    ok('story: a visitor is sent home and sees no tab', (await vpage.locator('.hero').count()) === 1 && !(await vpage.locator('.nav-a').allInnerTexts()).join('|').includes('My story'));
+    await vctx.close();
+    const { ctx, page, errs } = await mk();
+    await ctx.addInitScript(() => { try { localStorage.setItem('app-chrome:owner-key', 'test'); } catch (e) { /* ignore */ } });
+    await page.goto(URL0); await settle(page, 800);
+    ok('story: the owner sees the My story tab', (await page.locator('.nav-a').allInnerTexts()).join('|').includes('My story'));
+    await page.goto(URL0 + '#/story'); await settle(page, 400);
+    ok('story: empty state explains what to do', (await page.locator('.empty').innerText()).includes('Add a company'));
+    await page.click('[data-action=st-add-unit][data-kind=company]'); await page.fill('#dlg-in', 'Acme Corp'); await page.click('dialog button.primary'); await settle(page, 400);
+    ok('story: a company gets its section and template cards', (await page.locator('.sec h2', { hasText: 'Acme Corp' }).count()) === 1 && (await page.locator('.sec .card').count()) === 8);
+    ok('story: not saved as the sample', await page.evaluate(() => { const d = JSON.parse(localStorage.getItem('rehearsal-desk-v1')); return d.sample === false && Object.keys(d.story.units).length === 1; }));
+    await page.click('[data-action=st-add-unit][data-kind=project]'); await page.fill('#dlg-in', 'Data Hub'); await page.click('dialog button.primary'); await settle(page, 400);
+    ok('story: a project gets its own cards, including Structure', (await page.locator('.sec h2', { hasText: 'Data Hub' }).count()) === 1 && (await page.locator('.sec', { hasText: 'Data Hub' }).locator('.card h3', { hasText: 'Structure' }).count()) === 1);
+    ok('story: the unit form opens for the new section', (await page.locator('.unit-form').count()) === 1);
+    await page.fill('[data-sf="unit.role"]', 'Developer'); await page.fill('[data-sf="unit.team"]', '4'); await page.fill('[data-sf="unit.stack"]', 'Power BI, DAX, SQL'); await page.click('[data-action=st-unit-done]'); await settle(page, 300);
+    ok('story: facts and stack chips show in the header', (await page.locator('.sec', { hasText: 'Data Hub' }).locator('.facts-strip').innerText()).includes('Developer') && (await page.locator('.sec', { hasText: 'Data Hub' }).locator('.stack .chip').count()) === 3);
+    const hub = page.locator('.sec', { hasText: 'Data Hub' });
+    await hub.locator('.card', { hasText: 'Structure' }).locator('[data-action=st-edit]').click(); await settle(page, 200);
+    await page.fill('[data-sf="card.body"]', '- Bronze to gold\n- Semantic model on top\nTeam of [add: size]'); await page.click('[data-action=st-done]'); await settle(page, 300);
+    const st = hub.locator('.card', { hasText: 'Structure' });
+    ok('story: a list renders as bullets and a gap is marked', (await st.locator('li').count()) === 2 && (await st.locator('mark.gap').count()) === 1);
+    ok('story: the header counts the gap', (await hub.locator('.sub').innerText()).includes('1 with gaps to fill'));
+    await page.reload(); await settle(page, 600);
+    ok('story: everything survives a reload', (await page.locator('.sec h2').allInnerTexts()).join('|').includes('Data Hub') && (await page.locator('.sec', { hasText: 'Data Hub' }).locator('.card', { hasText: 'Structure' }).locator('li').count()) === 2);
+    // known + filter
+    await page.locator('.sec', { hasText: 'Data Hub' }).locator('.card', { hasText: 'Structure' }).locator('[data-action=st-known]').click(); await settle(page, 200);
+    await page.click('[data-action=st-filter][data-v=known]'); await settle(page, 200);
+    ok('story: the Known filter shows only known cards', (await page.locator('.sec .card').count()) === 1);
+    await page.click('[data-action=st-filter][data-v=all]'); await settle(page, 200);
+    // search
+    await page.fill('#story-search', 'bronze'); await settle(page, 300);
+    ok('story: search finds a fact inside a card', (await page.locator('.sec .card').count()) === 1);
+    await page.fill('#story-search', ''); await settle(page, 300);
+    // recall mode
+    await page.click('[data-action=st-cover]'); await settle(page, 200);
+    ok('story: recall mode hides the answers', (await page.locator('.story-a').count()) === 0 && (await page.locator('[data-action=st-reveal]').count()) > 0);
+    await page.locator('.sec', { hasText: 'Data Hub' }).locator('.card', { hasText: 'Structure' }).locator('[data-action=st-reveal]').click(); await settle(page, 200);
+    ok('story: reveal shows the answer and the rating buttons', (await page.locator('.story-a').count()) === 1 && (await page.locator('[data-action=st-rate]').count()) === 2);
+    await page.locator('[data-action=st-rate][data-ok="0"]').click(); await settle(page, 500);
+    ok('story: a missed card is no longer known and gets a review date', await page.evaluate(() => { const d = JSON.parse(localStorage.getItem('rehearsal-desk-v1')); const c = Object.values(d.story.cards).find((x) => x.title === 'Structure' && x.body); return c.status === 'draft' && !!c.practice; }));
+    await page.click('[data-action=st-cover]'); await settle(page, 200);
+    // export and import
+    const dl = page.waitForEvent('download'); await page.click('[data-action=st-export]'); const file = await dl; const exported = readFileSync(await file.path(), 'utf8');
+    ok('story: the download is a story file with both sections', JSON.parse(exported).app === 'rehearsal-desk-story' && JSON.parse(exported).units.length === 2);
+    await page.locator('.sec', { hasText: 'Acme Corp' }).locator('[data-action=st-del-unit]').click(); await page.click('dialog button.primary'); await settle(page, 300);
+    ok('story: deleting a section removes its cards', (await page.locator('.sec h2', { hasText: 'Acme Corp' }).count()) === 0 && (await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('rehearsal-desk-v1')).story.cards).length)) === 9);
+    await page.setInputFiles('#story-file', { name: 'story.json', mimeType: 'application/json', buffer: Buffer.from(exported) }); await settle(page, 500);
+    ok('story: importing adds the missing section and skips the one that exists', (await page.locator('.sec h2', { hasText: 'Acme Corp' }).count()) === 1 && (await page.locator('.sec h2', { hasText: 'Data Hub' }).count()) === 1 && (await page.locator('.status').innerText()).includes('skipped 1'));
+    await page.setInputFiles('#story-file', { name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{"x":1}') }); await settle(page, 400);
+    ok('story: a wrong file gives a clear message and changes nothing', (await page.locator('.status').innerText()).includes('not a Rehearsal Desk story file') && (await page.locator('.sec').count()) === 2);
+    ok('story: focus bar and rail follow the sections', (await page.locator('.rail button').count()) === 2 && (await page.locator('#fb-name').innerText()).length > 0);
+    ok('story: Clear my data wipes it', await (async () => { await page.click('[data-action=erase]'); await page.click('dialog button.primary'); await settle(page, 300); return (await page.evaluate(() => localStorage.getItem('rehearsal-desk-v1'))) === null; })());
+    ok('story: no page errors', errs.length === 0, errs);
+    await ctx.close();
+  }
+
   // ---------- admin sign-out hides everything again ----------
   {
     const { ctx, page } = await mk();
@@ -491,8 +551,11 @@ I pushed back on a deadline.
       await page.click('[data-action=analyse]'); await settle(page, 400);
       await page.goto(URL0 + '#/collected'); await settle(page);
       await page.fill('#col-text', '1. What is a primary key?\nA unique row id.\n2. Tell me about yourself.'); await page.click('[data-action=extract]'); await settle(page, 500);
+      await page.goto(URL0 + '#/story'); await settle(page, 300);
+      await page.click('[data-action=st-add-unit][data-kind=project]'); await page.fill('#dlg-in', 'Data Hub'); await page.click('dialog button.primary'); await settle(page, 400);
+      await page.click('[data-action=st-unit-done]'); await settle(page, 200);
       const seen = [];
-      for (const [name, hash, pre] of [['home', '#/home'], ['board', '#/board'], ['resume content', '#/resume'], ['resume checks', '#/resume', '[data-action=resume-tab][data-v=checks]'], ['resume design', '#/resume', '[data-action=resume-tab][data-v=design]'], ['match', '#/match'], ['practice', '#/practice', '[data-action=pr-start]'], ['jds', '#/jds'], ['collected', '#/collected']]) {
+      for (const [name, hash, pre] of [['story', '#/story'], ['story editing', '#/story', '[data-action=st-edit]'], ['story recall', '#/story', '[data-action=st-cover]'], ['home', '#/home'], ['board', '#/board'], ['resume content', '#/resume'], ['resume checks', '#/resume', '[data-action=resume-tab][data-v=checks]'], ['resume design', '#/resume', '[data-action=resume-tab][data-v=design]'], ['match', '#/match'], ['practice', '#/practice', '[data-action=pr-start]'], ['jds', '#/jds'], ['collected', '#/collected']]) {
         await page.goto(URL0 + hash); await settle(page, 350);
         if (pre) { await page.click(pre); await settle(page, 250); }
         if (name === 'board') { const c = page.locator('.card').first(); await c.hover(); await c.locator('[data-action=perfect]').click(); await page.mouse.move(2, 600); await settle(page, 300); }

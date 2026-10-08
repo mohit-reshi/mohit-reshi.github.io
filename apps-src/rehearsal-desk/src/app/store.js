@@ -13,18 +13,19 @@ const KEY = 'rehearsal-desk-v1';
 const VERSION = 1;
 const MAX_HISTORY = 5;
 let S = null;
-const UI = { route: 'home', focusCard: null, ret: null, notice: '', resumeTab: 'content', filter: 'all', search: '', selected: new Set(), openMenu: null, practice: null };
+const UI = { route: 'home', focusCard: null, ret: null, notice: '', resumeTab: 'content', filter: 'all', search: '', storyFilter: 'all', storySearch: '', storyCover: false, selected: new Set(), openMenu: null, practice: null };
 
 const defaultUi = () => ({ template: 'classic', paper: 'a4', autofit: true, include: { projects: true, personal: true, certifications: true, education: true } });
 
 function blank() {
-  return { v: VERSION, sample: false, seq: 0, lastBackup: 0, resumeText: '', resume: null, resumeAt: 0, jds: {}, activeJd: null, sections: {}, cards: {}, batches: [], ui: defaultUi() };
+  return { v: VERSION, sample: false, seq: 0, lastBackup: 0, resumeText: '', resume: null, resumeAt: 0, jds: {}, activeJd: null, sections: {}, cards: {}, batches: [], story: { units: {}, cards: {}, seq: 0 }, ui: defaultUi() };
 }
 
 function migrate(s) {
   const out = Object.assign(blank(), s || {});
   out.ui = Object.assign(defaultUi(), out.ui || {}); out.ui.include = Object.assign(defaultUi().include, (s && s.ui && s.ui.include) || {});
   out.jds = out.jds || {}; out.sections = out.sections || {}; out.cards = out.cards || {}; out.batches = out.batches || [];
+  out.story = Object.assign({ units: {}, cards: {}, seq: 0 }, out.story || {});
   out.seq = Math.max(out.seq || 0, ...Object.values(out.cards).map((c) => c.seq || 0), 0);
   out.v = VERSION;
   return out;

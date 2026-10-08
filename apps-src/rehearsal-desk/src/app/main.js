@@ -2,7 +2,7 @@
 
 const $ = (sel, root) => (root || document).querySelector(sel);
 const NAV = [['home', 'Home'], ['resume', 'Resume'], ['match', 'Job match'], ['board', 'Question cards'], ['practice', 'Practice']];
-const NAV_ADMIN = [['jds', 'My JDs'], ['collected', 'Collected']];
+const NAV_ADMIN = [['jds', 'My JDs'], ['collected', 'Collected'], ['story', 'My story']];
 let lastAdmin = false;
 let editStart = '';
 
@@ -74,7 +74,7 @@ function routeFromHash() {
   const [r, id] = h.split('/');
   const ok = NAV.concat(NAV_ADMIN).map((x) => x[0]).concat(['edit']);
   let route = ok.includes(r) ? r : 'home';
-  if ((route === 'jds' || route === 'collected') && !isAdmin()) route = 'home';
+  if ((route === 'jds' || route === 'collected' || route === 'story') && !isAdmin()) route = 'home';
   return { route, id };
 }
 
@@ -85,11 +85,11 @@ function render() {
   UI.route = route; UI.editId = id;
   renderNav();
   const main = $('#main');
-  const html = route === 'home' ? renderHome() : route === 'resume' ? renderResume() : route === 'match' ? renderMatch() : route === 'board' ? renderBoard() : route === 'edit' ? renderEdit(id) : route === 'practice' ? renderPractice() : route === 'jds' ? renderJds() : renderCollected();
+  const html = route === 'home' ? renderHome() : route === 'resume' ? renderResume() : route === 'match' ? renderMatch() : route === 'board' ? renderBoard() : route === 'edit' ? renderEdit(id) : route === 'practice' ? renderPractice() : route === 'jds' ? renderJds() : route === 'story' ? renderStory() : renderCollected();
   main.innerHTML = html;
   main.className = 'main route-' + route;
   document.title = 'Rehearsal Desk';
-  if (route === 'board') {
+  if (route === 'board' || route === 'story') {
     bindBoardScroll();
     const y = UI.ret ? UI.ret.y : 0;
     requestAnimationFrame(() => {
@@ -171,7 +171,7 @@ function entryList(kind) { return kind === 'job' ? S.resume.experience : kind ==
 
 async function onClick(e) {
   const t = e.target.closest('[data-action]');
-  if (!t) { if (UI.openMenu && !e.target.closest('.menu-wrap')) { UI.openMenu = null; if (UI.route === 'board') rerenderBoardKeepScroll(); } return; }
+  if (!t) { if (UI.openMenu && !e.target.closest('.menu-wrap')) { UI.openMenu = null; if (UI.route === 'board' || UI.route === 'story') rerenderBoardKeepScroll(); } return; }
   const a = t.dataset.action;
   if (t.tagName === 'INPUT' || t.tagName === 'SELECT') return; // handled by change
   const id = t.dataset.id;
@@ -262,13 +262,13 @@ async function onClick(e) {
     case 'apply-rewrite': { if (applyRewrite({ kind: t.dataset.kind, i: +t.dataset.i, line: +t.dataset.line }, t.dataset.text)) { UI.notice = 'Changed. Press "Save and refresh questions" on the first tab when you are happy.'; } render(); break; }
     case 'add-skill': { addSkill(t.dataset.label); UI.notice = 'Added to your skills. Press "Save and refresh questions" on the Resume tab to update your cards.'; render(); break; }
     case 'backup': { markBackup(); if (UI.route === 'home') setTimeout(render, 0); const blob = new Blob([exportJson()], { type: 'application/json' }); const l = document.createElement('a'); l.href = URL.createObjectURL(blob); l.download = 'rehearsal-desk-backup.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); break; }
-    case 'erase': askDialog('Clear all my data?', { text: 'This removes your resume, answers and settings from this browser and brings back the sample. Download a backup first if you may want them again.', ok: 'Clear my data' }, () => { resetAll(); UI.notice = ''; go('#/home'); render(); }); break;
-    default: break;
+    case 'erase': askDialog('Clear all my data?', { text: 'This removes your resume, answers, My story and settings from this browser and brings back the sample. Download a backup first if you may want them again.', ok: 'Clear my data' }, () => { resetAll(); UI.notice = ''; go('#/home'); render(); }); break;
+    default: storyAction(a, t); break;
   }
 }
 function rerenderBoardKeepScroll() {
   const y = window.scrollY; const keep = UI.focusCard;
-  const main = $('#main'); main.innerHTML = renderBoard(); renderNav();
+  const main = $('#main'); main.innerHTML = UI.route === 'story' ? renderStory() : renderBoard(); renderNav();
   window.scrollTo(0, y); updateFocus();
 }
 
@@ -276,6 +276,8 @@ function rerenderBoardKeepScroll() {
 function onInput(e) {
   const el = e.target;
   if (el.id === 'board-search') { UI.search = el.value; const pos = el.selectionStart; rerenderBoardKeepScroll(); const n = $('#board-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
+  if (el.dataset && el.dataset.sf) { storyInput(el); return; }
+  if (el.id === 'story-search') { UI.storySearch = el.value; const pos = el.selectionStart; render(); const n = $('#story-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
   if (el.id === 'jd-search') { UI.jdSearch = el.value; const pos = el.selectionStart; render(); const n = $('#jd-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
   if (el.id === 'answer') {
     const c = getCard(el.dataset.id); if (!c) return;
@@ -300,6 +302,7 @@ function onChange(e) {
   if (el.dataset.action === 'pr-fact') { const p = UI.practice; const id = p.deck[p.i]; const set = new Set(p.hits[id] || []); if (el.checked) set.add(+el.dataset.i); else set.delete(+el.dataset.i); p.hits[id] = [...set]; const sc = $('#fact-score'); if (sc) sc.textContent = set.size + ' of ' + document.querySelectorAll('.facts input').length; return; }
   if (el.closest('.jd-detail') && el.dataset.f === 'status') { updateJdFields(el.closest('.jd-detail').dataset.id, { status: el.value }); render(); return; }
   if (el.closest('.jd-detail') && el.dataset.f === 'interviewDate') { updateJdFields(el.closest('.jd-detail').dataset.id, { interviewDate: el.value }); return; }
+  if (el.id === 'story-file' && el.files && el.files[0]) { storyFile(el.files[0]); el.value = ''; return; }
   if (el.type === 'file' && el.files && el.files[0]) {
     const file = el.files[0]; const target = el.id;
     readFileText(file).then((text) => {
