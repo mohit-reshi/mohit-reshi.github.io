@@ -1559,6 +1559,12 @@ function rateCard(id, ok, spoken) {
   c.practice = Object.assign(scheduleReview(c.practice, ok, Date.now()), spoken ? { spoken } : {});
   save();
 }
+function addQuestionCard(secId, q) {
+  const id = uid('c');
+  S.cards[id] = { id, key: 'man:' + id, seq: ++S.seq, source: 'manual', jdId: null, secId, cat: 'general', tid: null, q: norm(q) || 'New question', a: '', gen: '', seconds: 90, status: 'draft', history: [], archived: false, askedCount: 1, practice: null, createdAt: Date.now() };
+  save(); return id;
+}
+function setQuestionText(id, q) { const c = S.cards[id]; if (c && c.source === 'manual') { c.q = q; save(); } }
 function deleteCard(id) { delete S.cards[id]; UI.selected.delete(id); save(); }
 
 // ---------- reading order, readiness and what to do next ----------
@@ -1813,7 +1819,7 @@ function renderBoard() {
     const batch = S.batches.find((b) => b.secId === s.id);
     html += '<section class="sec" id="' + esc(s.id.replace(/[^a-z0-9]/gi, '_')) + '" data-sec="' + esc(s.id) + '" aria-labelledby="h-' + i + '">' +
       '<header class="sec-head"><div><h2 id="h-' + i + '">' + esc(s.title) + '</h2>' + (s.sub ? '<p class="sub">' + esc(s.sub) + '</p>' : '') + '</div>' +
-      '<div class="sec-side"><span class="ring" role="img" aria-label="' + p + ' of ' + all.length + ' perfected"><span style="--p:' + (all.length ? Math.round(p / all.length * 100) : 0) + '"></span><b>' + p + '/' + all.length + '</b></span>' +
+      '<div class="sec-side"><button class="btn small" data-action="add-question" data-sec="' + esc(s.id) + '" aria-label="Add a question to ' + esc(s.title) + '">Add question</button><span class="ring" role="img" aria-label="' + p + ' of ' + all.length + ' perfected"><span style="--p:' + (all.length ? Math.round(p / all.length * 100) : 0) + '"></span><b>' + p + '/' + all.length + '</b></span>' +
       (admin ? '<div class="menu-wrap"><button class="btn small" data-action="sec-menu" data-sec="' + esc(s.id) + '" aria-haspopup="true" aria-expanded="' + (UI.openMenu === s.id) + '" aria-label="Section options for ' + esc(s.title) + '">Section</button>' +
         (UI.openMenu === s.id ? '<div class="menu right" role="menu"><button role="menuitem" data-action="sec-rename" data-sec="' + esc(s.id) + '">Rename</button><button role="menuitem" data-action="sec-up" data-sec="' + esc(s.id) + '">Move up</button><button role="menuitem" data-action="sec-down" data-sec="' + esc(s.id) + '">Move down</button><button role="menuitem" data-action="sec-select" data-sec="' + esc(s.id) + '">Select all cards</button>' + (batch ? '<button role="menuitem" data-action="undo-import" data-batch="' + esc(batch.batch) + '">Undo this import</button>' : '') + '<button role="menuitem" data-action="sec-delete" data-sec="' + esc(s.id) + '">Delete (if empty)</button></div>' : '') + '</div>' : '') +
       '</div></header>' +
@@ -2098,7 +2104,7 @@ function renderEdit(id) {
   return '<section class="edit hue-' + (HUE_OF[c.cat] || 'slate') + '"><div class="edit-top"><button class="btn" data-action="back-to-card" data-id="' + esc(c.id) + '">\u2190 Back to the card</button><span class="muted">' + esc(sec ? sec.title : '') + '</span>' +
     '<span class="spacer"></span><button class="btn small" data-action="edit-prev" ' + (prevC ? 'data-id="' + esc(prevC.id) + '"' : 'disabled') + '>\u2190 Previous card</button><button class="btn small" data-action="edit-next" ' + (nextC ? 'data-id="' + esc(nextC.id) + '"' : 'disabled') + '>Next card \u2192</button><span id="save-state" class="muted" role="status"></span></div>' +
     (S.sample ? '<div class="notice">Sample card: edits are not saved. Add your own resume on Home to start saving.</div>' : '') +
-    '<div class="edit-grid"><div class="edit-main"><h1 class="q">' + esc(c.q) + '</h1>' +
+    '<div class="edit-grid"><div class="edit-main">' + (c.source === 'manual' ? '<label class="field"><span>Question</span><input id="q-edit" data-id="' + esc(c.id) + '" value="' + esc(c.q) + '" autocomplete="off"></label>' : '<h1 class="q">' + esc(c.q) + '</h1>') +
     '<label class="field"><span>Your answer</span><textarea id="answer" rows="14" data-id="' + esc(c.id) + '" aria-describedby="live-checks">' + esc(c.a) + '</textarea></label>' +
     '<div class="row tools"><button class="btn small" data-action="next-gap">Jump to the next gap</button><button class="btn small" data-action="star-frame">Add a situation-task-action-result frame</button><span class="sw"><button class="btn small" data-action="sw-toggle" id="sw-btn">Time myself</button><span id="sw-time" class="muted" aria-live="off">0:00</span></span></div>' +
     '<p class="hint">Replace each <mark class="gap">[add: ...]</mark> with your own fact. Starter answers use only what your resume says.</p>' +
@@ -2603,6 +2609,7 @@ async function onClick(e) {
       UI.notice = ''; UI.scrollSec = res.secId; UI.lastImport = res;
       render(); go('#/board'); break;
     }
+    case 'add-question': { const sid = t.dataset.sec; askDialog('Type the question', { value: '', ok: 'Add and write the answer' }, (v) => { if (!norm(v)) return; const nid = addQuestionCard(sid, v); UI.ret = { y: window.scrollY }; UI.focusCard = null; go('#/edit/' + nid); }); break; }
     case 'filter': UI.filter = t.dataset.v; rerenderBoardKeepScroll(); break;
     case 'edit': UI.ret = { y: window.scrollY }; UI.focusCard = null; go('#/edit/' + id); break;
     case 'back-to-card': UI.focusCard = id; go('#/board'); break;
@@ -2666,6 +2673,7 @@ function onInput(e) {
   if (el.dataset && el.dataset.sf) { storyInput(el); return; }
   if (el.id === 'story-search') { UI.storySearch = el.value; const pos = el.selectionStart; render(); const n = $('#story-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
   if (el.id === 'jd-search') { UI.jdSearch = el.value; const pos = el.selectionStart; render(); const n = $('#jd-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
+  if (el.id === 'q-edit') { setQuestionText(el.dataset.id, el.value); return; }
   if (el.id === 'answer') {
     const c = getCard(el.dataset.id); if (!c) return;
     setAnswer(c.id, el.value);

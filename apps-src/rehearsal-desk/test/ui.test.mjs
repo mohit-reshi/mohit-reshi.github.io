@@ -399,6 +399,26 @@ I pushed back on a deadline.
     await ctx.close();
   }
 
+  // ---------- adding your own question card ----------
+  {
+    const { ctx, page, errs } = await mk();
+    await page.goto(URL0); await settle(page, 600);
+    await page.fill('#resume-in', MY_RESUME); await page.click('[data-action=analyse]'); await settle(page, 400);
+    await page.goto(URL0 + '#/board'); await settle(page, 400);
+    const before = await page.locator('.card').count();
+    await page.locator('.sec').first().locator('[data-action=add-question]').click(); await page.fill('#dlg-in', 'What would you do in your first week?'); await page.click('dialog button.primary'); await settle(page, 400);
+    ok('add question: opens the editor with an editable question', (await page.locator('#q-edit').inputValue()) === 'What would you do in your first week?');
+    await page.fill('#answer', 'I would meet the team and read the existing reports.'); await page.fill('#q-edit', 'What would you do in your first week at a new job?'); await settle(page, 500);
+    await page.click('[data-action=back-to-card]'); await settle(page, 500);
+    ok('add question: the card appears in that section with its answer', (await page.locator('.card').count()) === before + 1 && (await page.locator('.card', { hasText: 'first week at a new job' }).innerText()).includes('meet the team'));
+    await page.reload(); await settle(page, 600); await page.goto(URL0 + '#/board'); await settle(page, 400);
+    ok('add question: it survives a reload and is not archived by a resume refresh', (await page.locator('.card', { hasText: 'first week at a new job' }).count()) === 1);
+    await page.goto(URL0 + '#/resume'); await settle(page, 300); await page.click('[data-action=save-resume]'); await settle(page, 500); await page.goto(URL0 + '#/board'); await settle(page, 400);
+    ok('add question: still there after Save and refresh questions', (await page.locator('.card', { hasText: 'first week at a new job' }).count()) === 1);
+    ok('add question: no page errors', errs.length === 0, errs);
+    await ctx.close();
+  }
+
   // ---------- My story (admin only) ----------
   {
     const { ctx: vctx, page: vpage } = await mk();

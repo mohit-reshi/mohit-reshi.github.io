@@ -184,6 +184,12 @@ export function rateCard(id, ok, spoken) {
   c.practice = Object.assign(scheduleReview(c.practice, ok, Date.now()), spoken ? { spoken } : {});
   save();
 }
+export function addQuestionCard(secId, q) {
+  const id = uid('c');
+  S.cards[id] = { id, key: 'man:' + id, seq: ++S.seq, source: 'manual', jdId: null, secId, cat: 'general', tid: null, q: norm(q) || 'New question', a: '', gen: '', seconds: 90, status: 'draft', history: [], archived: false, askedCount: 1, practice: null, createdAt: Date.now() };
+  save(); return id;
+}
+export function setQuestionText(id, q) { const c = S.cards[id]; if (c && c.source === 'manual') { c.q = q; save(); } }
 export function deleteCard(id) { delete S.cards[id]; UI.selected.delete(id); save(); }
 
 // ---------- reading order, readiness and what to do next ----------

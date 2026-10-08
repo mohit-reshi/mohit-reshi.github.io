@@ -216,6 +216,7 @@ async function onClick(e) {
       UI.notice = ''; UI.scrollSec = res.secId; UI.lastImport = res;
       render(); go('#/board'); break;
     }
+    case 'add-question': { const sid = t.dataset.sec; askDialog('Type the question', { value: '', ok: 'Add and write the answer' }, (v) => { if (!norm(v)) return; const nid = addQuestionCard(sid, v); UI.ret = { y: window.scrollY }; UI.focusCard = null; go('#/edit/' + nid); }); break; }
     case 'filter': UI.filter = t.dataset.v; rerenderBoardKeepScroll(); break;
     case 'edit': UI.ret = { y: window.scrollY }; UI.focusCard = null; go('#/edit/' + id); break;
     case 'back-to-card': UI.focusCard = id; go('#/board'); break;
@@ -279,6 +280,7 @@ function onInput(e) {
   if (el.dataset && el.dataset.sf) { storyInput(el); return; }
   if (el.id === 'story-search') { UI.storySearch = el.value; const pos = el.selectionStart; render(); const n = $('#story-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
   if (el.id === 'jd-search') { UI.jdSearch = el.value; const pos = el.selectionStart; render(); const n = $('#jd-search'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
+  if (el.id === 'q-edit') { setQuestionText(el.dataset.id, el.value); return; }
   if (el.id === 'answer') {
     const c = getCard(el.dataset.id); if (!c) return;
     setAnswer(c.id, el.value);
