@@ -1,6 +1,6 @@
 ---
-slug: katori
-title: "Katori"
+slug: pot-and-plate
+title: "Pot and Plate"
 kind: app
 group: app
 client_label: null

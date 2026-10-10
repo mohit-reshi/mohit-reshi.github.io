@@ -4,8 +4,9 @@ import { uid, norm, num, dayKeyFor, minutesOf, addDays, slug, similarity } from 
 import { starterFoods } from '../core/starter.js';
 import { clean, snap, scale, times, dayTotals } from '../core/nutri.js';
 
-const KEY = 'katori-v1';
-const PREV = 'katori-prev';
+const KEY = 'pot-and-plate-v1';
+const PREV = 'pot-and-plate-prev';
+const LEGACY = 'katori-v1'; // the app's first name: data saved under it is picked up once
 const VERSION = 1;
 let S = null;
 const UI = { tab: 'today', day: null, notice: '', saveError: '', foodQ: '', foodFilter: 'all', mealQ: '', range: 30, plate: [] };
@@ -41,8 +42,9 @@ export function restorePrev() { try { const raw = localStorage.getItem(PREV); if
 
 export function load(now) {
   let raw = null;
-  try { raw = localStorage.getItem(KEY); } catch (e) { /* ignore */ }
-  if (raw) { try { S = migrate(JSON.parse(raw)); foodsRev++; return S; } catch (e) { /* fall through */ } }
+  let legacy = false;
+  try { raw = localStorage.getItem(KEY); if (!raw) { raw = localStorage.getItem(LEGACY); legacy = !!raw; } } catch (e) { /* ignore */ }
+  if (raw) { try { S = migrate(JSON.parse(raw)); foodsRev++; if (legacy) flush(); return S; } catch (e) { /* fall through */ } }
   S = blank(); S.sample = true; fillDemo(S, now || new Date()); foodsRev++;
   return S;
 }
@@ -152,10 +154,10 @@ export const lastAmount = (ref) => { const r = recentRefs(200).find((x) => x.ref
 
 // ---------- backup ----------
 export function markBackup() { S.lastBackup = Date.now(); save(); }
-export function exportJson() { return JSON.stringify(Object.assign({ app: 'katori' }, S), null, 1); }
+export function exportJson() { return JSON.stringify(Object.assign({ app: 'pot-and-plate' }, S), null, 1); }
 export function importJson(text) {
   const d = JSON.parse(text);
-  if (!d || d.app !== 'katori' || typeof d.log !== 'object') throw new Error('bad');
+  if (!d || d.app !== 'pot-and-plate' && d.app !== 'katori' || typeof d.log !== 'object') throw new Error('bad');
   stashPrev(); delete d.app; S = migrate(d); S.sample = false; foodsRev++; flush(); return S;
 }
 export function logCsv() {

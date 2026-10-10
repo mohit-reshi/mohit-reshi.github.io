@@ -13,7 +13,7 @@ function render() {
   const route = routeFromHash(); const prev = UI.tab; UI.tab = route; applyTheme(); renderNav();
   const main = $('#main'); const y = window.scrollY;
   main.innerHTML = route === 'today' ? renderToday() : route === 'meals' ? renderMeals() : route === 'foods' ? renderFoods() : route === 'progress' ? renderProgress() : renderSettings();
-  main.className = 'main route-' + route; document.title = 'Katori';
+  main.className = 'main route-' + route; document.title = 'Pot and Plate';
   window.scrollTo(0, prev === route ? y : 0);
 }
 const go = (hash) => { if (location.hash === hash) render(); else location.hash = hash; };
@@ -26,7 +26,7 @@ function onClick(e) {
   switch (a) {
     case 'start-own': startOwn(); toast('Your own diary is ready.'); render(); break;
     case 'goto-settings': go('#/settings'); break;
-    case 'backup': download('katori-backup.json', exportJson()); markBackup(); toast('Backup downloaded'); render(); break;
+    case 'backup': download('pot-and-plate-backup.json', exportJson()); markBackup(); toast('Backup downloaded'); render(); break;
     case 'day-prev': UI.day = addDays(curDay(), -1); render(); break;
     case 'day-next': { const n = addDays(curDay(), 1); UI.day = n >= todayKey() ? null : n; render(); break; }
     case 'day-today': UI.day = null; render(); break;
@@ -51,7 +51,7 @@ function onClick(e) {
     case 'range': UI.range = +t.dataset.v; render(); break;
     case 'save-goals': { const g = {}; ['k', 'p', 'c', 'f', 'fi', 'water'].forEach((k) => { const v = num($('#goal-' + k).value); if (v !== null && v >= 0) g[k] = v; }); setGoals(g); toast('Goals saved'); render(); break; }
     case 'save-water': { const list = $('#water-presets').value.split(/[,;\s]+/).map(num).filter((n) => n && n > 0 && n <= 3000); if (list.length) { setSettings({ waterPresets: list.slice(0, 6) }); toast('Water buttons saved'); } else toast('Enter at least one size in ml.'); render(); break; }
-    case 'export-log': { const c = logCsv(); download('katori-diary.csv', c.entries, 'text/csv'); download('katori-days.csv', c.days, 'text/csv'); break; }
+    case 'export-log': { const c = logCsv(); download('pot-and-plate-diary.csv', c.entries, 'text/csv'); download('pot-and-plate-days.csv', c.days, 'text/csv'); break; }
     case 'undo-restore': if (restorePrev()) { toast('Restored the earlier data'); render(); } break;
     case 'unhide-starters': hiddenStarters().forEach((f) => resetStarter(f.id)); render(); break;
     case 'erase': askDialog('Clear all my data?', { text: 'This removes your diary, foods, meals and settings from this browser and shows the example data again. Download a backup first if you may want them back.', ok: 'Clear my data' }, () => { resetAll(); UI.day = null; go('#/today'); render(); toast('Data cleared'); }); break;
@@ -65,7 +65,7 @@ function onChange(e) {
   if (el.id === 'day-start') { setSettings({ dayStart: +el.value }); render(); return; }
   if (el.id === 'hide-weight') { setSettings({ hideWeight: el.checked }); render(); return; }
   if (el.id === 'theme-sel') { setSettings({ theme: el.value }); render(); return; }
-  if (el.id === 'backup-in' && el.files && el.files[0]) { el.files[0].text().then((t) => { try { importJson(t); toast('Backup restored'); UI.day = null; go('#/today'); render(); } catch (x) { toast('That file is not a Katori backup.'); } }); el.value = ''; }
+  if (el.id === 'backup-in' && el.files && el.files[0]) { el.files[0].text().then((t) => { try { importJson(t); toast('Backup restored'); UI.day = null; go('#/today'); render(); } catch (x) { toast('That file is not a Pot and Plate backup.'); } }); el.value = ''; }
 }
 function onInput(e) {
   const el = e.target;
@@ -79,7 +79,7 @@ function boot() {
   document.addEventListener('click', onClick); document.addEventListener('change', onChange); document.addEventListener('input', onInput);
   window.addEventListener('hashchange', render); window.addEventListener('pagehide', flush);
   window.addEventListener('appchrome:owner', () => { const now = isAdmin(); if (now !== lastAdmin) { lastAdmin = now; render(); } });
-  window.addEventListener('storage', (e) => { if (e.key === 'katori-v1' && !S.sample) { load(new Date()); render(); } });
+  window.addEventListener('storage', (e) => { if (e.key === 'pot-and-plate-v1' && !S.sample) { load(new Date()); render(); } });
   render();
   try { if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('./sw.js').catch(() => {}); } catch (e) { /* ignore */ }
 }

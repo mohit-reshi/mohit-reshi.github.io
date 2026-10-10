@@ -1,4 +1,4 @@
-// Browser checks for Katori. Run: node apps-src/katori/test/ui.test.mjs  (after build.mjs and make-app-packages.mjs)
+// Browser checks for Pot and Plate. Run: node apps-src/pot-and-plate/test/ui.test.mjs  (after build.mjs and make-app-packages.mjs)
 // Uses the site's Playwright and a tiny static server over site/public. Prints PASS/FAIL lines and exits non-zero on failure.
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
@@ -13,7 +13,7 @@ const { chromium } = require('playwright');
 const PORT = 4991;
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
 const srv = createServer((q, r) => { let p = join(root, 'site', 'public', decodeURIComponent(q.url.split('?')[0])); if (p.endsWith('/')) p += 'index.html'; if (!existsSync(p)) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': TYPES[extname(p)] || 'application/octet-stream' }); r.end(readFileSync(p)); }).listen(PORT);
-const URL0 = `http://localhost:${PORT}/apps-hosted/katori/`;
+const URL0 = `http://localhost:${PORT}/apps-hosted/pot-and-plate/`;
 let failed = 0;
 const ok = (name, cond, extra) => { if (cond) console.log('PASS ' + name); else { failed++; console.log('FAIL ' + name + (extra !== undefined ? ' -> ' + JSON.stringify(extra) : '')); } };
 const BLOCK = `Here you go.
@@ -48,7 +48,7 @@ const mk = async (opts = {}) => {
   return { ctx, page, errs, outside };
 };
 const settle = (page, ms) => page.waitForTimeout(ms || 250);
-const store = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('katori-v1')));
+const store = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('pot-and-plate-v1')));
 const text = (page, sel) => page.locator(sel).first().innerText();
 const addFood = async (page, slot, query, amount, unit) => {
   await page.click(`[data-action=add][data-slot=${slot}]`); await page.fill('.pk-q', query); await page.locator('.pk-row').first().click();
@@ -65,7 +65,7 @@ try {
     await page.goto(URL0); await settle(page, 700);
     ok('visitor: five tabs', (await page.locator('.nav-a').allInnerTexts()).join('|') === 'Today|Meals|Foods|Progress|Settings');
     ok('visitor: example data banner and a calorie ring', (await page.locator('.notice').first().innerText()).includes('Example data') && (await text(page, '.ring-mid b')).length > 0);
-    ok('visitor: example data is not stored', await page.evaluate(() => localStorage.getItem('katori-v1')) === null);
+    ok('visitor: example data is not stored', await page.evaluate(() => localStorage.getItem('pot-and-plate-v1')) === null);
     await page.goto(URL0 + '#/meals'); await settle(page);
     ok('visitor: no import button and no admin pill', (await page.locator('[data-action=meal-import]').count()) === 0 && (await page.locator('#admin-pill:not([hidden])').count()) === 0);
     ok('visitor: the example meal is listed', (await page.locator('.meal h3').allInnerTexts()).join('').includes('khichdi'));
@@ -148,6 +148,17 @@ try {
     await ctx.close();
   }
 
+  // ---------- data saved under the app's first name is picked up ----------
+  {
+    const { ctx, page, errs } = await mk();
+    await page.addInitScript(() => { if (!localStorage.getItem('pot-and-plate-v1') && !sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('katori-v1', JSON.stringify({ v: 1, sample: false, goals: { k: 1700, p: 80, c: 200, f: 55, fi: 25, water: 2500 }, goalsSet: true, foods: {}, meals: {}, log: {} })); } });
+    await page.goto(URL0); await settle(page, 700);
+    ok('rename: data saved under the old name is loaded', (await text(page, '.ring-mid b')) === '1,700' && (await page.locator('.notice', { hasText: 'Example data' }).count()) === 0);
+    ok('rename: and is copied to the new storage key', (await store(page)).goals.k === 1700);
+    ok('rename: no page errors', errs.length === 0, errs);
+    await ctx.close();
+  }
+
   // ---------- foods: label converter, consistency check, edit starter, CSV ----------
   {
     const { ctx, page, errs } = await mk();
@@ -176,7 +187,7 @@ try {
     await page.click('[data-apply]'); await settle(page, 400);
     const st = await store(page);
     ok('csv: imported foods are saved, the existing one updated', Object.values(st.foods).some((f) => f.name === 'Home roti' && f.units[0].g === 45) && Object.values(st.foods).find((f) => f.name === 'Protein bar').k === 410);
-    ok('csv: the safety copy for undo exists', await page.evaluate(() => localStorage.getItem('katori-prev') !== null));
+    ok('csv: the safety copy for undo exists', await page.evaluate(() => localStorage.getItem('pot-and-plate-prev') !== null));
     ok('foods: no page errors', errs.length === 0, errs);
     await ctx.close();
   }
@@ -187,7 +198,7 @@ try {
     await page.goto(URL0); await settle(page, 500); await page.click('[data-action=start-own]'); await settle(page, 200);
     await addFood(page, 'breakfast', 'banana', 100); await settle(page, 400);
     const dl = page.waitForEvent('download'); await page.goto(URL0 + '#/settings'); await settle(page, 200); await page.click('[data-action=backup]'); const file = await dl; const path = await file.path(); const backup = readFileSync(path, 'utf8');
-    ok('backup: a katori backup file with the diary', JSON.parse(backup).app === 'katori' && Object.keys(JSON.parse(backup).log).length === 1);
+    ok('backup: a Pot and Plate backup file with the diary', JSON.parse(backup).app === 'pot-and-plate' && Object.keys(JSON.parse(backup).log).length === 1);
     await settle(page, 300);
     ok('backup: the last-backup time is recorded', (await text(page, '.settings')).includes('Last backup: today'));
     await page.goto(URL0 + '#/today'); await settle(page, 200); await addFood(page, 'lunch', 'apple', 150); await settle(page, 400);
@@ -197,11 +208,11 @@ try {
     await page.goto(URL0 + '#/settings'); await settle(page, 200); await page.click('[data-action=undo-restore]'); await settle(page, 400); await page.goto(URL0 + '#/today'); await settle(page, 300);
     ok('restore: undo brings back the data from before the restore', (await page.locator('.ent').count()) === 2);
     await page.goto(URL0 + '#/settings'); await page.setInputFiles('#backup-in', { name: 'x.json', mimeType: 'application/json', buffer: Buffer.from('{"nope":1}') }); await settle(page, 300);
-    ok('restore: a wrong file is refused and nothing changes', (await text(page, '#toast')).includes('not a Katori backup') && (await store(page)).sample === false);
+    ok('restore: a wrong file is refused and nothing changes', (await text(page, '#toast')).includes('not a Pot and Plate backup') && (await store(page)).sample === false);
     const csvDl = page.waitForEvent('download'); await page.click('[data-action=export-log]'); const f2 = await csvDl; const csv = readFileSync(await f2.path(), 'utf8');
     ok('csv log export: header and rows', csv.startsWith('date,time,meal,item,amount,unit,kcal') && csv.includes('Banana (raw)'));
     await page.click('[data-action=erase]'); await page.click('dialog button.primary'); await settle(page, 400);
-    ok('clear: data removed and the example is back', (await page.evaluate(() => localStorage.getItem('katori-v1'))) === null && (await page.locator('.notice', { hasText: 'Example data' }).count()) === 1);
+    ok('clear: data removed and the example is back', (await page.evaluate(() => localStorage.getItem('pot-and-plate-v1'))) === null && (await page.locator('.notice', { hasText: 'Example data' }).count()) === 1);
     ok('backup: no page errors', errs.length === 0, errs);
     await ctx.close();
   }

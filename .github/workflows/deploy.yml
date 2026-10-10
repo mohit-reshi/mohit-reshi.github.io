@@ -45,11 +45,11 @@ jobs:
           node --test apps-src/rehearsal-desk/test/core.test.js
           node apps-src/rehearsal-desk/build.mjs
           git diff --exit-code -- site/public/apps-hosted/rehearsal-desk/index.html
-      - name: Katori tests and bundle check
+      - name: Pot and Plate tests and bundle check
         run: |
-          node --test apps-src/katori/test/core.test.js
-          node apps-src/katori/build.mjs
-          git diff --exit-code -- site/public/apps-hosted/katori
+          node --test apps-src/pot-and-plate/test/core.test.js
+          node apps-src/pot-and-plate/build.mjs
+          git diff --exit-code -- site/public/apps-hosted/pot-and-plate
       - name: Validate content
         run: npm --prefix site run validate
       - name: Build Live Lab module

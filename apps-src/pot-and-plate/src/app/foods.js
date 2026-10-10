@@ -49,9 +49,9 @@ function openCsv() {
   const sh = openSheet('Import or export foods (CSV)', '<p class="muted">Keep your food list in a spreadsheet if you like. Columns: name, state, kcal, protein, carbs, fat, fibre, units, ml_density. Values are per 100 g.</p><div class="row"><button class="btn" data-template>Download the CSV template</button><button class="btn" data-export>Export my foods</button><button class="btn" data-export-all>Export all foods</button></div><h3>Import</h3><label class="field"><span>Choose a CSV file, or paste the text</span><input type="file" id="csv-file" accept=".csv,.txt,text/csv"></label><label class="field"><span class="sr">CSV text</span><textarea id="csv-text" rows="6" placeholder="name,state,kcal,protein,carbs,fat,fibre,units"></textarea></label><div class="row"><button class="btn primary" data-read>Check it</button></div><div id="csv-out"></div>', { wide: true });
   const out = $('#csv-out', sh.el); let foods = [];
   const dl = (name, text) => { const b = new Blob([text], { type: 'text/csv' }); const l = document.createElement('a'); l.href = URL.createObjectURL(b); l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); };
-  $('[data-template]', sh.el).addEventListener('click', () => dl('katori-foods-template.csv', csvTemplate()));
-  $('[data-export]', sh.el).addEventListener('click', () => dl('katori-my-foods.csv', foodsToCsv(foodList().filter((f) => f.source !== 'starter' || isOverride(f.id)))));
-  $('[data-export-all]', sh.el).addEventListener('click', () => dl('katori-all-foods.csv', foodsToCsv(foodList())));
+  $('[data-template]', sh.el).addEventListener('click', () => dl('pot-and-plate-foods-template.csv', csvTemplate()));
+  $('[data-export]', sh.el).addEventListener('click', () => dl('pot-and-plate-my-foods.csv', foodsToCsv(foodList().filter((f) => f.source !== 'starter' || isOverride(f.id)))));
+  $('[data-export-all]', sh.el).addEventListener('click', () => dl('pot-and-plate-all-foods.csv', foodsToCsv(foodList())));
   $('#csv-file', sh.el).addEventListener('change', (e) => { const f = e.target.files[0]; if (f) f.text().then((t) => { $('#csv-text', sh.el).value = t; }); });
   $('[data-read]', sh.el).addEventListener('click', () => {
     const r = foodsFromCsv($('#csv-text', sh.el).value); foods = r.foods;

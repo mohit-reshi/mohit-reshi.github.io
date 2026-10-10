@@ -1,6 +1,6 @@
 {
-  "name": "Katori",
-  "short_name": "Katori",
+  "name": "Pot and Plate",
+  "short_name": "Pot and Plate",
   "description": "Offline meal, calorie and water tracker",
   "start_url": "./index.html",
   "scope": "./",

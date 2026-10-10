@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Katori</title>
+<title>Pot and Plate</title>
 <meta name="description" content="An offline meal, calorie and water tracker. Weigh your ingredients, build meals once, log any portion. Your data stays on your device.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://portfolio-app-sync.mohitreshi.workers.dev; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#1f7a5a">
@@ -95,11 +95,11 @@ details { margin: 8px 0; } summary { cursor: pointer; font-weight: 600; min-heig
 @media (max-width: 759px) { .acx-own { bottom: calc(var(--nav-h) + 10px + env(safe-area-inset-bottom)) !important; } }
 
 </style>
-<script defer src="./app-chrome.js" data-app="katori" data-keys="katori-v1" data-zip="katori-local.zip"></script>
+<script defer src="./app-chrome.js" data-app="pot-and-plate" data-keys="pot-and-plate-v1" data-zip="pot-and-plate-local.zip"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to the content</a>
-<header class="topbar"><a class="brand" href="#/today"><span class="logo" aria-hidden="true"></span>Katori</a><nav id="nav" class="nav" aria-label="Main"></nav><span id="admin-pill" class="pill" hidden>Admin</span></header>
+<header class="topbar"><a class="brand" href="#/today"><span class="logo" aria-hidden="true"></span>Pot and Plate</a><nav id="nav" class="nav" aria-label="Main"></nav><span id="admin-pill" class="pill" hidden>Admin</span></header>
 <div id="save-error" class="banner" role="alert" hidden></div>
 <main id="main" class="main" tabindex="-1"></main>
 <script>
@@ -706,8 +706,9 @@ notes: <one or two short lines, optional>
 
 
 
-const KEY = 'katori-v1';
-const PREV = 'katori-prev';
+const KEY = 'pot-and-plate-v1';
+const PREV = 'pot-and-plate-prev';
+const LEGACY = 'katori-v1'; // the app's first name: data saved under it is picked up once
 const VERSION = 1;
 let S = null;
 const UI = { tab: 'today', day: null, notice: '', saveError: '', foodQ: '', foodFilter: 'all', mealQ: '', range: 30, plate: [] };
@@ -743,8 +744,9 @@ function restorePrev() { try { const raw = localStorage.getItem(PREV); if (!raw)
 
 function load(now) {
   let raw = null;
-  try { raw = localStorage.getItem(KEY); } catch (e) { /* ignore */ }
-  if (raw) { try { S = migrate(JSON.parse(raw)); foodsRev++; return S; } catch (e) { /* fall through */ } }
+  let legacy = false;
+  try { raw = localStorage.getItem(KEY); if (!raw) { raw = localStorage.getItem(LEGACY); legacy = !!raw; } } catch (e) { /* ignore */ }
+  if (raw) { try { S = migrate(JSON.parse(raw)); foodsRev++; if (legacy) flush(); return S; } catch (e) { /* fall through */ } }
   S = blank(); S.sample = true; fillDemo(S, now || new Date()); foodsRev++;
   return S;
 }
@@ -854,10 +856,10 @@ const lastAmount = (ref) => { const r = recentRefs(200).find((x) => x.ref === re
 
 // ---------- backup ----------
 function markBackup() { S.lastBackup = Date.now(); save(); }
-function exportJson() { return JSON.stringify(Object.assign({ app: 'katori' }, S), null, 1); }
+function exportJson() { return JSON.stringify(Object.assign({ app: 'pot-and-plate' }, S), null, 1); }
 function importJson(text) {
   const d = JSON.parse(text);
-  if (!d || d.app !== 'katori' || typeof d.log !== 'object') throw new Error('bad');
+  if (!d || d.app !== 'pot-and-plate' && d.app !== 'katori' || typeof d.log !== 'object') throw new Error('bad');
   stashPrev(); delete d.app; S = migrate(d); S.sample = false; foodsRev++; flush(); return S;
 }
 function logCsv() {
@@ -1278,9 +1280,9 @@ function openCsv() {
   const sh = openSheet('Import or export foods (CSV)', '<p class="muted">Keep your food list in a spreadsheet if you like. Columns: name, state, kcal, protein, carbs, fat, fibre, units, ml_density. Values are per 100 g.</p><div class="row"><button class="btn" data-template>Download the CSV template</button><button class="btn" data-export>Export my foods</button><button class="btn" data-export-all>Export all foods</button></div><h3>Import</h3><label class="field"><span>Choose a CSV file, or paste the text</span><input type="file" id="csv-file" accept=".csv,.txt,text/csv"></label><label class="field"><span class="sr">CSV text</span><textarea id="csv-text" rows="6" placeholder="name,state,kcal,protein,carbs,fat,fibre,units"></textarea></label><div class="row"><button class="btn primary" data-read>Check it</button></div><div id="csv-out"></div>', { wide: true });
   const out = $('#csv-out', sh.el); let foods = [];
   const dl = (name, text) => { const b = new Blob([text], { type: 'text/csv' }); const l = document.createElement('a'); l.href = URL.createObjectURL(b); l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); };
-  $('[data-template]', sh.el).addEventListener('click', () => dl('katori-foods-template.csv', csvTemplate()));
-  $('[data-export]', sh.el).addEventListener('click', () => dl('katori-my-foods.csv', foodsToCsv(foodList().filter((f) => f.source !== 'starter' || isOverride(f.id)))));
-  $('[data-export-all]', sh.el).addEventListener('click', () => dl('katori-all-foods.csv', foodsToCsv(foodList())));
+  $('[data-template]', sh.el).addEventListener('click', () => dl('pot-and-plate-foods-template.csv', csvTemplate()));
+  $('[data-export]', sh.el).addEventListener('click', () => dl('pot-and-plate-my-foods.csv', foodsToCsv(foodList().filter((f) => f.source !== 'starter' || isOverride(f.id)))));
+  $('[data-export-all]', sh.el).addEventListener('click', () => dl('pot-and-plate-all-foods.csv', foodsToCsv(foodList())));
   $('#csv-file', sh.el).addEventListener('change', (e) => { const f = e.target.files[0]; if (f) f.text().then((t) => { $('#csv-text', sh.el).value = t; }); });
   $('[data-read]', sh.el).addEventListener('click', () => {
     const r = foodsFromCsv($('#csv-text', sh.el).value); foods = r.foods;
@@ -1337,7 +1339,7 @@ function renderSettings() {
     '<section class="card"><h2>Backup</h2><p>' + (S.sample ? 'Nothing to back up yet.' : days === null ? 'You have not downloaded a backup yet.' : 'Last backup: ' + (days === 0 ? 'today' : days + ' day' + (days === 1 ? '' : 's') + ' ago') + '.') + '</p><p class="muted">Your data lives only in this browser on this device. Download a backup now and then, and before clearing your browser data.</p><div class="row"><button class="btn primary" data-action="backup">Download a backup</button><label class="btn file">Restore from a backup<input type="file" id="backup-in" accept=".json,application/json" hidden></label><button class="btn" data-action="export-log">Download my diary as CSV</button>' + (hasPrev() ? '<button class="btn" data-action="undo-restore">Undo the last restore or import</button>' : '') + '</div></section>' +
     '<section class="card"><h2>Storage</h2><p>Saved data: ' + fmt1(bytes / 1024) + ' KB. ' + (bytes > 1.6e6 ? '<span class="warn">This is getting large. Download a backup, and think about clearing very old days.</span>' : 'Plenty of room.') + '</p>' + (hidden ? '<p>' + hidden + ' starter food' + (hidden === 1 ? ' is' : 's are') + ' hidden. <button class="btn small" data-action="unhide-starters">Bring them back</button></p>' : '') + (isAdmin() ? '<p class="muted">Signed in as owner: a copy of this data is also kept in your private sync while you are signed in.</p>' : '') + '</section>' +
     '<section class="card"><h2>Clear my data</h2><p class="muted">Removes your diary, foods, meals and settings from this browser. Download a backup first.</p><button class="btn danger" data-action="erase">Clear my data</button></section>' +
-    '<p class="muted">Katori is an offline tracker. Its starter food values are approximate and it gives no medical advice.</p></div>';
+    '<p class="muted">Pot and Plate is an offline tracker. Its starter food values are approximate and it gives no medical advice.</p></div>';
 }
 
 /* ---- app/main.js ---- */
@@ -1356,7 +1358,7 @@ function render() {
   const route = routeFromHash(); const prev = UI.tab; UI.tab = route; applyTheme(); renderNav();
   const main = $('#main'); const y = window.scrollY;
   main.innerHTML = route === 'today' ? renderToday() : route === 'meals' ? renderMeals() : route === 'foods' ? renderFoods() : route === 'progress' ? renderProgress() : renderSettings();
-  main.className = 'main route-' + route; document.title = 'Katori';
+  main.className = 'main route-' + route; document.title = 'Pot and Plate';
   window.scrollTo(0, prev === route ? y : 0);
 }
 const go = (hash) => { if (location.hash === hash) render(); else location.hash = hash; };
@@ -1369,7 +1371,7 @@ function onClick(e) {
   switch (a) {
     case 'start-own': startOwn(); toast('Your own diary is ready.'); render(); break;
     case 'goto-settings': go('#/settings'); break;
-    case 'backup': download('katori-backup.json', exportJson()); markBackup(); toast('Backup downloaded'); render(); break;
+    case 'backup': download('pot-and-plate-backup.json', exportJson()); markBackup(); toast('Backup downloaded'); render(); break;
     case 'day-prev': UI.day = addDays(curDay(), -1); render(); break;
     case 'day-next': { const n = addDays(curDay(), 1); UI.day = n >= todayKey() ? null : n; render(); break; }
     case 'day-today': UI.day = null; render(); break;
@@ -1394,7 +1396,7 @@ function onClick(e) {
     case 'range': UI.range = +t.dataset.v; render(); break;
     case 'save-goals': { const g = {}; ['k', 'p', 'c', 'f', 'fi', 'water'].forEach((k) => { const v = num($('#goal-' + k).value); if (v !== null && v >= 0) g[k] = v; }); setGoals(g); toast('Goals saved'); render(); break; }
     case 'save-water': { const list = $('#water-presets').value.split(/[,;\s]+/).map(num).filter((n) => n && n > 0 && n <= 3000); if (list.length) { setSettings({ waterPresets: list.slice(0, 6) }); toast('Water buttons saved'); } else toast('Enter at least one size in ml.'); render(); break; }
-    case 'export-log': { const c = logCsv(); download('katori-diary.csv', c.entries, 'text/csv'); download('katori-days.csv', c.days, 'text/csv'); break; }
+    case 'export-log': { const c = logCsv(); download('pot-and-plate-diary.csv', c.entries, 'text/csv'); download('pot-and-plate-days.csv', c.days, 'text/csv'); break; }
     case 'undo-restore': if (restorePrev()) { toast('Restored the earlier data'); render(); } break;
     case 'unhide-starters': hiddenStarters().forEach((f) => resetStarter(f.id)); render(); break;
     case 'erase': askDialog('Clear all my data?', { text: 'This removes your diary, foods, meals and settings from this browser and shows the example data again. Download a backup first if you may want them back.', ok: 'Clear my data' }, () => { resetAll(); UI.day = null; go('#/today'); render(); toast('Data cleared'); }); break;
@@ -1408,7 +1410,7 @@ function onChange(e) {
   if (el.id === 'day-start') { setSettings({ dayStart: +el.value }); render(); return; }
   if (el.id === 'hide-weight') { setSettings({ hideWeight: el.checked }); render(); return; }
   if (el.id === 'theme-sel') { setSettings({ theme: el.value }); render(); return; }
-  if (el.id === 'backup-in' && el.files && el.files[0]) { el.files[0].text().then((t) => { try { importJson(t); toast('Backup restored'); UI.day = null; go('#/today'); render(); } catch (x) { toast('That file is not a Katori backup.'); } }); el.value = ''; }
+  if (el.id === 'backup-in' && el.files && el.files[0]) { el.files[0].text().then((t) => { try { importJson(t); toast('Backup restored'); UI.day = null; go('#/today'); render(); } catch (x) { toast('That file is not a Pot and Plate backup.'); } }); el.value = ''; }
 }
 function onInput(e) {
   const el = e.target;
@@ -1422,7 +1424,7 @@ function boot() {
   document.addEventListener('click', onClick); document.addEventListener('change', onChange); document.addEventListener('input', onInput);
   window.addEventListener('hashchange', render); window.addEventListener('pagehide', flush);
   window.addEventListener('appchrome:owner', () => { const now = isAdmin(); if (now !== lastAdmin) { lastAdmin = now; render(); } });
-  window.addEventListener('storage', (e) => { if (e.key === 'katori-v1' && !S.sample) { load(new Date()); render(); } });
+  window.addEventListener('storage', (e) => { if (e.key === 'pot-and-plate-v1' && !S.sample) { load(new Date()); render(); } });
   render();
   try { if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('./sw.js').catch(() => {}); } catch (e) { /* ignore */ }
 }
