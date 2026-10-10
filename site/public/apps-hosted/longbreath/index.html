@@ -6,7 +6,7 @@
 <title>Longbreath: breathing and breath-hold trainer</title>
 <style>
 :root{
-  --bg:#E4ECEA; --surface:#F4F8F7; --ink:#15363B; --muted:#56706F; --line:#C5D5D2;
+  --bg:#E4ECEA; --surface:#F4F8F7; --ink:#15363B; --muted:#4B6665; --line:#C5D5D2;
   --in:#2B857A; --hold:#B98322; --out:#4C5AAE; --rest:#5E9A90; --danger:#B03F36;
   --phase:var(--in);
   --display:'Segoe UI', system-ui, sans-serif;
@@ -59,10 +59,17 @@ nav.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
 .nextup .pb{font-family:var(--display);font-weight:800;font-size:3rem;line-height:1;letter-spacing:-.03em}
 .nextup .pb small{display:block;font-size:.95rem;font-weight:600;opacity:.8;margin-top:6px;letter-spacing:0}
 body.focus nav.tabs{display:none}
-body.focus .top{opacity:.35}
+body.focus .top{opacity:.8}
+body.focus .top .sync{color:var(--ink)}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;z-index:50;max-width:90vw;text-align:center}
 .toast[hidden]{display:none}
 .nextup p{margin:0;opacity:.9}
+.nextup{position:relative;overflow:hidden}
+.nextup > *{position:relative}
+.nextwind{position:absolute!important;right:0;bottom:12px;width:min(60%,420px);height:60px;overflow:hidden;pointer-events:none;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40%);mask-image:linear-gradient(90deg,transparent,#000 40%)}
+.nextwind svg{display:block;width:200%;height:60px;animation:bz 22s linear infinite}
+.nextwind path{fill:none;stroke:var(--bg);stroke-linecap:round}
+@media (max-width:520px){.nextwind{opacity:.55;width:50%}}
 .nextup button{justify-self:start;background:var(--bg);color:var(--ink);border:0;border-radius:999px;padding:10px 18px;font-weight:700}
 .group{margin-bottom:28px}
 .group h2{font-size:1.2rem;margin-bottom:4px}
@@ -173,10 +180,98 @@ dialog li{margin-bottom:6px}
 .toggle{width:50px;height:30px;accent-color:var(--in)}
 .big-result{font-family:var(--display);font-size:3rem;font-weight:800;letter-spacing:-.03em;line-height:1.1}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---- Wind layer: sky, canvas, orb air, motion ---- */
+@property --phase{syntax:'<color>';inherits:true;initial-value:#2B857A}
+:root{--sk1:#D6E9E5;--sk2:#D9E6F4;--sk3:#EEF4EF;--sk-warm:#F2DFD0;--warm:0;transition:--phase .9s ease}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sk1:#15393E;--sk2:#162B46;--sk3:#10292E;--sk-warm:#3A3052}}
+:root[data-theme="dark"]{--sk1:#15393E;--sk2:#162B46;--sk3:#10292E;--sk-warm:#3A3052}
+#sky{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none;background:linear-gradient(180deg,var(--sk3),var(--bg) 72%)}
+#sky i{position:absolute;display:block;width:90vmax;height:90vmax;border-radius:50%;will-change:transform}
+#sky .b1{left:-34vmax;top:-52vmax;background:radial-gradient(closest-side,var(--sk1),transparent);animation:mist1 80s ease-in-out infinite alternate}
+#sky .b2{right:-40vmax;top:-6vmax;background:radial-gradient(closest-side,var(--sk2),transparent);animation:mist2 95s ease-in-out infinite alternate}
+#sky .b3{left:-6vmax;bottom:-62vmax;background:radial-gradient(closest-side,color-mix(in srgb,var(--sk-warm) calc(var(--warm)*100%),var(--sk1)),transparent);animation:mist1 110s ease-in-out infinite alternate-reverse}
+#sky #skyTint{inset:0;width:auto;height:auto;border-radius:0;will-change:auto;background:radial-gradient(ellipse 75% 46% at 50% 36%,color-mix(in srgb,var(--phase) 9%,transparent),transparent 72%);opacity:0;transition:opacity 1.4s ease}
+body.live #skyTint{opacity:1}
+body.live #sky i:not(#skyTint){animation-play-state:paused}
+@keyframes mist1{to{transform:translate3d(14vmax,9vmax,0) scale(1.1)}}
+@keyframes mist2{to{transform:translate3d(-16vmax,10vmax,0) scale(.92)}}
+#wind{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;transition:opacity .4s ease}
+html.vhid #sky i,html.vhid .live,html.vhid .orb *{animation-play-state:paused!important}
+.live{animation-play-state:var(--ps,running)!important}
+
+.view:not([hidden]){animation:viewin .55s cubic-bezier(.2,.7,.2,1) backwards}
+@keyframes viewin{from{opacity:0;transform:translateY(8px)}}
+@keyframes fadein{from{opacity:0}}
+@keyframes rise2{from{opacity:0;transform:translateY(10px)}}
+nav.tabs button{transition:background-color .3s,color .3s}
+.btn,.nextup button{transition:transform .16s ease,box-shadow .3s ease,background-color .3s}
+.btn:hover,.nextup button:hover{box-shadow:0 6px 18px -6px color-mix(in srgb,var(--phase) 70%,transparent)}
+.btn:active,.nextup button:active{transform:scale(.97)}
+.nextup .ghostbtn{background:none;color:var(--bg);border:1.5px solid color-mix(in srgb,var(--bg) 60%,transparent);min-height:44px}
+.nextup .trycap{min-height:1.5em;font-weight:700}
+.exrow{position:relative;overflow:hidden;transition:background-color .35s}
+.exrow:hover{background:color-mix(in srgb,var(--c) 8%,transparent)}
+.exrow .pip{transition:transform .35s cubic-bezier(.3,.7,.2,1)}
+.exrow:hover .pip,.exrow:focus-visible .pip{transform:scaleY(1.18)}
+.exrow .len{transition:transform .35s}
+.exrow:hover .len{transform:translateX(-3px)}
+.ripple{position:absolute;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:color-mix(in srgb,var(--c) 30%,transparent);pointer-events:none;animation:ripple .8s ease-out forwards}
+@keyframes ripple{to{transform:scale(22);opacity:0}}
+
+/* Orb made of moving air */
+.orb{--f:.15}
+.orb::before{content:"";position:absolute;inset:-16%;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,color-mix(in srgb,var(--phase) 24%,transparent) 50%,transparent);transform:scale(calc(.78 + .3*var(--f)));opacity:.9}
+.orb .ring{transition:none;transform-box:fill-box;transform-origin:50% 50%;transform:scale(calc(.955 + .045*var(--f)))}
+.orb .ring2{fill:none;stroke:var(--phase);stroke-width:2;stroke-linecap:round;stroke-dasharray:26 20 6 20;opacity:.4;transform-box:fill-box;transform-origin:50% 50%;animation:spin 60s linear infinite}
+.orb .ring3{fill:none;stroke:var(--phase);stroke-width:1.4;stroke-linecap:round;stroke-dasharray:3 15 40 22;opacity:.3;transform-box:fill-box;transform-origin:50% 50%;animation:spin 90s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.orb .water{transition:none;fill-opacity:.42}
+.orb .air{fill:none;stroke:var(--phase);stroke-linecap:round;animation:drift 6s linear infinite}
+.orb.drive .air,.orb.drive .wave{animation:none}
+.phase{transition:none;color:color-mix(in srgb,var(--phase) 76%,var(--ink))}
+
+.breeze{display:block;width:100%;height:22px;overflow:hidden;margin:0 0 14px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
+.breeze svg{display:block;width:200%;height:22px;animation:bz 26s linear infinite}
+.breeze path{fill:none;stroke:var(--in);stroke-linecap:round}
+@keyframes bz{to{transform:translateX(-50%)}}
+.empty .flatwave,.flatwave{display:block;width:100%;max-width:340px;height:26px;margin:0 0 10px;overflow:hidden}
+.flatwave svg{display:block;width:200%;height:26px;animation:bz 30s linear infinite}
+.flatwave path{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-linecap:round;opacity:.7}
+.play .ln{stroke-dasharray:1;animation:draw 1.4s cubic-bezier(.3,.6,.2,1) .15s both}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.play .dt{animation:fadein .5s ease both;animation-delay:calc(.55s + var(--i,0)*45ms)}
+.play .bar{transform-box:fill-box;transform-origin:50% 100%;animation:grow .9s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0)*70ms)}
+.play .barv{animation:fadein .5s ease both;animation-delay:calc(.5s + var(--i,0)*70ms)}
+@keyframes grow{from{transform:scaleY(0)}}
+.stats.play .stat{animation:rise2 .7s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0)*80ms)}
+.hrbig .beat{width:12px;height:12px;border-radius:50%;background:var(--danger);align-self:center;position:relative;flex:none;margin-left:2px}
+.hrbig .beat::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--danger);animation:beat var(--bpm,.9s) ease-out infinite;animation-play-state:var(--ps,running)}
+@keyframes beat{from{transform:scale(.8);opacity:.85}to{transform:scale(3.2);opacity:0}}
+.zonemark{transition:left 1.1s cubic-bezier(.2,.7,.2,1)}
+.panel[open] .inner{animation:viewin .4s ease backwards}
+.subl{display:block;font-size:.8rem;color:var(--muted);font-weight:400;max-width:30ch}
+dialog[open]{animation:dlgin .5s cubic-bezier(.2,.7,.2,1)}
+dialog[open]::backdrop{animation:fadein .5s ease}
+@keyframes dlgin{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.settle{display:block;width:100%;height:30px;margin:0 0 10px}
+.settle path{fill:none;stroke:var(--in);stroke-width:2;stroke-linecap:round;stroke-dasharray:1;animation:draw 1.8s ease .2s both}
+#doneBody .big-result{animation:rise2 .8s ease .35s both}
+@media (prefers-reduced-motion:reduce){
+  #sky i,.orb .ring2,.orb .ring3,.orb .air,.orb .wave,.breeze svg,.flatwave svg,.nextwind svg,.hrbig .beat::after,.ripple{animation:none!important}
+  .view:not([hidden]),.panel[open] .inner,dialog[open],dialog[open]::backdrop,#doneBody .big-result{animation:fadein .3s ease backwards}
+  .play .ln,.play .dt,.play .bar,.play .barv,.stats.play .stat,.settle path{animation:none!important}
+  .settle path{stroke-dasharray:none}
+  .zonemark,#skyTint,.btn,.nextup button,.exrow,.exrow .pip,.exrow .len{transition:none}
+  .exrow:hover .pip,.exrow:hover .len{transform:none}
+  :root{transition:none}
+}
 </style>
 <script defer src="./app-chrome.js" data-app="longbreath" data-keys="longbreath-state-v1" data-zip="longbreath-local.zip"></script>
 </head>
 <body>
+<div id="sky" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i id="skyTint"></i></div>
+<canvas id="wind" aria-hidden="true"></canvas>
 <div class="wrap">
   <header class="top">
     <div class="brand">
@@ -220,6 +315,7 @@ dialog li{margin-bottom:6px}
             </g>
           </g>
           <circle class="ring" r="104"/>
+          <circle class="ring2" r="109"/><circle class="ring3" r="98"/>
         </svg>
         <div class="center"><div class="timer" id="timer">0</div></div>
       </div>
@@ -299,14 +395,15 @@ dialog li{margin-bottom:6px}
 <dialog id="settingsDlg">
   <div class="dbody">
     <h2>Settings</h2>
-    <div class="setrow"><span>Sound cues</span><input type="checkbox" class="toggle" id="setSound"></div>
-    <div class="setrow"><span>Spoken cues (voice)</span><input type="checkbox" class="toggle" id="setVoice"></div>
-    <div class="setrow"><span>Vibration (phones)</span><input type="checkbox" class="toggle" id="setVibe"></div>
-    <div class="setrow"><span>3-second countdown ticks</span><input type="checkbox" class="toggle" id="setTicks"></div>
+    <div class="setrow"><span>Sound cues</span><input type="checkbox" class="toggle" id="setSound" aria-label="Sound cues"></div>
+    <div class="setrow"><span>Wind sound<span class="subl">Soft airflow that follows your breath. Off until you turn it on.</span></span><input type="checkbox" class="toggle" id="setWind" aria-label="Wind sound"></div>
+    <div class="setrow"><span>Spoken cues (voice)</span><input type="checkbox" class="toggle" id="setVoice" aria-label="Spoken cues"></div>
+    <div class="setrow"><span>Vibration (phones)</span><input type="checkbox" class="toggle" id="setVibe" aria-label="Vibration"></div>
+    <div class="setrow"><span>3-second countdown ticks</span><input type="checkbox" class="toggle" id="setTicks" aria-label="Countdown ticks"></div>
     <div class="setrow"><span>Check your sound</span><button class="btn ghost" style="min-width:0;padding:8px 16px" id="testSound" type="button">Play test cue</button></div>
-    <div class="setrow"><span>Theme</span><select id="setTheme"><option value="auto">Match device</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
-    <div class="setrow"><span>Breath-hold personal best (seconds)</span><input class="input" type="number" min="10" max="900" id="setPb"></div>
-    <div class="setrow"><span>Your age (for heart-rate zones)</span><input class="input" type="number" min="10" max="100" id="setAge"></div>
+    <div class="setrow"><span>Theme</span><select id="setTheme" aria-label="Theme"><option value="auto">Match device</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+    <div class="setrow"><span>Breath-hold personal best (seconds)</span><input class="input" type="number" min="10" max="900" id="setPb" aria-label="Breath-hold personal best in seconds"></div>
+    <div class="setrow"><span>Your age (for heart-rate zones)</span><input class="input" type="number" min="10" max="100" id="setAge" aria-label="Your age"></div>
     <div class="setrow"><span>Your data</span><span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
       <button class="btn ghost" style="min-width:0;padding:8px 16px" id="exportData" type="button">Download backup</button>
       <label class="btn ghost" style="min-width:0;padding:8px 16px;cursor:pointer">Import backup<input type="file" id="importData" accept=".json,application/json" hidden></label></span></div>
@@ -328,7 +425,7 @@ const dayKey = t => { const d = new Date(t); return d.getFullYear()+'-'+(d.getMo
 /* ---------------- Data ---------------- */
 const DEFAULT = {
   v:1, updatedAt:0, pb:40, pbHistory:[], sessions:[], hr:[], ack:false,
-  settings:{sound:true, voice:false, vibe:true, ticks:true, theme:'auto', age:''},
+  settings:{sound:true, voice:false, vibe:true, ticks:true, theme:'auto', age:'', wind:false},
   custom:{}
 };
 let S = structuredClone(DEFAULT);
@@ -656,6 +753,7 @@ const exById = id => EX.find(e => e.id === id);
 
 /* ---------------- Tabs ---------------- */
 const VIEWS = ['practice','learn','progress','heart'];
+let playIn = false;
 let currentTab = 'practice';
 function showTab(t){
   if (running) return;
@@ -663,8 +761,11 @@ function showTab(t){
   document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
   VIEWS.forEach(v => $('#v-'+v).hidden = v !== t);
   $('#v-session').hidden = true;
+  playIn = true;
   if (t==='progress') renderProgress();
   if (t==='heart') renderHeart();
+  playIn = false;
+  Wind.screen(t);
   window.scrollTo(0,0);
 }
 document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
@@ -687,13 +788,37 @@ function renderPractice(){
   const ex = exById(sug.id);
   $('#nextup').innerHTML = `<div class="pb">${human(S.pb)}<small>breath-hold personal best</small></div>
     <p><b>Next up: ${esc(ex.name)}.</b> ${esc(sug.why)}</p>
-    <button data-open="${ex.id}">Start ${esc(ex.name)}</button>`;
+    <div class="nextwind" aria-hidden="true"><svg class="live" viewBox="0 0 800 60" preserveAspectRatio="none"><path d="${waveD(9,60)}" stroke-width="1.8" opacity=".5"/><path d="${waveD(6,60)}" transform="translate(50 12)" stroke-width="1.4" opacity=".35"/><path d="${waveD(4,60)}" transform="translate(25 -12)" stroke-width="1.2" opacity=".28"/></svg></div>
+    <button data-open="${ex.id}">Start ${esc(ex.name)}</button>${S.sessions.length ? '' : `<button class="ghostbtn" id="tryBreath" type="button">Try one slow breath</button><p class="trycap" id="tryCap" aria-live="polite"></p>`}`;
   $('#groups').innerHTML = Object.entries(CAT).map(([k,c]) => `
     <section class="group"><h2>${c.name}</h2><p>${c.desc}</p>
     <ul class="exlist">${EX.filter(e=>e.cat===k).map(e => { const lv = levelsFor(e).b; const sec = e.open ? null : estimate(e, lv);
       return `<li><button class="exrow" data-open="${e.id}" style="--c:${c.color}"><span class="pip"></span><span><b>${esc(e.name)}</b><span class="sub">${esc(e.tag)}</span></span><span class="len">${sec ? 'from ' + human(sec) : 'open'}</span></button></li>`; }).join('')}</ul></section>`).join('');
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-open]'); if (b) openExercise(b.dataset.open); });
+/* Wind on touch: a ripple in the row and a ring of wind across the sky. */
+document.addEventListener('pointerdown', e => {
+  if (RM.matches) return;
+  const row = e.target.closest('.exrow');
+  if (row) { const r = row.getBoundingClientRect(), d = document.createElement('span'); d.className = 'ripple'; d.style.left = (e.clientX - r.left) + 'px'; d.style.top = (e.clientY - r.top) + 'px'; row.appendChild(d); d.addEventListener('animationend', () => d.remove()); }
+  if (e.target.closest('.exlist,.nextup,.orb,nav.tabs')) Wind.gust(e.clientX, e.clientY, e.target.closest('.orb') ? .7 : .55);
+});
+/* First run: one slow breath, shown by the wind, before any setup. */
+let tryOn = false;
+document.addEventListener('click', e => {
+  const b = e.target.closest('#tryBreath'); if (!b || tryOn) return;
+  tryOn = true; b.disabled = true;
+  const cap = $('#tryCap'), card = $('#nextup'), live = () => document.contains(cap) && !$('#v-practice').hidden && !running;
+  const seq = [['in', 'Breathe in', 4200], ['hold', 'Hold softly', 1400], ['out', 'Breathe out, slowly', 6000], ['idle', 'That is the whole idea. Pick an exercise below.', 5000]];
+  Wind.demo(card);
+  let i = 0;
+  const next = () => {
+    if (!live()) { tryOn = false; Wind.demo(null); return; }
+    if (i >= seq.length) { tryOn = false; Wind.demo(null); b.disabled = false; return; }
+    const [ty, txt, ms] = seq[i++]; cap.textContent = txt; Wind.phase(ty); setTimeout(next, ms);
+  };
+  next();
+});
 
 /* ---------------- Session setup ---------------- */
 let cur = null, level = 'b', params = {};
@@ -713,6 +838,7 @@ function openExercise(id){
   $('#levelSeg').hidden = !!ex.noLevels;
   renderLevels(); renderFields(); renderGuide(); resetStage();
   window.scrollTo(0,0);
+  Wind.screen('session');
 }
 $('#backBtn').addEventListener('click', () => { if (running && !confirm('Stop this session and go back?')) return; if (running) stopSession(false); showTab(currentTab); renderPractice(); });
 
@@ -768,10 +894,352 @@ function renderGuide(){
 
 /* ---------------- Orb ---------------- */
 const waterG = $('#waterG');
-function setFill(f){ const y = 100 - f*200; waterG.setAttribute('transform', `translate(0 ${y.toFixed(2)})`); }
+function setFill(f){ const y = 100 - f*200; waterG.setAttribute('transform', `translate(0 ${y.toFixed(2)})`); Orb.level(f); Wind.level(f); }
 const PHASECOL = {in:'var(--in)', hold:'var(--hold)', out:'var(--out)', hold2:'var(--out)', rest:'var(--rest)', apnea:'var(--hold)'};
 function setPhaseColor(t){ document.documentElement.style.setProperty('--phase', PHASECOL[t] || 'var(--in)'); }
 const ease = x => 0.5 - 0.5*Math.cos(Math.PI*x);
+
+/* ---------------- Wind: sky, streaks, orb air, breath sound ---------------- */
+const RM = matchMedia('(prefers-reduced-motion: reduce)');
+const root = document.documentElement;
+const orbEl = $('.orb');
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const smooth = x => { x = clamp01(x); return x * x * (3 - 2 * x); };
+
+/* The orb: layers of air ribbons that ride the breath level. */
+const Orb = (() => {
+  const NS = 'http://www.w3.org/2000/svg', g = $('#waterG');
+  const wave = a => { let d = `M-400 0 Q-350 ${-a} -300 0`; for (let x = -200; x <= 400; x += 100) d += ` T${x} 0`; return d; };
+  const defs = [{y:10,a:7,w:1.7,o:.6,d:5.5}, {y:30,a:9,w:1.2,o:.45,d:8}, {y:54,a:5,w:2,o:.35,d:6.5}, {y:-13,a:4,w:1.3,o:.6,d:4.2}];
+  const items = defs.map(df => {
+    const gg = document.createElementNS(NS, 'g'), p = document.createElementNS(NS, 'path');
+    gg.setAttribute('transform', `translate(0 ${df.y})`);
+    p.setAttribute('d', wave(df.a)); p.setAttribute('class', 'air live');
+    p.style.strokeWidth = df.w; p.style.opacity = df.o; p.style.animationDuration = df.d + 's'; p.style.animationDelay = (-Math.random() * df.d).toFixed(2) + 's';
+    gg.appendChild(p); g.appendChild(gg);
+    return {p, v: 200 / df.d, off: Math.random() * 200};
+  });
+  const water = {p: g.querySelector('.wave'), v: 40, off: 0};
+  water.p.classList.add('live');
+  const all = items.concat(water); let lastLv = 0, lastLf = 0;
+  return {
+    drive(dt, flow){ all.forEach(it => { it.off = (it.off + it.v * flow * dt) % 200; it.p.style.transform = `translateX(${(-it.off).toFixed(1)}px)`; }); },
+    on(v){ orbEl.classList.toggle('drive', v); },
+    level(f){ const n = performance.now(); if (n - lastLv < 30 && Math.abs(f - lastLf) < .05) return; lastLv = n; lastLf = f; orbEl.style.setProperty('--f', f.toFixed(3)); }
+  };
+})();
+
+/* The wind: one capped canvas behind the app. */
+const Wind = (() => {
+  const cv = $('#wind'), ctx = cv.getContext && cv.getContext('2d');
+  const noop = () => {};
+  if (!ctx) return {screen:noop, phase:noop, level:noop, live:noop, hold:noop, end:noop, gust:noop, demo:noop, refresh:noop, wake:noop};
+  const MODE = {
+    idle:{g:0,o:0,s:0,gl:0}, prep:{g:0,o:0,s:.15,gl:.2}, in:{g:1,o:0,s:0,gl:0}, out:{g:0,o:1,s:0,gl:0},
+    hold:{g:0,o:0,s:.92,gl:.8}, hold2:{g:0,o:0,s:.92,gl:.8}, apnea:{g:0,o:0,s:1,gl:1}, rest:{g:0,o:0,s:.1,gl:.1}, still:{g:0,o:0,s:.7,gl:.5}
+  };
+  const PCOL = {in:'in', hold:'hold', out:'out', hold2:'out', rest:'rest', apnea:'hold', prep:'rest', idle:'in', still:'rest'};
+  const TL = 22;
+  let W = 0, H = 0, dpr = 1, P = [];
+  let tgt = {...MODE.idle}, cur = {...MODE.idle}, type = 'idle', isLive = false, held = false, demoEl = null, ambK = .85;
+  let raf = 0, lastDraw = 0, t = 0, activeUntil = 0, pal = {}, dark = false, rgb = [43,133,122], rgbT = [43,133,122];
+  let focus = null, textR = null, geomDirty = true, fvs = 0, lastF = null, lastFt = 0, settleT = 0, staticT = 0;
+  const gusts = [], ptr = {x:-999, y:-999, vx:0, vy:0, t:0}, tv = {x:0, y:0};
+
+  const hex = v => { const m = /^#([0-9a-f]{6})$/i.exec((v || '').trim()); return m ? [parseInt(m[1].slice(0,2),16), parseInt(m[1].slice(2,4),16), parseInt(m[1].slice(4,6),16)] : null; };
+  function readPalette(){
+    const cs = getComputedStyle(root);
+    ['in','hold','out','rest'].forEach(k => pal[k] = hex(cs.getPropertyValue('--' + k)) || [43,133,122]);
+    const bg = hex(cs.getPropertyValue('--bg')) || [228,236,234];
+    dark = (bg[0]*.3 + bg[1]*.59 + bg[2]*.11) < 110;
+    rgbT = pal[PCOL[type] || 'in'];
+  }
+  function tod(){ // morning and evening tint, 0 at midday and night
+    const h = new Date().getHours() + new Date().getMinutes() / 60;
+    const w = Math.max(0, 1 - Math.abs(h - 7) / 2.5, 1 - Math.abs(h - 18.5) / 2.5);
+    root.style.setProperty('--warm', (w * .5).toFixed(2));
+  }
+
+  function geom(){
+    geomDirty = false; focus = null; textR = null;
+    if (demoEl && document.contains(demoEl)) { const r = demoEl.getBoundingClientRect(); focus = {x:r.left + r.width/2, y:r.top + r.height/2, r:18}; return; }
+    if ($('#v-session').hidden) return;
+    const r = orbEl.getBoundingClientRect();
+    focus = {x:r.left + r.width/2, y:r.top + r.height/2, r:r.width/2 * (104/110)};
+    textR = [];
+    [['#phase', '#hint', '.meta'], ['#sTitle', '#sTag'], ['#levelSeg'], ['.controls']].forEach(grp => {
+      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+      grp.forEach(sel => { const b = $(sel).getBoundingClientRect(); if (b.height) { x0 = Math.min(x0, b.left); y0 = Math.min(y0, b.top); x1 = Math.max(x1, b.right); y1 = Math.max(y1, b.bottom); } });
+      if (x1 > x0) textR.push({x0:x0 - 10, y0:y0 - 8, x1:x1 + 10, y1:y1 + 8});
+    });
+  }
+
+  function respawn(p, how){
+    how = how || (tgt.g > .35 ? 'in' : tgt.o > .35 ? 'out' : 'idle');
+    p.tx.length = 0; p.ty.length = 0; p.vx = p.vy = 0; p.fade = 0; p.grace = 3.5;
+    const F = focus;
+    if (how === 'init') { p.x = Math.random() * W; p.y = Math.random() * H; p.fade = 1; p.grace = 0; return; }
+    if (F && how === 'in') { const a = Math.random() * 6.283, d = Math.max(W, H) * (.42 + Math.random() * .25); p.x = F.x + Math.cos(a) * d; p.y = F.y + Math.sin(a) * d * .8; }
+    else if (F && how === 'out') { const a = Math.random() * 6.283, d = F.r * (.9 + Math.random() * .1); p.x = F.x + Math.cos(a) * d; p.y = F.y + Math.sin(a) * d; p.grace = 6; }
+    else { p.x = -40 - Math.random() * 80; p.y = Math.random() * H; p.grace = 0; }
+  }
+  function mk(k){ const p = {k, z:.45 + Math.random() * .55, a:.45 + Math.random() * .55, ph:Math.random() * 6.283, x:0, y:0, vx:0, vy:0, tx:[], ty:[], fade:1, grace:0}; respawn(p, 'init'); return p; }
+
+  function resize(){
+    W = innerWidth; H = innerHeight;
+    dpr = Math.max(.5, Math.min(devicePixelRatio || 1, 2, Math.sqrt(6e5 / (W * H))));
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const area = W * H, ns = Math.max(24, Math.min(96, Math.round(area / 12500))), nd = Math.max(8, Math.min(40, Math.round(area / 30000)));
+    const have = k => P.filter(p => p.k === k), want = {0:ns, 1:Math.round(nd * .65), 2:Math.round(nd * .35)};
+    P = P.filter(p => { want[p.k]--; return want[p.k] >= 0; });
+    [0,1,2].forEach(k => { while (want[k]-- > 0) P.push(mk(k)); });
+    geomDirty = true;
+  }
+
+  function field(p, o){
+    const z = p.z; let vx = (36 + 24 * Math.sin(p.y * .008 + t * .35 + p.ph)) * z, vy = 24 * Math.sin(p.x * .006 + t * .45 + p.ph * 2) * z;
+    if (p.k) vy += 14 * Math.sin(t * 1.6 + p.ph * 3);
+    const calm = 1 - cur.s * .93; vx *= calm; vy *= calm;
+    const F = focus;
+    if (F && (cur.g > .01 || cur.o > .01)) {
+      const dx = F.x - p.x, dy = F.y - p.y, r = Math.hypot(dx, dy) || 1, ux = dx / r, uy = dy / r, m = p.k ? .7 : 1;
+      if (cur.g > .01) { const s = (55 + Math.min(r, 520) * .4) * cur.g * z * m; const c = 42 * cur.g * z * smooth(r / 220); vx += ux * s - uy * c; vy += uy * s + ux * c - 10 * cur.g; }
+      if (cur.o > .01) { const s = (60 + Math.min(r, 520) * .5) * cur.o * z * m, c = 46 * cur.o * z * (p.ph > 3.14 ? 1 : -1) * smooth(r / 220); vx -= ux * s - uy * c; vy -= uy * s + ux * c; }
+    }
+    o.x = vx; o.y = vy;
+  }
+
+  function step(dt, amb){
+    const k = 1 - Math.exp(-dt * 1.6);
+    for (const key in cur) cur[key] += (tgt[key] - cur[key]) * k;
+    for (let i = 0; i < 3; i++) rgb[i] += (rgbT[i] - rgb[i]) * k;
+    const pk = performance.now() - ptr.t < 120;
+    for (let i = gusts.length - 1; i >= 0; i--) if (t - gusts[i].t0 > gusts[i].life) gusts.splice(i, 1);
+    for (const p of P) {
+      field(p, tv);
+      const e = Math.min(1, dt * 2.4);
+      p.vx += (tv.x * amb - p.vx) * e; p.vy += (tv.y * amb - p.vy) * e;
+      if (pk) { const dx = p.x - ptr.x, dy = p.y - ptr.y, d2 = dx*dx + dy*dy; if (d2 < 22500) { const f = 1 - Math.sqrt(d2) / 150; p.vx += ptr.vx * f * f * dt * 3; p.vy += ptr.vy * f * f * dt * 3; } }
+      for (const g of gusts) {
+        const age = t - g.t0, rg = age * 340, dx = p.x - g.x, dy = p.y - g.y, d = Math.hypot(dx, dy) || 1, w = Math.abs(d - rg);
+        if (w < 50) { const f = (1 - w / 50) * (1 - age / g.life) * g.s * dt * 700 * p.z; p.vx += dx / d * f; p.vy += dy / d * f; }
+      }
+      p.x += p.vx * dt; p.y += p.vy * dt; p.fade = Math.min(1, p.fade + dt * 1.1); if (p.grace > 0) p.grace -= dt;
+      if (!p.k) {
+        const n = p.tx.length;
+        if (!n || (p.x - p.tx[n-1]) ** 2 + (p.y - p.ty[n-1]) ** 2 > 36) { p.tx.push(p.x); p.ty.push(p.y); if (p.tx.length > TL) { p.tx.shift(); p.ty.shift(); } }
+      }
+      if (p.grace <= 0 && cur.s < .8 && (p.x < -90 || p.x > W + 90 || p.y < -90 || p.y > H + 90)) respawn(p);
+      else if (focus && cur.g > .3 && Math.hypot(p.x - focus.x, p.y - focus.y) < focus.r * .5) respawn(p);
+    }
+  }
+
+  function dimAt(p){
+    let f = 1;
+    if (focus) { const r = Math.hypot(p.x - focus.x, p.y - focus.y); f *= smooth((r - focus.r * .5) / (focus.r * .55)); }
+    if (textR && isLive) for (const q of textR) { const dx = Math.max(q.x0 - p.x, 0, p.x - q.x1), dy = Math.max(q.y0 - p.y, 0, p.y - q.y1); f *= .2 + .8 * smooth(Math.hypot(dx, dy) / 48); }
+    return f;
+  }
+
+  function draw(still){
+    ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = ctx.fillStyle = `rgb(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0})`;
+    ctx.lineCap = 'round';
+    const base = (dark ? .54 : .52) * ambK;
+    for (const p of P) {
+      const glim = 1 + cur.gl * (p.k ? .9 : .5) * Math.sin(t * 2.4 + p.ph * 3);
+      const A = base * p.a * p.fade * glim * dimAt(p);
+      if (A < .012) continue;
+      if (p.k === 0) {
+        const n = p.tx.length; if (n < 2) continue;
+        ctx.lineWidth = .7 + 1.3 * p.z;
+        for (let c = 0; c < 2; c++) {
+          const i0 = Math.floor(c * (n - 1) / 2), i1 = Math.floor((c + 1) * (n - 1) / 2);
+          if (i1 <= i0) continue;
+          ctx.globalAlpha = Math.min(1, A) * [.35, 1][c];
+          ctx.beginPath(); ctx.moveTo(p.tx[i0], p.ty[i0]);
+          for (let i = i0 + 1; i <= i1; i++) ctx.lineTo(p.tx[i], p.ty[i]);
+          ctx.stroke();
+        }
+      } else if (p.k === 1) {
+        const r = .8 + 1.4 * p.z;
+        if (dark) { ctx.globalAlpha = Math.min(1, A) * .18; ctx.beginPath(); ctx.arc(p.x, p.y, r * 3.2, 0, 6.283); ctx.fill(); }
+        ctx.globalAlpha = Math.min(1, A * 1.1); ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
+      } else {
+        ctx.globalAlpha = Math.min(1, A * .9); ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx) + Math.sin(t + p.ph) * .5);
+        ctx.beginPath(); ctx.ellipse(0, 0, 3.4 * p.z + 1, 1.5 * p.z + .5, 0, 0, 6.283); ctx.fill(); ctx.restore();
+      }
+    }
+    // rings of wind from a tap
+    ctx.setLineDash([22, 18]); ctx.lineWidth = 1.4;
+    for (const g of gusts) {
+      const age = t - g.t0, a = (1 - age / g.life) * .32 * g.s * (dark ? 1.2 : 1);
+      if (a <= .01) continue;
+      ctx.globalAlpha = a; ctx.lineDashOffset = -age * 60; ctx.beginPath(); ctx.arc(g.x, g.y, age * 340, 0, 6.283); ctx.stroke();
+    }
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+  }
+
+  function loop(){
+    raf = 0;
+    if (document.hidden || RM.matches) return;
+    const now = performance.now(), cont = (isLive && !held) || !!demoEl;
+    if (lastDraw && now - lastDraw < 28) { raf = requestAnimationFrame(loop); return; }
+    const dt = lastDraw ? Math.min(.05, Math.max(.001, (now - lastDraw) / 1000)) : 1/60;
+    lastDraw = now;
+    if (geomDirty) geom();
+    const amb = cont ? 1 : clamp01((activeUntil + 3000 - now) / 3000);
+    t += dt; step(dt, amb); draw();
+    if (isLive) Orb.drive(dt, .06 + (.2 + .75 * Math.max(cur.g, cur.o)) * (1 - cur.s));
+    if (!cont && now > activeUntil + 3000) { lastDraw = 0; return; }
+    raf = requestAnimationFrame(loop);
+  }
+  function ensure(){
+    if (RM.matches) { staticSoon(0); return; }
+    if (!raf && !document.hidden) raf = requestAnimationFrame(loop);
+  }
+  function wake(ms){ activeUntil = Math.max(activeUntil, performance.now() + (ms || 9000)); ensure(); }
+
+  /* Reduced motion: no loop. A still picture of the wind, redrawn with a fade when the phase changes. */
+  function drawStatic(){
+    if (geomDirty) geom();
+    Object.assign(cur, tgt); rgb = rgbT.slice();
+    ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = ctx.fillStyle = `rgb(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0})`; ctx.lineCap = 'round';
+    const base = (dark ? .6 : .46) * ambK;
+    for (const p of P) {
+      const A = base * p.a * dimAt(p); if (A < .012) continue;
+      field(p, tv); const sp = Math.hypot(tv.x, tv.y), ux = sp > 1 ? tv.x / sp : 1, uy = sp > 1 ? tv.y / sp : 0;
+      if (p.k === 0) { const L = 26 + Math.min(60, sp * .5); ctx.lineWidth = .7 + 1.3 * p.z; ctx.globalAlpha = Math.min(1, A) * .45; ctx.beginPath(); ctx.moveTo(p.x - ux * L, p.y - uy * L); ctx.lineTo(p.x - ux * L * .4, p.y - uy * L * .4); ctx.stroke(); ctx.globalAlpha = Math.min(1, A); ctx.beginPath(); ctx.moveTo(p.x - ux * L * .4, p.y - uy * L * .4); ctx.lineTo(p.x, p.y); ctx.stroke(); }
+      else { ctx.globalAlpha = Math.min(1, A); ctx.beginPath(); ctx.arc(p.x, p.y, .8 + 1.4 * p.z, 0, 6.283); ctx.fill(); }
+    }
+    ctx.globalAlpha = 1;
+  }
+  function staticSoon(delay){
+    if (!RM.matches) return;
+    clearTimeout(staticT);
+    if (delay === 0) { drawStatic(); return; }
+    cv.style.opacity = 0;
+    staticT = setTimeout(() => { drawStatic(); cv.style.opacity = 1; }, delay || 300);
+  }
+
+  function setType(ty){
+    const was = cur.s > .5 || tgt.s > .5;
+    type = ty; tgt = {...(MODE[ty] || MODE.idle)}; rgbT = pal[PCOL[ty] || 'in']; geomDirty = true;
+    if (RM.matches) { staticSoon(); return; }
+    if (focus || !$('#v-session').hidden || demoEl) {
+      if (geomDirty) geom();
+      if (ty === 'in') P.forEach(p => { if (Math.random() < .55) respawn(p, 'in'); });
+      else if (ty === 'out') { P.forEach(p => { if (Math.random() < .7) respawn(p, 'out'); }); }
+      if (was && tgt.s < .5 && focus) api.gust(focus.x, focus.y, .9, 1.8);
+    }
+    wake(2500);
+  }
+
+  const api = {
+    screen(name){ ambK = name === 'practice' ? .8 : name === 'session' ? 1 : .36; geomDirty = true; if (RM.matches) staticSoon(); else wake(9000); },
+    phase(ty){ setType(ty); },
+    level(f){
+      const n = performance.now();
+      if (lastF !== null) { const dt = (n - lastFt) / 1000; if (dt > .001 && dt < .5) fvs += ((f - lastF) / dt - fvs) * .15; }
+      lastF = f; lastFt = n;
+      if ((type === 'rest' || type === 'prep') && !held) { tgt.g = clamp01(fvs / .06) * .7; tgt.o = clamp01(-fvs / .06) * .7; }
+    },
+    live(on){
+      isLive = on; held = false; lastF = null; fvs = 0; clearTimeout(settleT); geomDirty = true; Orb.on(on);
+      if (on) { document.body.classList.add('live'); wake(1000); } else { document.body.classList.remove('live'); activeUntil = performance.now() + 4000; ensure(); }
+    },
+    hold(on){
+      held = on;
+      if (on) { tgt = {...MODE.still, s:1}; activeUntil = performance.now() + 4000; ensure(); if (RM.matches) staticSoon(); }
+      else setType(type);
+    },
+    end(){
+      geomDirty = true; if (geomDirty) geom();
+      tgt = {...MODE.still}; rgbT = pal.rest; type = 'still';
+      if (focus && !RM.matches) api.gust(focus.x, focus.y, .6, 2.2);
+      clearTimeout(settleT); settleT = setTimeout(() => { if (!isLive) { type = 'idle'; tgt = {...MODE.idle}; rgbT = pal.in; if (RM.matches) staticSoon(); else wake(1500); } }, 2600);
+      activeUntil = performance.now() + 5000; ensure(); if (RM.matches) staticSoon();
+    },
+    gust(x, y, s, life){ if (RM.matches) return; gusts.push({x, y, t0:t, s:s || .6, life:life || 1.4}); wake((life || 1.4) * 1000 + 1500); },
+    gustEl(el, s){ const r = el.getBoundingClientRect(); api.gust(r.left + r.width/2, r.top + r.height/2, s); },
+    demo(el){ demoEl = el; geomDirty = true; if (!el) { activeUntil = performance.now() + 3000; } wake(3000); if (RM.matches) staticSoon(); },
+    refresh(){ readPalette(); rgb = rgbT.slice(); geomDirty = true; if (RM.matches) staticSoon(0); else wake(4000); },
+    wake
+  };
+
+  readPalette(); tod(); resize(); rgb = rgbT.slice();
+  for (let i = 0; i < 150; i++) { t += .04; step(.04, 1); }
+  let rsT = 0;
+  addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(() => { resize(); if (RM.matches) staticSoon(0); else wake(4000); }, 150); });
+  addEventListener('scroll', () => { geomDirty = true; if (!RM.matches) wake(3000); }, {passive:true});
+  addEventListener('pointermove', e => {
+    if (RM.matches) return;
+    const n = performance.now(), dt = (n - ptr.t) / 1000;
+    if (dt > 0 && dt < .2) { const c = v => Math.max(-1100, Math.min(1100, v)); ptr.vx += (c((e.clientX - ptr.x) / dt) - ptr.vx) * .35; ptr.vy += (c((e.clientY - ptr.y) / dt) - ptr.vy) * .35; }
+    ptr.x = e.clientX; ptr.y = e.clientY; ptr.t = n; wake(7000);
+  }, {passive:true});
+  document.addEventListener('visibilitychange', () => {
+    root.classList.toggle('vhid', document.hidden);
+    if (document.hidden) { cancelAnimationFrame(raf); raf = 0; lastDraw = 0; } else { tod(); if (!RM.matches) wake(2000); }
+  });
+  const onRM = () => { if (RM.matches) { cancelAnimationFrame(raf); raf = 0; staticSoon(0); } else { cv.style.opacity = 1; wake(4000); } };
+  RM.addEventListener ? RM.addEventListener('change', onRM) : RM.addListener(onRM);
+  const mqd = matchMedia('(prefers-color-scheme: dark)');
+  mqd.addEventListener ? mqd.addEventListener('change', () => api.refresh()) : 0;
+  setInterval(tod, 600000);
+  if (RM.matches) staticSoon(0); else wake(12000);
+  return api;
+})();
+
+/* Breath sound: filtered noise that follows the phase. Off until the owner of the device turns it on. */
+const WindSound = (() => {
+  let n = null;
+  function noise(a){
+    const sr = a.sampleRate, L = Math.floor(sr * 4), X = Math.floor(sr * .3), raw = new Float32Array(L + X);
+    let last = 0; for (let i = 0; i < raw.length; i++) { last = last * .94 + (Math.random() * 2 - 1) * .06; raw[i] = last * 3; }
+    const b = a.createBuffer(1, L, sr), d = b.getChannelData(0);
+    for (let i = 0; i < L; i++) d[i] = raw[X + i];
+    for (let i = 0; i < X; i++) { const w = i / X; d[i] = raw[X + i] * Math.sqrt(w) + raw[i] * Math.sqrt(1 - w); }
+    return b;
+  }
+  function start(){
+    if (!S.settings.wind || n) return;
+    const a = audio(); if (!a || !a.createBiquadFilter) return;
+    const src = a.createBufferSource(); src.buffer = noise(a); src.loop = true;
+    const bp = a.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 400; bp.Q.value = .6;
+    const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1600;
+    const g = a.createGain(); g.gain.value = 0;
+    const lfo = a.createOscillator(), lg = a.createGain(); lfo.frequency.value = .13; lg.gain.value = 90; lfo.connect(lg).connect(bp.frequency);
+    src.connect(bp).connect(lp).connect(g).connect(a.destination);
+    src.start(); lfo.start(); n = {a, src, bp, g, lfo};
+  }
+  function ramp(param, to, dur){ const t = n.a.currentTime; param.cancelScheduledValues(t); param.setValueAtTime(param.value, t); param.linearRampToValueAtTime(to, t + Math.max(.2, dur)); }
+  const SHAPE = {in:[260, 900, .02, .07], out:[900, 260, .07, .014], hold:[500, 500, .012, .012], hold2:[300, 300, .01, .01], apnea:[300, 300, .006, .003], rest:[420, 520, .03, .03], prep:[300, 300, .01, .02]};
+  return {
+    start,
+    phase(ty, dur){
+      if (!n) return; const sh = SHAPE[ty] || SHAPE.rest, d = isFinite(dur) ? dur : 4;
+      const t = n.a.currentTime;
+      n.bp.frequency.cancelScheduledValues(t); n.bp.frequency.setValueAtTime(n.bp.frequency.value, t); n.bp.frequency.linearRampToValueAtTime(sh[0], t + .4); n.bp.frequency.linearRampToValueAtTime(sh[1], t + .4 + d);
+      n.g.gain.cancelScheduledValues(t); n.g.gain.setValueAtTime(n.g.gain.value, t); n.g.gain.linearRampToValueAtTime(sh[2], t + .4); n.g.gain.linearRampToValueAtTime(sh[3], t + .4 + d);
+    },
+    hush(){ if (n) ramp(n.g.gain, .002, .6); },
+    stop(){
+      if (!n) return; const m = n; n = null; const t = m.a.currentTime;
+      m.g.gain.cancelScheduledValues(t); m.g.gain.setValueAtTime(m.g.gain.value, t); m.g.gain.linearRampToValueAtTime(0, t + .8);
+      setTimeout(() => { try { m.src.stop(); m.lfo.stop(); m.src.disconnect(); m.g.disconnect(); } catch(e){} }, 1000);
+    },
+    on(){ return !!n; }
+  };
+})();
+
+/* Pause animations that are scrolled out of view. */
+const liveIO = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => e.target.style.setProperty('--ps', e.isIntersecting ? 'running' : 'paused'))) : null;
+function watchLive(rootEl){ if (liveIO) (rootEl || document).querySelectorAll('.live').forEach(el => liveIO.observe(el)); }
+const waveD = (a, w) => { let d = `M0 ${w/2}`; for (let x = 0; x < 800; x += 100) d += ` q25 ${-a} 50 0 t50 0`; return d; };
+const breezeSvg = () => `<div class="breeze" aria-hidden="true"><svg class="live" viewBox="0 0 800 22" preserveAspectRatio="none"><path d="${waveD(7, 22)}" stroke-width="1.6" opacity=".55"/><path d="${waveD(4, 22)}" transform="translate(50 5)" stroke-width="1.2" opacity=".35"/></svg></div>`;
+const flatWave = () => `<div class="flatwave" aria-hidden="true"><svg class="live" viewBox="0 0 800 26" preserveAspectRatio="none"><path d="${waveD(2.5, 26)}"/></svg></div>`;
 
 /* ---------------- Audio / voice / vibe ---------------- */
 let actx = null;
@@ -813,6 +1281,7 @@ function resetStage(){
   $('#totalInfo').textContent = cur.open ? '' : human(estimate(cur, params)) + ' total';
   $('#nextInfo').textContent = '';
   setPhaseColor('in'); setFill(cur.hold ? .5 : .15);
+  if (!running) Wind.phase('idle');
   $('#startBtn').textContent = 'Start'; $('#startBtn').hidden = false;
   $('#stopBtn').hidden = true; $('#breathedBtn').hidden = true; $('#contractionBtn').hidden = true;
 }
@@ -829,6 +1298,8 @@ function startSession(){
   document.body.classList.add('focus');
   $('.stage').scrollIntoView({block:'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
   keepAwake(true);
+  Wind.live(true); WindSound.start();
+  if (orbEl) Wind.gustEl(orbEl, .7);
   beginStep(performance.now(), false);
   raf = requestAnimationFrame(frame);
   clearInterval(bgTimer); bgTimer = setInterval(update, 200);
@@ -844,6 +1315,7 @@ function beginStep(startAt, silent){
   const nx = steps[idx+1];
   $('#nextInfo').textContent = nx ? 'Next: ' + nx.label.toLowerCase() + (isFinite(nx.dur) ? ', ' + human(nx.dur) : '') : 'Last step';
   const isApnea = s.type === 'apnea';
+  Wind.phase(s.type); WindSound.phase(s.type, s.dur);
   $('#breathedBtn').hidden = !isApnea;
   $('#contractionBtn').hidden = !isApnea; $('#contractionBtn').disabled = false; $('#contractionBtn').textContent = 'Contraction';
   $('#startBtn').hidden = isApnea;
@@ -902,8 +1374,8 @@ function endStepEarly(){
 function togglePause(){
   if (!running) return startSession();
   paused = !paused;
-  if (paused) { pausedAt = performance.now(); $('#startBtn').textContent = 'Resume'; $('#phase').textContent = 'Paused'; $('#hint').textContent = 'Breathe normally. Resume when ready.'; keepAwake(false); if ('speechSynthesis' in window) speechSynthesis.cancel(); }
-  else { const d = performance.now() - pausedAt; stepStart += d; pausedTotal += d; $('#startBtn').textContent = 'Pause'; $('#phase').textContent = steps[idx].label; $('#hint').textContent = steps[idx].hint || ''; keepAwake(true); }
+  if (paused) { pausedAt = performance.now(); $('#startBtn').textContent = 'Resume'; $('#phase').textContent = 'Paused'; $('#hint').textContent = 'Breathe normally. Resume when ready.'; keepAwake(false); Wind.hold(true); WindSound.hush(); if ('speechSynthesis' in window) speechSynthesis.cancel(); }
+  else { const d = performance.now() - pausedAt; stepStart += d; pausedTotal += d; $('#startBtn').textContent = 'Pause'; $('#phase').textContent = steps[idx].label; $('#hint').textContent = steps[idx].hint || ''; keepAwake(true); Wind.hold(false); WindSound.phase(steps[idx].type, steps[idx].dur - (performance.now()-stepStart)/1000); }
 }
 function stopSession(silent){
   if (!running) return;
@@ -911,6 +1383,7 @@ function stopSession(silent){
 }
 function finishSession(stopped, silent){
   running = false; paused = false; cancelAnimationFrame(raf); clearInterval(bgTimer); keepAwake(false); document.body.classList.remove('focus');
+  Wind.live(false); WindSound.stop();
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   document.querySelectorAll('#fields input, #fields button, #levelSeg button').forEach(el => el.disabled = false);
   const secs = ((sessionEndAt ?? performance.now()) - sessionStart - pausedTotal)/1000; sessionEndAt = null;
@@ -926,6 +1399,7 @@ function finishSession(stopped, silent){
   }
   if (!stopped) tone(523,523,.2,.1), tone(659,659,.2,.1,'sine',.2), tone(784,784,.4,.1,'sine',.4);
   resetStage(); renderPractice();
+  Wind.end(stopped);
   if (silent) return;
   if (secs < 20 && stopped) { toast('Stopped. Sessions under 20 seconds aren\u2019t saved.'); return; }
   let body = `<h2>${stopped ? 'Session stopped' : 'Session complete'}</h2>`;
@@ -938,13 +1412,16 @@ function finishSession(stopped, silent){
     if (holdLog.length) { const early = holdLog.filter(h=>h.early).length; body += `<p>${holdLog.length} holds completed${early ? `, ${early} ended early` : ''}. ${early === 0 ? 'All holds done. If it felt controlled, add 5 seconds next session.' : early === 1 ? 'One early finish is fine. Repeat this level next time.' : 'Lower the hold by 5 seconds next time so every round feels controlled.'}</p>`; }
   }
   if (cur.hold) body += `<p class="note">Rest from breath-hold tables tomorrow. A calm breathing session is ideal on rest days.</p>`;
-  $('#doneBody').innerHTML = body; $('#doneDlg').showModal();
+  if (!stopped) body = `<svg class="settle" viewBox="0 0 240 30" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M0 15 C30 3 50 27 80 15 S130 3 160 15 S210 27 240 15"/></svg>` + body;
+  $('#doneBody').innerHTML = body;
+  const openDone = () => { if (!running && !$('#doneDlg').open) $('#doneDlg').showModal(); };
+  if (!stopped && !RM.matches) setTimeout(openDone, 1400); else openDone();
 }
 $('#doneOk').addEventListener('click', () => $('#doneDlg').close());
 $('#startBtn').addEventListener('click', togglePause);
 $('#stopBtn').addEventListener('click', () => stopSession(false));
 $('#breathedBtn').addEventListener('click', () => { if (!running || paused) return; const s = steps[idx]; if (s.type!=='apnea') return; endStepEarly(); });
-$('#contractionBtn').addEventListener('click', () => { if (!running || contraction !== null) return; contraction = (performance.now()-stepStart)/1000; $('#contractionBtn').textContent = 'First at ' + clock(contraction); $('#contractionBtn').disabled = true; });
+$('#contractionBtn').addEventListener('click', () => { if (!running || contraction !== null) return; contraction = (performance.now()-stepStart)/1000; $('#contractionBtn').textContent = 'First at ' + clock(contraction); $('#contractionBtn').disabled = true; Wind.gustEl(orbEl, .35); });
 document.addEventListener('keydown', e => { if ($('#v-session').hidden || document.querySelector('dialog[open]')) return; if (e.code==='Space' && e.target.tagName!=='INPUT' && e.target.tagName!=='BUTTON') { e.preventDefault(); if (running && steps[idx]?.type==='apnea') $('#breathedBtn').click(); else togglePause(); } });
 
 /* ---------------- Safety dialog ---------------- */
@@ -968,9 +1445,9 @@ function lineChart(pts, opt){
   let bands = '';
   (opt.bands||[]).forEach(b => { const a = Math.max(y0,b.from), c = Math.min(y1,b.to); if (c>a) bands += `<rect x="${P.l}" width="${W-P.l-P.r}" y="${Y(c)}" height="${Y(a)-Y(c)}" fill="${b.color}" opacity=".12"/>`; });
   const d = pts.map((p,i)=>(i?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)).join(' ');
-  const dots = pts.map(p=>`<circle cx="${X(p.t)}" cy="${Y(p.v)}" r="4" fill="${opt.color}"><title>${new Date(p.t).toLocaleDateString()}: ${opt.fmt?opt.fmt(p.v):p.v}</title></circle>`).join('');
+  const dots = pts.map((p,i)=>`<circle class="dt" style="--i:${i}" cx="${X(p.t)}" cy="${Y(p.v)}" r="4" fill="${opt.color}"><title>${new Date(p.t).toLocaleDateString()}: ${opt.fmt?opt.fmt(p.v):p.v}</title></circle>`).join('');
   const fd = t => new Date(t).toLocaleDateString(undefined,{month:'short',day:'numeric'});
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label)}">${bands}${grid}<path d="${d}" fill="none" stroke="${opt.color}" stroke-width="3" stroke-linejoin="round"/>${dots}
+  return `<svg${playIn?' class="play"':''} viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label)}">${bands}${grid}<path class="ln" pathLength="1" d="${d}" fill="none" stroke="${opt.color}" stroke-width="3" stroke-linejoin="round"/>${dots}
     <text x="${P.l}" y="${H-6}" font-size="12" fill="var(--muted)">${fd(x0)}</text><text x="${W-P.r}" y="${H-6}" font-size="12" text-anchor="end" fill="var(--muted)">${fd(x1)}</text></svg>`;
 }
 function barChart(vals, labels, opt){
@@ -978,10 +1455,10 @@ function barChart(vals, labels, opt){
   const max = Math.max(10, ...vals), bw = (W-P.l-P.r)/n;
   const Y = v => H - P.b - v/max*(H-P.t-P.b);
   let s = `<line x1="${P.l}" x2="${W-P.r}" y1="${H-P.b}" y2="${H-P.b}" stroke="var(--line)"/>`;
-  vals.forEach((v,i) => { s += `<rect x="${P.l+i*bw+bw*.18}" width="${bw*.64}" y="${Y(v)}" height="${H-P.b-Y(v)}" rx="4" fill="${opt.color}"><title>${labels[i]}: ${v} min</title></rect>`;
-    if (v) s += `<text x="${P.l+i*bw+bw/2}" y="${Y(v)-4}" font-size="11" text-anchor="middle" fill="var(--muted)">${v}</text>`;
+  vals.forEach((v,i) => { s += `<rect class="bar" style="--i:${i}" x="${P.l+i*bw+bw*.18}" width="${bw*.64}" y="${Y(v)}" height="${H-P.b-Y(v)}" rx="4" fill="${opt.color}"><title>${labels[i]}: ${v} min</title></rect>`;
+    if (v) s += `<text class="barv" style="--i:${i}" x="${P.l+i*bw+bw/2}" y="${Y(v)-4}" font-size="11" text-anchor="middle" fill="var(--muted)">${v}</text>`;
     s += `<text x="${P.l+i*bw+bw/2}" y="${H-8}" font-size="11" text-anchor="middle" fill="var(--muted)">${labels[i]}</text>`; });
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label)}">${s}</svg>`;
+  return `<svg${playIn?' class="play"':''} viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label)}">${s}</svg>`;
 }
 
 /* ---------------- Progress ---------------- */
@@ -1002,17 +1479,18 @@ function renderProgress(){
   for (let i=7;i>=0;i--){ const a = now-(i+1)*wk, b = now-i*wk; weeks.push(Math.round(S.sessions.filter(s=>s.t>a&&s.t<=b).reduce((x,s)=>x+s.secs,0)/60)); labels.push(i===0?'Now':'-'+i+'w'); }
   const pbPts = S.pbHistory.slice(-40);
   const recent = S.sessions.slice(-12).reverse();
-  $('#v-progress').innerHTML = `<h1>Your progress</h1><p class="lede">Consistency matters more than any single session. Three breath-hold sessions and a few calm-breathing sessions a week is a strong routine.</p>
-  <div class="stats">
-    <div class="stat"><b>${clock(S.pb)}</b><span>Breath-hold best</span></div>
-    <div class="stat"><b>${streak()}</b><span>Day streak</span></div>
-    <div class="stat"><b>${thisWeek.length}</b><span>Sessions this week</span></div>
-    <div class="stat"><b>${totalMin}</b><span>Total minutes</span></div>
+  $('#v-progress').innerHTML = `<h1>Your progress</h1>${breezeSvg()}<p class="lede">Consistency matters more than any single session. Three breath-hold sessions and a few calm-breathing sessions a week is a strong routine.</p>
+  <div class="stats${playIn?' play':''}">
+    <div class="stat" style="--i:0"><b>${clock(S.pb)}</b><span>Breath-hold best</span></div>
+    <div class="stat" style="--i:1"><b>${streak()}</b><span>Day streak</span></div>
+    <div class="stat" style="--i:2"><b>${thisWeek.length}</b><span>Sessions this week</span></div>
+    <div class="stat" style="--i:3"><b>${totalMin}</b><span>Total minutes</span></div>
   </div>
-  <div class="chartbox"><h2>Max hold tests</h2>${pbPts.length ? lineChart(pbPts,{w:cw('#v-progress'),color:'var(--hold)',pad:10,fmt:v=>clock(v),label:'Max hold test results over time'}) : '<p class="empty">No tests yet. Do a Max hold test to set your baseline.</p>'}</div>
+  <div class="chartbox"><h2>Max hold tests</h2>${pbPts.length ? lineChart(pbPts,{w:cw('#v-progress'),color:'var(--hold)',pad:10,fmt:v=>clock(v),label:'Max hold test results over time'}) : '<div class="empty">'+flatWave()+'<p style="margin:0">No tests yet. Do a Max hold test to set your baseline.</p></div>'}</div>
   <div class="chartbox"><h2>Minutes practised per week</h2>${barChart(weeks, labels, {w:cw('#v-progress'),color:'var(--in)', label:'Minutes practised per week, last 8 weeks'})}</div>
   <div class="chartbox"><h2>Recent sessions</h2>${recent.length ? `<ul class="log">${recent.map(s=>`<li><span>${esc(exById(s.ex)?.name||s.ex)}${s.hold!=null?' \u2013 '+clock(s.hold):''}${s.done?'':' (stopped)'}</span><span>${new Date(s.t).toLocaleDateString(undefined,{month:'short',day:'numeric'})}, ${human(s.secs)}</span></li>`).join('')}</ul>` : '<p class="empty">Nothing here yet. Your finished sessions will appear here.</p>'}</div>
   <button class="dangerlink" id="resetAll">Erase all my data</button>`;
+  watchLive($('#v-progress'));
   $('#resetAll').addEventListener('click', () => { if (confirm('Erase all sessions, tests, heart readings and settings? This cannot be undone.')) { S = structuredClone(DEFAULT); S.updatedAt = 0; save(); applyTheme(); renderAll(); } });
 }
 
@@ -1035,10 +1513,10 @@ function renderHeart(){
   const age = +S.settings.age;
   const pos = show ? Math.min(100, Math.max(0, (show-40)/(110-40)*100)) : null;
   const zones = age ? (() => { const mx = 220-age; const z = [[.5,.6,'Zone 1','Warm-up, recovery walks'],[.6,.7,'Zone 2','Easy cardio. Best for lowering resting heart rate. You can hold a conversation.'],[.7,.8,'Zone 3','Moderate, steady effort'],[.8,.9,'Zone 4','Hard intervals'],[.9,1,'Zone 5','All-out sprints, very short']]; return `<div class="chartbox"><h2>Your training zones</h2><p class="note" style="margin-top:0">Estimated max heart rate: ${mx} bpm (220 minus age). This is a rough rule; individuals vary by 10\u201315 bpm.</p><div class="table-scroll"><table><thead><tr><th>Zone</th><th>Heart rate</th><th>Use it for</th></tr></thead><tbody>${z.map(r=>`<tr><td>${r[2]}</td><td>${Math.round(mx*r[0])}\u2013${Math.round(mx*r[1])}</td><td>${r[3]}</td></tr>`).join('')}</tbody></table></div><p class="note">To lower your resting rate, most of your cardio (about 80%) should be in Zone 2: 30\u201345 minutes, 4\u20135 times a week, plus one harder session.</p></div>`; })() : `<div class="chartbox"><h2>Your training zones</h2><p class="empty">Add your age in Settings to see personal heart-rate zones for cardio training.</p></div>`;
-  $('#v-heart').innerHTML = `<h1>Resting heart rate</h1><p class="lede">Measure it the same way every morning: right after waking, before coffee or getting out of bed. One reading means little; the weekly average is what to watch.</p>
+  $('#v-heart').innerHTML = `<h1>Resting heart rate</h1>${breezeSvg()}<p class="lede">Measure it the same way every morning: right after waking, before coffee or getting out of bed. One reading means little; the weekly average is what to watch.</p>
   <div class="chartbox">
-    ${show ? `<div class="hrbig"><b>${show}</b><span>bpm, ${avg ? '7-day average' : 'latest reading'}</span></div>
-    <div class="zoneband" aria-hidden="true"><i style="flex:14;background:var(--out)"></i><i style="flex:14;background:var(--in)"></i><i style="flex:14;background:var(--rest)"></i><i style="flex:28;background:var(--hold)"></i><i style="flex:10;background:var(--danger)"></i><span class="zonemark" style="left:${pos}%"></span></div>
+    ${show ? `<div class="hrbig"><b>${show}</b><i class="beat live" style="--bpm:${(60/Math.min(120,Math.max(40,show))).toFixed(2)}s" aria-hidden="true"></i><span>bpm, ${avg ? '7-day average' : 'latest reading'}</span></div>
+    <div class="zoneband" aria-hidden="true"><i style="flex:14;background:var(--out)"></i><i style="flex:14;background:var(--in)"></i><i style="flex:14;background:var(--rest)"></i><i style="flex:28;background:var(--hold)"></i><i style="flex:10;background:var(--danger)"></i><span class="zonemark" data-pos="${pos}" style="left:${playIn?0:pos}%"></span></div>
     <div class="zonelabels"><span>40</span><span>60</span><span>80</span><span>100</span><span>110</span></div>
     <p style="margin-top:12px"><b>${esc(zone.name)}.</b> ${esc(zone.text)}</p>` : `<p class="empty" style="padding-top:0">No readings yet. Take your first one below; you mentioned about 80 bpm, so this will be your starting point.</p>`}
     <div class="row" style="margin-top:10px">
@@ -1047,7 +1525,7 @@ function renderHeart(){
       <button class="btn ghost" id="hrSave">Save reading</button>
     </div>
   </div>
-  <div class="chartbox"><h2>Trend</h2>${hr.length ? lineChart(hr.map(h=>({t:h.t,v:h.v})),{w:cw('#v-heart'),color:'var(--danger)',pad:6,label:'Resting heart rate over time',bands:[{from:0,to:60,color:'var(--in)'},{from:60,to:80,color:'var(--rest)'},{from:80,to:100,color:'var(--hold)'}]}) : '<p class="empty">Your readings will be charted here.</p>'}</div>
+  <div class="chartbox"><h2>Trend</h2>${hr.length ? lineChart(hr.map(h=>({t:h.t,v:h.v})),{w:cw('#v-heart'),color:'var(--danger)',pad:6,label:'Resting heart rate over time',bands:[{from:0,to:60,color:'var(--in)'},{from:60,to:80,color:'var(--rest)'},{from:80,to:100,color:'var(--hold)'}]}) : '<div class="empty">'+flatWave()+'<p style="margin:0">Your readings will be charted here.</p></div>'}</div>
   ${zones}
   <div class="chartbox prose"><h2>How to bring your resting rate down</h2>
     <p>A resting rate falls when the heart gets stronger (pumping more blood per beat) and when the calming side of your nervous system gets more active. Typical results: 5\u201310 bpm lower over 2\u20133 months of consistent effort.</p>
@@ -1061,6 +1539,8 @@ function renderHeart(){
     <p class="note">See a doctor if your resting rate is regularly over 100, under 50 with dizziness or fatigue, feels irregular, or comes with chest pain or breathlessness.</p>
   </div>
   ${hr.length ? `<div class="chartbox"><h2>Readings</h2><ul class="log">${hr.slice(-10).reverse().map((h)=>`<li><span>${h.v} bpm</span><span>${new Date(h.t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} <button class="dangerlink" style="padding:0 0 0 8px" data-delhr="${h.t}">Delete</button></span></li>`).join('')}</ul></div>` : ''}`;
+  watchLive($('#v-heart'));
+  const zm = $('.zonemark'); if (zm && playIn) requestAnimationFrame(() => requestAnimationFrame(() => { zm.style.left = zm.dataset.pos + '%'; }));
   $('#measureBtn').addEventListener('click', openPulse);
   $('#hrSave').addEventListener('click', () => { const v = Math.round(+$('#hrInput').value); if (v >= 30 && v <= 220) { S.hr.push({t:Date.now(), v}); save(); renderHeart(); } else $('#hrInput').focus(); });
   document.querySelectorAll('[data-delhr]').forEach(b => b.addEventListener('click', () => { S.hr = S.hr.filter(h => String(h.t) !== b.dataset.delhr); save(); renderHeart(); }));
@@ -1122,18 +1602,19 @@ function renderLearn(){
 }
 
 /* ---------------- Settings & theme ---------------- */
-function applyTheme(){ const t = S.settings.theme; if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t); }
+function applyTheme(){ const t = S.settings.theme; if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t); Wind.refresh(); }
 $('#openSettings').addEventListener('click', () => {
-  $('#setSound').checked = S.settings.sound; $('#setVoice').checked = S.settings.voice; $('#setVibe').checked = S.settings.vibe; $('#setTicks').checked = S.settings.ticks;
+  $('#setSound').checked = S.settings.sound; $('#setWind').checked = !!S.settings.wind; $('#setVoice').checked = S.settings.voice; $('#setVibe').checked = S.settings.vibe; $('#setTicks').checked = S.settings.ticks;
   $('#setTheme').value = S.settings.theme; $('#setPb').value = S.pb; $('#setAge').value = S.settings.age || '';
   $('#settingsDlg').showModal();
 });
 $('#testSound').addEventListener('click', () => { const sv=S.settings.sound; S.settings.sound=true; tone(330,494,.45); tone(494,330,.45,.12,'sine',.6); S.settings.sound=sv; if ($('#setVoice').checked && 'speechSynthesis' in window){ speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('Breathe in')); } if ($('#setVibe').checked && navigator.vibrate) navigator.vibrate(60); });
 $('#settingsOk').addEventListener('click', () => {
-  S.settings.sound = $('#setSound').checked; S.settings.voice = $('#setVoice').checked; S.settings.vibe = $('#setVibe').checked; S.settings.ticks = $('#setTicks').checked;
+  S.settings.sound = $('#setSound').checked; S.settings.voice = $('#setVoice').checked; S.settings.vibe = $('#setVibe').checked; S.settings.ticks = $('#setTicks').checked; S.settings.wind = $('#setWind').checked;
   S.settings.theme = $('#setTheme').value; S.settings.age = $('#setAge').value;
   const pb = Math.round(+$('#setPb').value); if (pb >= 10 && pb <= 900 && pb !== S.pb) { S.pb = pb; }
   save(); applyTheme(); $('#settingsDlg').close(); renderAll();
+  if (running) { if (S.settings.wind) { WindSound.start(); if (!paused) WindSound.phase(steps[idx].type, steps[idx].dur - (performance.now()-stepStart)/1000); } else WindSound.stop(); }
 });
 
 $('#exportData').addEventListener('click', () => {
@@ -1160,6 +1641,8 @@ function renderAll(){
   if (cur && !$('#v-session').hidden && !running) { if (level !== 'c') params = {...levelsFor(cur)[level]}; renderLevels(); renderFields(); resetStage(); }
 }
 renderAll();
+watchLive();
+Wind.screen('practice');
 })();
 </script>
 </body>
