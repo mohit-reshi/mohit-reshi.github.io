@@ -11,11 +11,12 @@ const VERSION = 1;
 let S = null;
 const UI = { tab: 'today', day: null, notice: '', saveError: '', foodQ: '', foodFilter: 'all', mealQ: '', range: 30, plate: [] };
 
-const blank = () => ({ v: VERSION, sample: false, seq: 0, lastBackup: 0, createdAt: Date.now(), goals: { k: 2000, p: 60, c: 250, f: 65, fi: 25, water: 2500 }, goalsSet: false, waterPresets: [250, 500, 750], dayStart: 4, hideWeight: false, theme: '', foods: {}, removed: {}, meals: {}, log: {} });
+const blank = () => ({ v: VERSION, sample: false, seq: 0, lastBackup: 0, createdAt: Date.now(), goals: { k: 2000, p: 60, c: 250, f: 65, fi: 25, water: 2500, diet: 'custom' }, goalsSet: false, periods: [], dismissed: {}, waterPresets: [250, 500, 750], dayStart: 4, hideWeight: false, theme: '', foods: {}, removed: {}, meals: {}, log: {} });
 
 function migrate(s) {
   const out = Object.assign(blank(), s || {});
   out.goals = Object.assign(blank().goals, out.goals || {});
+  out.periods = Array.isArray(out.periods) ? out.periods : []; out.dismissed = out.dismissed || {};
   out.foods = out.foods || {}; out.removed = out.removed || {}; out.meals = out.meals || {}; out.log = out.log || {};
   out.waterPresets = Array.isArray(out.waterPresets) && out.waterPresets.length ? out.waterPresets : [250, 500, 750];
   out.v = VERSION; return out;
@@ -142,6 +143,20 @@ export function undoWater(key) { const d = dayRec(key); if (!d || !d.water.lengt
 export function setWeight(key, kg) { ensureOwn(); const d = dayRec(key, kg != null); if (!d) return; d.weight = kg; cleanDay(key); save(); }
 export function setNote(key, text) { ensureOwn(); const d = dayRec(key, !!norm(text)); if (!d) return; d.note = text; cleanDay(key); save(); }
 export function setGoals(g) { ensureOwn(); S.goals = Object.assign(S.goals, g); S.goalsSet = true; save(); }
+// ---------- goals: the default goal and up to three dated periods ----------
+export const goalFor = (key) => goalOn(S.goals, S.periods, key);
+export function saveDefaultGoal(g) { ensureOwn(); S.goals = Object.assign(S.goals, g); S.goalsSet = true; save(); }
+export function addPeriod(today) {
+  ensureOwn(); if (S.periods.length >= MAX_PERIODS) return null;
+  const sug = suggestPeriod(S.periods, today); const d = S.goals;
+  const used = new Set(S.periods.map((p) => p.name)); let n = 1; while (used.has('Goal ' + n)) n++;
+  const p = { id: uid('g'), name: 'Goal ' + n, start: sug.start, end: sug.end, k: d.k, p: d.p, c: d.c, f: d.f, fi: d.fi, water: d.water, diet: d.diet || 'custom' };
+  S.periods.push(p); save(); return p.id;
+}
+export function savePeriod(g) { ensureOwn(); const i = S.periods.findIndex((p) => p.id === g.id); if (i < 0) return false; S.periods[i] = Object.assign({}, S.periods[i], g); S.goalsSet = true; save(); return true; }
+export function deletePeriod(id) { S.periods = S.periods.filter((p) => p.id !== id); save(); }
+export function dismissNotice(id) { ensureOwn(); S.dismissed[id] = true; save(); }
+
 export function setSettings(p) { ensureOwn(); Object.assign(S, p); save(); }
 
 /** Foods you logged lately, newest first, then the most used. For the Recent tab. */

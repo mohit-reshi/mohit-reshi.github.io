@@ -159,6 +159,76 @@ try {
     await ctx.close();
   }
 
+  // ---------- diets and goal periods ----------
+  {
+    const { ctx, page, errs } = await mk({ viewport: { width: 700, height: 1100 } });
+    await page.clock.install({ time: new Date(2026, 11, 31, 12, 0) });
+    await page.goto(URL0); await settle(page, 500); await page.click('[data-action=start-own]'); await page.goto(URL0 + '#/settings'); await settle(page, 300);
+    const order = await page.evaluate(() => { const h = [...document.querySelectorAll('.settings h2')].map((x) => x.textContent); return [h.indexOf('Diet'), h.indexOf('My goals'), h.indexOf('Goal periods')]; });
+    ok('goals: the diet dropdown sits above My goals, and Goal periods comes after', order[0] >= 0 && order[0] < order[1] && order[1] < order[2], order);
+    ok('goals: the default goal is highlighted as active', (await page.locator('.goalcard.active').count()) === 1 && (await page.locator('.goalcard.active').getAttribute('data-goal')) === 'default' && (await text(page, '.goalcard.active .chip.on')).includes('Active now'));
+    await page.fill('#goal-k', '1500'); await page.selectOption('#diet-sel', 'keto'); await settle(page, 400);
+    let st = await store(page);
+    ok('diet: keto on 1,500 kcal gives 75 g protein, 19 g carbs, 125 g fat, saved to the default goal', st.goals.diet === 'keto' && st.goals.p === 75 && st.goals.c === 19 && st.goals.f === 125 && st.goals.k === 1500, st.goals);
+    ok('diet: the split is shown', (await text(page, '.goalcard.active .split')).includes('protein 20%') && (await text(page, '.goalcard.active .split')).includes('carbs 5%'));
+    await page.fill('#goal-k', '1800'); await settle(page, 100);
+    ok('diet: changing calories updates the macros live (1,800 keto = 90 / 23 / 150)', (await page.inputValue('#goal-p')) === '90' && (await page.inputValue('#goal-c')) === '23' && (await page.inputValue('#goal-f')) === '150');
+    await page.fill('#goal-p', '120'); await settle(page, 100);
+    ok('diet: editing a macro switches to my own split', (await page.locator('#gd-default').inputValue()) === 'custom');
+    await page.click('[data-action=save-goals][data-goal=default]'); await settle(page, 500);
+    ok('diet: the default goal keeps the typed macros', (await store(page)).goals.p === 120 && (await store(page)).goals.diet === 'custom');
+    // add a period
+    await page.click('[data-action=period-add]'); await settle(page, 300);
+    let card = page.locator('.goalcard[data-goal]:not([data-goal=default])').first();
+    ok('periods: a new period appears with a free name and dates', (await card.locator('[data-gf=name]').inputValue()) === 'Goal 1' && (await card.locator('[data-gf=start]').inputValue()) === '2026-12-31');
+    await card.locator('[data-gf=name]').fill('January cut'); await card.locator('[data-gf=start]').fill('2027-01-01'); await card.locator('[data-gf=end]').fill('2027-01-10'); await card.locator('[data-gf=k]').fill('1500');
+    await card.locator('[data-gf=diet]').selectOption('lowcarb'); await settle(page, 100);
+    ok('periods: choosing a diet inside a goal fills its macros from its calories', (await card.locator('[data-gf=p]').inputValue()) === '113' && (await card.locator('[data-gf=c]').inputValue()) === '94' && (await card.locator('[data-gf=f]').inputValue()) === '75');
+    await card.locator('[data-action=period-save]').click(); await settle(page, 500);
+    st = await store(page); const jan = st.periods[0];
+    ok('periods: saved with name, dates, calories and diet; the default goal is untouched', st.periods.length === 1 && jan.name === 'January cut' && jan.start === '2027-01-01' && jan.end === '2027-01-10' && jan.k === 1500 && jan.diet === 'lowcarb' && st.goals.k === 1800 && st.goals.diet === 'custom', jan);
+    ok('periods: shows "Starts in 1 day" while the default is highlighted', (await page.locator('.goalcard[data-goal]:not([data-goal=default]) .chip', { hasText: 'Starts in 1 day' }).count()) === 1 && (await page.locator('.goalcard.active').getAttribute('data-goal')) === 'default');
+    // reminder on Today the day before
+    await page.goto(URL0 + '#/today'); await settle(page, 300);
+    ok('reminder: the day before, Today says the custom goal starts tomorrow', (await text(page, '.goalnote')).includes('From tomorrow your goal "January cut" starts: 1,500 kcal'), await text(page, '.goalnote'));
+    await page.click('[data-action=dismiss-notice]'); await settle(page, 400); await page.reload(); await settle(page, 500);
+    ok('reminder: "Got it" dismisses it for good', (await page.locator('.goalnote').count()) === 0);
+    // overlap and blocked dates
+    await page.goto(URL0 + '#/settings'); await settle(page, 300); await page.click('[data-action=period-add]'); await settle(page, 300);
+    card = page.locator('.goalcard:has([data-gf=name][value="Goal 1"])');
+    ok('periods: the blocked dates of the other goal are listed', (await card.locator('.blocked').innerText()).includes('1 Jan 2027 to 10 Jan 2027 (January cut)'));
+    await card.locator('[data-gf=start]').fill('2027-01-05'); await card.locator('[data-gf=end]').fill('2027-01-08'); await settle(page, 200);
+    ok('periods: choosing blocked dates shows the clash straight away', (await card.locator('.errs').innerText()).includes('overlap "January cut"'));
+    await card.locator('[data-action=period-save]').click(); await settle(page, 300);
+    ok('periods: a clashing goal is refused and not saved', (await card.locator('.errs').innerText()).includes('overlap') && !(await store(page)).periods.some((p) => p.start === '2027-01-05'));
+    await card.locator('[data-gf=start]').fill('2027-01-11'); await card.locator('[data-gf=end]').fill('2027-01-20'); await card.locator('[data-gf=name]').fill('Maintenance'); await card.locator('[data-gf=k]').fill('1900');
+    await card.locator('[data-action=period-save]').click(); await settle(page, 400);
+    ok('periods: the day after another goal ends is allowed', (await store(page)).periods.some((p) => p.name === 'Maintenance' && p.start === '2027-01-11'));
+    await page.click('[data-action=period-add]'); await settle(page, 300); await page.click('[data-action=period-add]').catch(() => {}); await settle(page, 200);
+    ok('periods: at most three, the add button is disabled and the count shows', (await page.locator('.goalcard[data-goal]:not([data-goal=default])').count()) === 3 && await page.locator('[data-action=period-add]').isDisabled() && (await text(page, '.settings')).includes('3 of 3 used'));
+    // go to the start date
+    await page.goto(URL0 + '#/today'); await page.clock.setSystemTime(new Date(2027, 0, 1, 12, 0)); await page.reload(); await settle(page, 600);
+    ok('start day: the period goal replaces the default on Today', (await text(page, '.ring-mid b')) === '1,500' && (await text(page, '.goal-chip')).includes('January cut') && (await text(page, '.goal-chip')).includes('10 Jan 2027'), await text(page, '.summary'));
+    ok('start day: no "starts tomorrow" reminder any more', (await page.locator('.goalnote').count()) === 0);
+    await page.click('[data-action=day-prev]'); await settle(page, 200);
+    ok('history: yesterday still uses the default goal of that day', (await text(page, '.ring-mid b')) === '1,800');
+    await page.click('[data-action=day-today]'); await page.goto(URL0 + '#/settings'); await settle(page, 300);
+    ok('start day: the active period is highlighted, the default is not', (await page.locator('.goalcard.active').count()) === 1 && (await page.locator('.goalcard.active [data-gf=name]').inputValue()) === 'January cut' && (await text(page, '[data-goal=default] .chip')).includes('Applies when no goal period'));
+    ok('start day: the diet dropdown shows the active goal and its diet', (await page.inputValue('#diet-sel')) === 'lowcarb' && (await text(page, '#diet-h + label')).includes('January cut'));
+    await page.selectOption('#diet-sel', 'highprotein'); await settle(page, 500); st = await store(page);
+    ok('diet: with a period running, the dropdown changes only the period (1,500 kcal high protein = 131 / 150 / 42)', st.periods[0].diet === 'highprotein' && st.periods[0].p === 131 && st.periods[0].c === 150 && st.periods[0].f === 42 && st.goals.diet === 'custom' && st.goals.p === 120, st.periods[0]);
+    // last day and end
+    await page.clock.setSystemTime(new Date(2027, 0, 10, 12, 0)); await page.goto(URL0 + '#/today'); await page.reload(); await settle(page, 600);
+    ok('last day: Today says the goal ends and what applies tomorrow', (await text(page, '.goalnote')).includes('last day of "January cut"') && (await text(page, '.goalnote')).includes('"Maintenance" applies again: 1,900 kcal'), await text(page, '.goalnote'));
+    await page.clock.setSystemTime(new Date(2027, 0, 25, 12, 0)); await page.goto(URL0 + '#/today'); await page.reload(); await settle(page, 600);
+    ok('after the periods: the default goal is back', (await text(page, '.ring-mid b')) === '1,800' && (await page.locator('.goal-chip').count()) === 0);
+    await page.goto(URL0 + '#/settings'); await settle(page, 300);
+    await page.locator('.goalcard[data-goal]:not([data-goal=default])').first().locator('[data-action=period-del]').click(); await page.click('dialog button.primary'); await settle(page, 400);
+    ok('periods: deleting one frees its dates and its slot', (await store(page)).periods.length === 2 && (await text(page, '.settings')).includes('2 of 3 used'));
+    ok('goals: no page errors', errs.length === 0, errs);
+    await ctx.close();
+  }
+
   // ---------- foods: label converter, consistency check, edit starter, CSV ----------
   {
     const { ctx, page, errs } = await mk();
@@ -313,7 +383,7 @@ try {
       const { ctx, page } = await mk({ colorScheme: scheme }); await owner(ctx);
       await page.goto(URL0); await settle(page, 600);
       const run = async (name) => { const res = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).exclude('.acx').analyze(); const bad = res.violations.map((v) => v.id + ' x' + v.nodes.length + ' [' + v.nodes[0].target.join(' ') + ']'); ok('a11y (' + scheme + '): ' + name, bad.length === 0, bad); };
-      for (const h of ['today', 'meals', 'foods', 'progress', 'settings']) { await page.goto(URL0 + '#/' + h); await settle(page, 350); await run(h); }
+      for (const h of ['today', 'meals', 'foods', 'progress', 'settings']) { await page.goto(URL0 + '#/' + h); await settle(page, 350); if (h === 'settings') { await page.click('[data-action=period-add]'); await settle(page, 300); } await run(h); }
       await page.goto(URL0 + '#/today'); await settle(page, 200);
       await page.click('[data-action=add][data-slot=lunch]'); await page.fill('.pk-q', 'rice'); await settle(page, 200); await run('add sheet: search'); await page.locator('.pk-row').first().click(); await settle(page, 200); await run('add sheet: amount');
       await page.click('[data-back]'); await page.click('[data-tab=plate]'); await settle(page, 200); await run('add sheet: plate'); await page.click('[data-tab=quick]'); await run('add sheet: quick'); await page.click('[data-sheet-close]');

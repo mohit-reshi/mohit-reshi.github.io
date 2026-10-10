@@ -8,6 +8,7 @@ import { parseMealText, findBlocks } from '../src/core/mealimport.js';
 import { parseCsv, foodsFromCsv, foodsToCsv, csvTemplate } from '../src/core/csv.js';
 import { series, averages, weightTrend, weekdayPattern, topFoods, loggedSpan } from '../src/core/stats.js';
 import { SESSION_PROMPT } from '../src/core/prompt.js';
+import { DIETS, dietById, macrosFor, splitOf, goalOn, periodOn, overlaps, validatePeriod, dateLimits, suggestPeriod, notices, statusOf, MAX_PERIODS } from '../src/core/goals.js';
 
 const near = (a, b, eps = 0.01) => assert.ok(Math.abs(a - b) <= eps, a + ' vs ' + b);
 const RICE = { k: 349, p: 7.5, c: 77, f: 0.6, fi: 1.3 }, DAL = { k: 348, p: 24, c: 59, f: 1.2, fi: 16 }, GHEE = { k: 900, p: 0, c: 0, f: 100, fi: 0 }, ONION = { k: 40, p: 1.1, c: 9.3, f: 0.1, fi: 1.7 };
@@ -161,4 +162,52 @@ test('stats: logged days only, weight trend, weekday pattern, top foods', () => 
   const wdays = [{ weight: 80 }, { weight: null }, { weight: 79 }, { weight: 78 }]; const t = weightTrend(wdays, 7); near(t[0], 80); assert.equal(t[1], null); near(t[2], 79.5); near(t[3], 79);
   const wp = weekdayPattern(days); assert.equal(wp.length, 7); near(wp[3], 1000); near(wp[4], 2000); assert.equal(wp[0], null);
   assert.deepEqual(topFoods(log, ['2026-10-08', '2026-10-09'], 3), [{ name: 'Rice', k: 3000, n: 2 }]); assert.equal(loggedSpan(log), 2);
+});
+
+test('diets turn a calorie limit into grams of protein, carbs and fat', () => {
+  assert.deepEqual(macrosFor('keto', 1500), { p: 75, c: 19, f: 125 });
+  assert.deepEqual(macrosFor('balanced', 2000), { p: 100, c: 250, f: 67 });
+  assert.deepEqual(macrosFor('lowcarb', 1500), { p: 113, c: 94, f: 75 });
+  assert.equal(macrosFor('custom', 2000), null); assert.equal(macrosFor('nope', 2000), null); assert.equal(macrosFor('keto', 0), null); assert.equal(macrosFor('keto', 'abc'), null);
+  DIETS.filter((d) => d.p !== undefined).forEach((d) => { assert.equal(d.p + d.c + d.f, 100, d.id); const m = macrosFor(d.id, 2400); near(m.p * 4 + m.c * 4 + m.f * 9, 2400, 12); });
+  assert.equal(dietById('zzz').id, 'custom'); assert.ok(DIETS.map((d) => d.id).includes('keto'));
+  assert.deepEqual(splitOf({ k: 2000, p: 100, c: 250, f: 67 }), { p: 20, c: 50, f: 30 }); assert.equal(splitOf({ k: 0 }), null);
+});
+
+const DEF = { k: 2000, p: 100, c: 250, f: 67, fi: 25, water: 2500, diet: 'balanced' };
+const JAN = { id: 'g1', name: 'January cut', start: '2027-01-01', end: '2027-01-10', k: 1500, p: 75, c: 19, f: 125, fi: 25, water: 3000, diet: 'keto' };
+test('a goal period replaces the default from its start date to its end date, both included', () => {
+  const ps = [JAN];
+  assert.equal(goalOn(DEF, ps, '2026-12-31').isDefault, true); assert.equal(goalOn(DEF, ps, '2026-12-31').k, 2000);
+  const a = goalOn(DEF, ps, '2027-01-01'); assert.equal(a.isDefault, false); assert.equal(a.k, 1500); assert.equal(a.name, 'January cut'); assert.equal(a.diet, 'keto'); assert.equal(a.water, 3000);
+  assert.equal(goalOn(DEF, ps, '2027-01-10').k, 1500); assert.equal(goalOn(DEF, ps, '2027-01-11').k, 2000);
+  assert.equal(periodOn([{ id: 'x', name: 'x', start: '', end: '' }], '2027-01-01'), null);
+  assert.equal(statusOf(JAN, '2026-12-31'), 'upcoming'); assert.equal(statusOf(JAN, '2027-01-05'), 'active'); assert.equal(statusOf(JAN, '2027-01-11'), 'ended');
+});
+test('two periods can never share a date', () => {
+  const b = { id: 'g2', name: 'Other', start: '2027-01-10', end: '2027-01-20', k: 1800 };
+  assert.ok(overlaps(JAN, b)); assert.ok(overlaps(b, JAN)); assert.ok(!overlaps(JAN, { start: '2027-01-11', end: '2027-01-20' }));
+  assert.match(validatePeriod([JAN], b).join(' '), /overlap "January cut"/);
+  assert.deepEqual(validatePeriod([JAN], { id: 'g2', name: 'Next', start: '2027-01-11', end: '2027-01-20', k: 1800 }), []);
+  assert.deepEqual(validatePeriod([JAN], JAN), [], 'a period does not clash with itself');
+  assert.match(validatePeriod([], { id: 'n', name: ' ', start: '', end: '', k: 0 }).join(' '), /name.*date.*Calories/s);
+  assert.match(validatePeriod([], { id: 'n', name: 'a', start: '2027-02-02', end: '2027-02-01', k: 1 }).join(' '), /cannot be before/);
+  assert.equal(MAX_PERIODS, 3);
+});
+test('date pickers are limited by the neighbouring periods', () => {
+  const later = { id: 'g3', name: 'Later', start: '2027-02-01', end: '2027-02-10', k: 1600 };
+  const mid = { id: 'g2', name: 'Mid', start: '2027-01-15', end: '2027-01-20', k: 1700 };
+  assert.deepEqual(dateLimits([JAN, mid, later], mid), { startMin: '2027-01-11', endMax: '2027-01-31' });
+  assert.deepEqual(dateLimits([JAN], JAN), { startMin: '', endMax: '' });
+});
+test('a new period starts on the first free day and stops before the next period', () => {
+  assert.deepEqual(suggestPeriod([], '2027-03-01'), { start: '2027-03-01', end: '2027-03-28' });
+  assert.deepEqual(suggestPeriod([JAN], '2027-01-05'), { start: '2027-01-11', end: '2027-02-07' });
+  assert.deepEqual(suggestPeriod([{ id: 'x', name: 'x', start: '2027-03-05', end: '2027-03-09' }], '2027-03-01'), { start: '2027-03-01', end: '2027-03-04' });
+});
+test('reminders: the day before a period starts and on its last day; dismissed ones stay quiet', () => {
+  assert.deepEqual(notices([JAN], '2026-12-31', {}).map((n) => n.kind), ['pre']);
+  assert.deepEqual(notices([JAN], '2026-12-30', {}), []); assert.deepEqual(notices([JAN], '2027-01-01', {}), []);
+  assert.deepEqual(notices([JAN], '2027-01-10', {}).map((n) => n.kind), ['last']);
+  assert.deepEqual(notices([JAN], '2026-12-31', { 'g1:2027-01-01:pre': true }), []);
 });

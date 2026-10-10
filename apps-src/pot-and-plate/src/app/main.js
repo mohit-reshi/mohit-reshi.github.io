@@ -49,17 +49,17 @@ function onClick(e) {
     case 'food-filter': UI.foodFilter = t.dataset.v; render(); break;
     case 'csv-open': openCsv(); break;
     case 'range': UI.range = +t.dataset.v; render(); break;
-    case 'save-goals': { const g = {}; ['k', 'p', 'c', 'f', 'fi', 'water'].forEach((k) => { const v = num($('#goal-' + k).value); if (v !== null && v >= 0) g[k] = v; }); setGoals(g); toast('Goals saved'); render(); break; }
     case 'save-water': { const list = $('#water-presets').value.split(/[,;\s]+/).map(num).filter((n) => n && n > 0 && n <= 3000); if (list.length) { setSettings({ waterPresets: list.slice(0, 6) }); toast('Water buttons saved'); } else toast('Enter at least one size in ml.'); render(); break; }
     case 'export-log': { const c = logCsv(); download('pot-and-plate-diary.csv', c.entries, 'text/csv'); download('pot-and-plate-days.csv', c.days, 'text/csv'); break; }
     case 'undo-restore': if (restorePrev()) { toast('Restored the earlier data'); render(); } break;
     case 'unhide-starters': hiddenStarters().forEach((f) => resetStarter(f.id)); render(); break;
     case 'erase': askDialog('Clear all my data?', { text: 'This removes your diary, foods, meals and settings from this browser and shows the example data again. Download a backup first if you may want them back.', ok: 'Clear my data' }, () => { resetAll(); UI.day = null; go('#/today'); render(); toast('Data cleared'); }); break;
-    default: break;
+    default: goalsAction(a, t); break;
   }
 }
 function onChange(e) {
   const el = e.target;
+  if (el.id === 'diet-sel' || (el.closest && el.closest('.goalcard'))) { if (goalsChange(el)) return; }
   if (el.id === 'day-in') { const v = el.value; if (v) { UI.day = v >= todayKey() ? null : v; render(); } return; }
   if (el.id === 'weight-in') { const v = num(el.value); setWeight(curDay(), v && v > 20 && v < 400 ? v : null); return; }
   if (el.id === 'day-start') { setSettings({ dayStart: +el.value }); render(); return; }
@@ -69,6 +69,7 @@ function onChange(e) {
 }
 function onInput(e) {
   const el = e.target;
+  if (el.closest && el.closest('.goalcard') && goalsInput(el)) return;
   if (el.id === 'note-in') { setNote(curDay(), el.value); return; }
   if (el.id === 'meal-q') { UI.mealQ = el.value; const pos = el.selectionStart; render(); const n = $('#meal-q'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
   if (el.id === 'food-q') { UI.foodQ = el.value; const pos = el.selectionStart; render(); const n = $('#food-q'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } }

@@ -80,3 +80,12 @@ details { margin: 8px 0; } summary { cursor: pointer; font-weight: 600; min-heig
 
 /* keep the shared owner chip clear of the bottom navigation on phones */
 @media (max-width: 759px) { .acx-own { bottom: calc(var(--nav-h) + 10px + env(safe-area-inset-bottom)) !important; } }
+
+/* goals */
+.sect { margin: 18px 0 6px; font-size: 18px; }
+.goalcard.active { border: 2px solid var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+.chip.on { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+.gname { font: inherit; font-weight: 700; font-size: 17px; min-height: 40px; max-width: 18em; }
+.goal-chip { margin: 0 0 8px; padding: 4px 10px; background: var(--surface2); border-radius: 999px; display: inline-block; font-size: 14px; }
+.goalnote { justify-content: space-between; border-left: 4px solid var(--accent); }
+.blocked { font-size: 13px; margin: 0 0 8px; } .errs:empty { display: none; } .split { margin: 0 0 8px; font-size: 13px; }

@@ -1,5 +1,5 @@
 // The Today screen: calorie ring, macros, meal sections, water, weight and a note.
-import { esc, fmt0, fmt1, dayKey, addDays, dateLong, dateLabel, timeLabel, norm } from '../core/base.js';
+import { esc, fmt0, fmt1, dayKey, addDays, dateLong, dateLabel, dateShort, timeLabel, norm } from '../core/base.js';
 import { dayTotals, waterTotal } from '../core/nutri.js';
 
 const slotName = (id) => (SLOTS.find((s) => s[0] === id) || [id, id])[1];
@@ -10,7 +10,7 @@ function entryRow(e) {
 }
 
 function renderToday() {
-  const now = new Date(); const today = todayKey(now); const key = UI.day || today; const rec = dayRec(key); const tot = dayTotals(rec); const g = S.goals;
+  const now = new Date(); const today = todayKey(now); const key = UI.day || today; const rec = dayRec(key); const tot = dayTotals(rec); const g = goalFor(key);
   const yest = addDays(key, -1); const yrec = dayRec(yest);
   const entries = rec ? rec.entries.slice().sort((a, b) => a.t - b.t) : [];
   const days = Math.floor((Date.now() - (S.lastBackup || 0)) / 864e5);
@@ -18,9 +18,16 @@ function renderToday() {
   let h = '<div class="today">';
   if (S.sample) h += '<div class="notice"><b>Example data.</b> Nothing here is saved. <button class="btn small primary" data-action="start-own">Start my own</button></div>';
   else if (!S.goalsSet) h += '<div class="notice">These goals are placeholders. <button class="btn small" data-action="goto-settings">Set my own goals</button></div>';
+  if (!S.sample && key === today) notices(S.periods, today, S.dismissed).forEach((n) => {
+    const p = n.period; const tomorrow = goalFor(addDays(today, 1));
+    const txt = n.kind === 'pre'
+      ? 'From tomorrow your goal "' + p.name + '" starts: ' + fmt0(p.k) + ' kcal a day, protein ' + fmt0(p.p) + ' g, carbs ' + fmt0(p.c) + ' g, fat ' + fmt0(p.f) + ' g, until ' + dateShort(p.end) + '. Get ready for it.'
+      : 'Today is the last day of "' + p.name + '". From tomorrow ' + (tomorrow.isDefault ? 'your default goal' : 'the goal "' + tomorrow.name + '"') + ' applies again: ' + fmt0(tomorrow.k) + ' kcal a day.';
+    h += '<div class="notice goalnote" role="status"><span>' + esc(txt) + '</span><button class="btn small" data-action="dismiss-notice" data-id="' + esc(n.id) + '">Got it</button></div>';
+  });
   if (!S.sample && hasData && days >= 7) h += '<div class="notice soft">' + (S.lastBackup ? 'Your last backup was ' + days + ' days ago.' : 'You have not downloaded a backup yet.') + ' <button class="btn small" data-action="backup">Download a backup</button></div>';
   h += '<div class="daynav"><button class="btn" data-action="day-prev" aria-label="Previous day">←</button><label class="daypick"><span class="sr">Pick a date</span><input type="date" id="day-in" value="' + key + '" max="' + today + '"></label><div class="daytitle"><b>' + esc(key === today ? 'Today' : dateLabel(key)) + '</b><span>' + esc(dateLong(key)) + '</span></div><button class="btn" data-action="day-next" aria-label="Next day"' + (key >= today ? ' disabled' : '') + '>→</button>' + (key !== today ? '<button class="btn small" data-action="day-today">Today</button>' : '') + '</div>';
-  h += '<section class="card summary" aria-label="Day summary">' + ringHtml(tot.k, g.k) + '<div class="summary-side"><div class="sum-line"><span>Eaten</span><b>' + fmt0(tot.k) + '</b></div><div class="sum-line"><span>Goal</span><b>' + fmt0(g.k) + '</b></div>' + barHtml('Protein', tot.p, g.p, 'g', 'floor') + barHtml('Carbs', tot.c, g.c, 'g', 'plain') + barHtml('Fat', tot.f, g.f, 'g', 'ceiling') + barHtml('Fibre', tot.fi, g.fi, 'g', 'floor') + '</div></section>';
+  h += '<section class="card summary" aria-label="Day summary">' + ringHtml(tot.k, g.k) + '<div class="summary-side">' + (g.isDefault ? '' : '<p class="goal-chip">Goal: <b>' + esc(g.name) + '</b> until ' + esc(dateShort(g.period.end)) + '</p>') + '<div class="sum-line"><span>Eaten</span><b>' + fmt0(tot.k) + '</b></div><div class="sum-line"><span>Goal</span><b>' + fmt0(g.k) + '</b></div>' + barHtml('Protein', tot.p, g.p, 'g', 'floor') + barHtml('Carbs', tot.c, g.c, 'g', 'plain') + barHtml('Fat', tot.f, g.f, 'g', 'ceiling') + barHtml('Fibre', tot.fi, g.fi, 'g', 'floor') + '</div></section>';
   SLOTS.forEach(([id, label]) => {
     const list = entries.filter((e) => e.meal === id); const sk = list.reduce((t, e) => t + e.k, 0);
     const canCopy = !list.length && yrec && yrec.entries.some((e) => e.meal === id);

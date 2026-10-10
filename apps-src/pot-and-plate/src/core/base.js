@@ -37,6 +37,7 @@ export const dowOf = (k) => parseKey(k).getDay();
 export const dowName = (i) => DOW[i];
 export const dateLabel = (k) => { const d = parseKey(k); return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()]; };
 export const dateLong = (k) => { const d = parseKey(k); return DOW[d.getDay()] + ', ' + d.getDate() + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear(); };
+export const dateShort = (k) => { const d = parseKey(k); return d.getDate() + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear(); };
 export const daysBetween = (a, b) => Math.round((parseKey(b) - parseKey(a)) / 864e5);
 
 // ---------- names ----------

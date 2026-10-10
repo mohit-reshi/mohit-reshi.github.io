@@ -17,7 +17,7 @@ function weightChart(days, trend) {
   return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="chart" role="img" aria-label="Weight from ' + fmt1(pts[0].w) + ' to ' + fmt1(pts[pts.length - 1].w) + ' kilograms. The line is the 7-day average."><text x="2" y="' + (pt + 8) + '" class="ct">' + fmt1(hi) + '</text><text x="2" y="' + (H - pb) + '" class="ct">' + fmt1(lo) + '</text>' + dots + '<path d="' + line + '" class="wl"/></svg>';
 }
 function renderProgress() {
-  const end = todayKey(); const n = UI.range; const days = series(S.log, end, n); const a = averages(days); const g = S.goals; const trend = weightTrend(days, 7);
+  const end = todayKey(); const n = UI.range; const days = series(S.log, end, n); const a = averages(days); const g = goalFor(end); const trend = weightTrend(days, 7);
   const wk = weekdayPattern(days); const maxw = Math.max(...wk.map((v) => v || 0), 1); const top = topFoods(S.log, days.filter((d) => d.logged).map((d) => d.key), 6);
   const ws = days.filter((d) => d.weight != null); const change = ws.length >= 2 ? ws[ws.length - 1].weight - ws[0].weight : null;
   const stat = (label, v, sub) => '<div class="stat"><span>' + esc(label) + '</span><b>' + v + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';

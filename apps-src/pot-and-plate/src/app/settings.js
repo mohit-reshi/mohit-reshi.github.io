@@ -2,11 +2,10 @@
 import { esc, num, fmt0, fmt1, norm } from '../core/base.js';
 
 function renderSettings() {
-  const g = S.goals; const bytes = storageBytes(); const days = S.lastBackup ? Math.floor((Date.now() - S.lastBackup) / 864e5) : null;
+  const bytes = storageBytes(); const days = S.lastBackup ? Math.floor((Date.now() - S.lastBackup) / 864e5) : null;
   const hidden = hiddenStarters().length;
   return '<div class="settings"><h1>Settings</h1>' + (S.sample ? '<div class="notice">Example data. <button class="btn small primary" data-action="start-own">Start my own</button></div>' : '') +
-    '<section class="card"><h2>My goals</h2><p class="muted">Your own numbers. The app never suggests targets.</p><div class="qrow">' +
-    [['k', 'Calories'], ['p', 'Protein g'], ['c', 'Carbs g'], ['f', 'Fat g'], ['fi', 'Fibre g'], ['water', 'Water ml']].map(([k, l]) => '<label class="field"><span>' + l + '</span>' + numIn('goal-' + k, g[k]) + '</label>').join('') + '</div><button class="btn primary" data-action="save-goals">Save goals</button></section>' +
+    goalsHtml() +
     '<section class="card"><h2>Water buttons</h2><label class="field"><span>Sizes in ml, separated by commas</span><input id="water-presets" value="' + esc(S.waterPresets.join(', ')) + '" autocomplete="off"></label><button class="btn" data-action="save-water">Save</button></section>' +
     '<section class="card"><h2>Day and display</h2><label class="field"><span>A new day starts at</span><select id="day-start">' + [0, 1, 2, 3, 4, 5, 6].map((h) => '<option value="' + h + '"' + (S.dayStart === h ? ' selected' : '') + '>' + (h === 0 ? 'midnight' : h + ':00') + '</option>').join('') + '</select></label><p class="muted">With 4:00, food eaten at 1 am still counts for the evening before.</p>' +
     '<label class="check"><input type="checkbox" id="hide-weight"' + (S.hideWeight ? ' checked' : '') + '> Hide weight (no weight box or chart)</label><label class="field"><span>Theme</span><select id="theme-sel">' + [['', 'Follow my device'], ['light', 'Light'], ['dark', 'Dark']].map(([v, l]) => '<option value="' + v + '"' + (S.theme === v ? ' selected' : '') + '>' + l + '</option>').join('') + '</select></label></section>' +

@@ -43,6 +43,7 @@ A meal keeps its own copy of each ingredient's values, so editing a food later n
 - **My meals:** save a plate or a recipe. Weigh the finished pot once, and any portion can be logged by grams or by servings. The pot method accounts for water gained or lost in cooking.
 - **Foods:** search and edit the list, convert the values on a pack label to per 100 g, and import or export a CSV. A check warns when calories do not match the macros, which catches typos.
 - **Progress:** calories per day against the goal, averages over the days that were logged, a weight chart with a seven-day average, a weekday pattern and the foods that add the most calories.
+- **Goals:** a default goal plus up to three dated goal periods that replace it while they run, with a reminder on Today the day before one starts. A diet preset (balanced, high protein, low carb, keto and others) turns the calorie limit into protein, carbs and fat for the active goal. Two periods can never share a date.
 - **Backup:** download everything as one file, restore it, and undo the restore.
 
 ## Under the hood

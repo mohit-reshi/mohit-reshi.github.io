@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..', '..');
 const src = (p) => readFileSync(join(here, 'src', p), 'utf8');
-const ORDER = ['core/base.js', 'core/nutri.js', 'core/units.js', 'core/starter.js', 'core/mealimport.js', 'core/csv.js', 'core/stats.js', 'core/prompt.js', 'app/store.js', 'app/ui.js', 'app/today.js', 'app/add.js', 'app/meals.js', 'app/foods.js', 'app/progress.js', 'app/settings.js', 'app/main.js'];
+const ORDER = ['core/base.js', 'core/nutri.js', 'core/units.js', 'core/starter.js', 'core/mealimport.js', 'core/csv.js', 'core/stats.js', 'core/goals.js', 'core/prompt.js', 'app/store.js', 'app/ui.js', 'app/today.js', 'app/add.js', 'app/meals.js', 'app/foods.js', 'app/progress.js', 'app/goalsui.js', 'app/settings.js', 'app/main.js'];
 
 const script = ORDER.map((f) => {
   let t = src(f);
