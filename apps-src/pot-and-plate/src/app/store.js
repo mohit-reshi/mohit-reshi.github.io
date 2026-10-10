@@ -9,7 +9,7 @@ const PREV = 'pot-and-plate-prev';
 const LEGACY = 'katori-v1'; // the app's first name: data saved under it is picked up once
 const VERSION = 1;
 let S = null;
-const UI = { tab: 'today', day: null, notice: '', saveError: '', foodQ: '', foodFilter: 'all', mealQ: '', range: 30, plate: [] };
+const UI = { tab: '', day: null, notice: '', saveError: '', foodQ: '', foodFilter: 'all', mealQ: '', range: 30, plate: [] };
 
 const blank = () => ({ v: VERSION, sample: false, seq: 0, lastBackup: 0, createdAt: Date.now(), goals: { k: 2000, p: 60, c: 250, f: 65, fi: 25, water: 2500, diet: 'custom' }, goalsSet: false, periods: [], dismissed: {}, waterPresets: [250, 500, 750], dayStart: 4, hideWeight: false, theme: '', foods: {}, removed: {}, meals: {}, log: {} });
 
@@ -123,7 +123,7 @@ export function addEntry(key, e) {
   const n = snap(clean(e));
   const entry = Object.assign({ kind: 'quick', ref: null, name: 'Food', amt: 0, unit: '' }, e, n);
   if (!entry.id) entry.id = uid('e'); if (entry.t == null) entry.t = minutesOf(new Date()); if (!entry.meal) entry.meal = defaultSlot(new Date(), S.dayStart);
-  d.entries.push(entry); save(); return entry.id;
+  d.entries.push(entry); UI.newEntry = entry.id; (UI.drops = UI.drops || []).push({ p: entry.p * 4, c: entry.c * 4, f: entry.f * 9 }); save(); return entry.id;
 }
 export function updateEntry(key, id, patch) {
   const d = dayRec(key); if (!d) return;

@@ -229,6 +229,61 @@ try {
     await ctx.close();
   }
 
+  // ---------- food-themed motion ----------
+  {
+    const { ctx, page, errs } = await mk();
+    await page.goto(URL0); await settle(page, 1500);
+    ok('plate: wedges for protein, carbs and fat are drawn once the entrance has played', await page.evaluate(() => [...document.querySelectorAll('.wedge')].every((w) => /stroke-dasharray:\s*[1-9]/.test(w.getAttribute('style')))));
+    ok('plate: the legend lists the shares as real text', (await text(page, '.legend')).includes('Protein') && /\d+%/.test(await text(page, '.legend')));
+    await page.hover('.lg[data-hl=p]'); await settle(page, 300);
+    ok('plate: hovering a macro lifts its wedge and shows its grams in the middle', (await page.locator('.plate-wrap.hl-p').count()) === 1 && (await text(page, '.ring-alt')).includes('protein') && (await page.evaluate(() => getComputedStyle(document.querySelector('.ring-mid')).opacity)) === '0');
+    await page.mouse.move(2, 2); await settle(page, 300);
+    ok('plate: moving away puts the calories back', (await page.locator('.plate-wrap.hl').count()) === 0);
+    await page.focus('.lg[data-hl=c]'); await settle(page, 150);
+    ok('plate: keyboard focus does the same', (await page.locator('.plate-wrap.hl-c').count()) === 1);
+    ok('glass: the water glass is drawn with the level and an accessible label', (await page.locator('svg.glass').getAttribute('aria-label')).includes('millilitres') && (await page.locator('.glass .wave').count()) === 2);
+    const raf = await page.evaluate(() => new Promise((res) => { let n = 0; const o = window.requestAnimationFrame; window.requestAnimationFrame = (f) => { n++; return o(f); }; setTimeout(() => { window.requestAnimationFrame = o; res(n); }, 1500); }));
+    ok('performance: nothing schedules animation frames while idle (the waves are CSS only)', raf === 0, raf);
+    await page.goto(URL0 + '#/meals'); await settle(page, 400);
+    ok('meals: a weighed pot has steam, an unweighed one does not', (await page.locator('.meal .steam').count()) === 1);
+    await page.click('[data-action=meal-log]'); await settle(page, 300);
+    const box = await page.locator('.slicer').boundingBox();
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height - 8); await settle(page, 200);
+    ok('slicer: clicking the bottom of the pot cuts half of it (2 of 4 servings)', (await page.inputValue('#lm-amt')) === '2' && (await page.inputValue('#lm-range')) === '2' && (await text(page, '#lm-prev')).includes('kcal'), await page.inputValue('#lm-amt'));
+    await page.fill('#lm-range', '3'); await page.locator('#lm-range').dispatchEvent('input'); await settle(page, 200);
+    ok('slicer: the slider moves the wedge and the amount together', (await page.inputValue('#lm-amt')) === '3' && (await page.locator('.sl-wedge').getAttribute('d')).includes('A46 46 0 1 1'));
+    await page.click('[data-mode=grams]'); await settle(page, 200);
+    ok('slicer: by grams the slider runs up to the weighed pot', (await page.inputValue('#lm-range')) === (await page.inputValue('#lm-amt')) && (await page.locator('#lm-range').getAttribute('max')) === '1450');
+    await page.click('[data-sheet-close]');
+    ok('motion: no page errors', errs.length === 0, errs);
+    await ctx.close();
+  }
+  {
+    const { ctx, page, errs } = await mk();
+    await page.goto(URL0); await settle(page, 500); await page.click('[data-action=start-own]'); await settle(page, 200);
+    ok('plate: an empty day shows an empty plate with cutlery and no wedges', (await page.locator('.cutlery').count()) === 1 && (await page.locator('.legend').innerText()).includes('0%'));
+    await page.goto(URL0 + '#/settings'); await settle(page, 200); await page.fill('#goal-p', '10'); await page.click('[data-action=save-goals][data-goal=default]'); await settle(page, 400); await page.goto(URL0 + '#/today'); await settle(page, 300);
+    await page.click('[data-action=add][data-slot=lunch]'); await page.fill('.pk-q', 'chicken'); await page.locator('.pk-row').first().click(); await page.fill('#q-amt', '100'); await page.click('[data-add]'); await settle(page, 300);
+    await page.click('[data-sheet-close]'); await settle(page, 250);
+    ok('drops: closing the sheet drops food bits onto the plate, coloured by macro', (await page.locator('.drops .bit').count()) >= 3);
+    ok('goals: reaching the protein goal says so', (await text(page, '#toast')).includes('Protein goal reached'), await text(page, '#toast'));
+    ok('entries: the new row slides in', (await page.locator('.ent.new').count()) === 1);
+    await page.click('[data-action=water][data-ml="250"]'); await settle(page, 200);
+    ok('glass: bubbles rise when you add water', (await page.locator('.bubbles .bub').count()) >= 5);
+    ok('motion: no page errors (own diary)', errs.length === 0, errs);
+    await ctx.close();
+  }
+  {
+    const { ctx, page, errs } = await mk({ reducedMotion: 'reduce' });
+    await page.goto(URL0); await settle(page, 300);
+    ok('reduced motion: the plate is drawn at once, with no entrance animation', await page.evaluate(() => [...document.querySelectorAll('.wedge')].every((w) => /stroke-dasharray:\s*[1-9]/.test(w.getAttribute('style')))));
+    ok('reduced motion: waves and steam do not animate', (await page.evaluate(() => getComputedStyle(document.querySelector('.glass .wave')).animationName)) === 'none');
+    await page.click('[data-action=start-own]'); await page.click('[data-action=add][data-slot=lunch]'); await page.fill('.pk-q', 'rice'); await page.locator('.pk-row').first().click(); await page.click('[data-add]'); await page.click('[data-sheet-close]'); await settle(page, 300);
+    ok('reduced motion: no flying food or bubbles', (await page.locator('.bit, .bub').count()) === 0);
+    ok('reduced motion: no page errors', errs.length === 0, errs);
+    await ctx.close();
+  }
+
   // ---------- foods: label converter, consistency check, edit starter, CSV ----------
   {
     const { ctx, page, errs } = await mk();

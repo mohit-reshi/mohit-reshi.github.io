@@ -11,10 +11,54 @@ function renderNav() {
 }
 function render() {
   const route = routeFromHash(); const prev = UI.tab; UI.tab = route; applyTheme(); renderNav();
+  const dayNow = UI.day || todayKey(); UI.enter = prev !== route || (route === 'today' && UI.lastDay !== dayNow); if (route === 'today') UI.lastDay = dayNow;
   const main = $('#main'); const y = window.scrollY;
   main.innerHTML = route === 'today' ? renderToday() : route === 'meals' ? renderMeals() : route === 'foods' ? renderFoods() : route === 'progress' ? renderProgress() : renderSettings();
   main.className = 'main route-' + route; document.title = 'Pot and Plate';
   window.scrollTo(0, prev === route ? y : 0);
+  afterRender();
+}
+
+// ---------- motion that follows a render: things ease in, drops land on the plate, bubbles rise ----------
+let io = null;
+/** Hovering or focusing a macro in the legend lifts its wedge on the plate and shows its grams in the middle. */
+function highlight(k, text) { const w = $('.plate-wrap'); if (!w) return; ['p', 'c', 'f'].forEach((x) => w.classList.toggle('hl-' + x, x === k)); w.classList.toggle('hl', !!k); const alt = $('.ring-alt', w); if (alt) alt.textContent = k ? text : ''; }
+function metToasts() {
+  const g = goalFor(UI.day || todayKey()); const d = dayRec(UI.day || todayKey()); const tot = dayTotals(d); const now = { protein: g.p > 0 && tot.p >= g.p, water: g.water > 0 && waterTotal(d) >= g.water }; const key = UI.day || todayKey();
+  const prev = UI.met; UI.met = Object.assign({ day: key }, now);
+  if (prev && prev.day === key && !S.sample) { if (now.protein && !prev.protein) { toast('Protein goal reached'); sparkle('.legend'); } if (now.water && !prev.water) { toast('Water goal reached'); sparkle('.glass-wrap'); } }
+}
+function sparkle(sel) { const el = $(sel); if (!el || REDUCED()) return; el.classList.remove('sparkle'); void el.offsetWidth; el.classList.add('sparkle'); setTimeout(() => el.classList.remove('sparkle'), 1600); }
+function afterRender() {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    $$('[data-to]').forEach((el) => { if (el.classList.contains('level')) el.style.transform = 'translateY(' + el.dataset.to + 'px)'; else el.setAttribute('style', el.dataset.to); });
+    $$('.ring-fg[data-dash]').forEach((el) => el.setAttribute('stroke-dasharray', el.dataset.dash));
+    $$('.fill[data-w]').forEach((el) => { el.style.width = el.dataset.w + '%'; });
+  }));
+  if (!REDUCED() && !document.querySelector('dialog[open]')) { spawnDrops(); }
+  if (UI.bubbles && !REDUCED()) { spawnBubbles(); } UI.bubbles = false;
+  if (!document.querySelector('dialog[open]')) UI.drops = [];
+  if (!document.querySelector('dialog[open]')) UI.newEntry = null;
+  if (UI.tab === 'today') metToasts();
+  if (io) io.disconnect();
+  if ('IntersectionObserver' in window) { io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle('paused', !e.isIntersecting))); $$('.glass-wrap, .meal').forEach((el) => io.observe(el)); }
+}
+function spawnDrops() {
+  const host = $('.drops'); const list = UI.drops || []; if (!host || !list.length) return;
+  const colors = { p: 'var(--c-protein)', c: 'var(--c-carb)', f: 'var(--c-fat)' };
+  list.slice(-3).forEach((d) => {
+    const tot = d.p + d.c + d.f || 1; const n = Math.max(3, Math.min(8, Math.round(3 + Math.sqrt(tot) / 6)));
+    for (let i = 0; i < n; i++) {
+      const r = Math.random() * tot; const key = r < d.p ? 'p' : r < d.p + d.c ? 'c' : 'f';
+      const b = document.createElement('i'); b.className = 'bit bit-' + key;
+      b.style.cssText = '--x:' + (Math.random() * 56 - 28).toFixed(0) + 'px;--y:' + (Math.random() * 46 - 23).toFixed(0) + 'px;--s:' + (0.7 + Math.random() * 0.8).toFixed(2) + ';--d:' + (i * 55 + Math.random() * 80).toFixed(0) + 'ms;--c:' + colors[key];
+      host.appendChild(b); setTimeout(() => b.remove(), 1700);
+    }
+  });
+}
+function spawnBubbles() {
+  const host = $('.bubbles'); if (!host) return;
+  for (let i = 0; i < 7; i++) { const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); c.setAttribute('class', 'bub'); c.setAttribute('cx', String(26 + Math.random() * 38)); c.setAttribute('cy', '112'); c.setAttribute('r', (1.2 + Math.random() * 2.2).toFixed(1)); c.style.animationDelay = (i * 90 + Math.random() * 120).toFixed(0) + 'ms'; host.appendChild(c); setTimeout(() => c.remove(), 2000); }
 }
 const go = (hash) => { if (location.hash === hash) render(); else location.hash = hash; };
 function download(name, text, type) { const b = new Blob([text], { type: type || 'application/json' }); const l = document.createElement('a'); l.href = URL.createObjectURL(b); l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); }
@@ -33,7 +77,7 @@ function onClick(e) {
     case 'add': openAdd(t.dataset.slot); break;
     case 'copy-slot': { const n = copyDay(addDays(curDay(), -1), curDay(), t.dataset.slot); toast('Copied ' + n + ' item' + (n === 1 ? '' : 's')); render(); break; }
     case 'edit-entry': openEntry(id); break;
-    case 'water': addWater(curDay(), +t.dataset.ml); render(); break;
+    case 'water': addWater(curDay(), +t.dataset.ml); UI.bubbles = true; render(); break;
     case 'water-other': askDialog('How many ml?', { value: '', ok: 'Add', type: 'text' }, (v) => { const n = num(v); if (n && n > 0 && n < 5000) { addWater(curDay(), n); render(); } }); break;
     case 'water-undo': { const ml = undoWater(curDay()); render(); if (ml) toast('Removed ' + ml + ' ml', () => { addWater(curDay(), ml); render(); }); break; }
     case 'toast-undo': if (UI.undo) { const f = UI.undo; UI.undo = null; f(); $('#toast').className = ''; } break;
@@ -78,6 +122,11 @@ function onInput(e) {
 function boot() {
   load(new Date()); lastAdmin = isAdmin();
   document.addEventListener('click', onClick); document.addEventListener('change', onChange); document.addEventListener('input', onInput);
+  document.addEventListener('pointerover', (e) => { const t = e.target.closest && e.target.closest('[data-hl]'); if (t) highlight(t.dataset.hl, t.dataset.g); });
+  document.addEventListener('pointerout', (e) => { if (e.target.closest && e.target.closest('[data-hl]')) highlight(null); });
+  document.addEventListener('focusin', (e) => { const t = e.target.closest && e.target.closest('[data-hl]'); if (t) highlight(t.dataset.hl, t.dataset.g); });
+  document.addEventListener('focusout', (e) => { if (e.target.closest && e.target.closest('[data-hl]')) highlight(null); });
+  document.addEventListener('visibilitychange', () => document.body.classList.toggle('hidden-tab', document.hidden));
   window.addEventListener('hashchange', render); window.addEventListener('pagehide', flush);
   window.addEventListener('appchrome:owner', () => { const now = isAdmin(); if (now !== lastAdmin) { lastAdmin = now; render(); } });
   window.addEventListener('storage', (e) => { if (e.key === 'pot-and-plate-v1' && !S.sample) { load(new Date()); render(); } });
