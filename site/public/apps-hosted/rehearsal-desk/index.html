@@ -209,6 +209,160 @@ kbd { font: 12px var(--mono); border: 1px solid currentColor; border-radius: 4px
 .card .reveal { margin-top: 4px; }
 .card textarea, .card input { width: 100%; }
 
+/* ---------- Stage and spotlight ---------- */
+:root { --glow: rgba(255, 205, 100, .30); --stage-bg: #0d2528; --stage-bg2: #12393e; --gold: #e1ae4c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --glow: rgba(255, 205, 100, .13); } }
+:root[data-theme="dark"] { --glow: rgba(255, 205, 100, .13); }
+@property --p { syntax: "<number>"; inherits: false; initial-value: 0; }
+
+/* buttons: a little give */
+.btn, .seg-btn, .chipbtn { transition: background-color .15s, transform .12s, box-shadow .15s, filter .15s; }
+.btn:active, .chipbtn:active { transform: scale(.97); }
+.btn.primary:hover { box-shadow: 0 4px 14px rgba(15, 92, 99, .35); transform: translateY(-1px); } .btn.primary:active { transform: scale(.97); box-shadow: none; }
+
+/* cards: depth, moving light, lift */
+.cards .card {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) rotate(var(--tilt, 0deg)) translate(0px, var(--lift, 0px));
+  transition: transform .4s cubic-bezier(.2, .7, .2, 1), box-shadow .4s ease;
+  box-shadow: var(--sx, 0px) calc(var(--sy, 0px) + 3px) 8px rgba(30, 30, 20, .10), var(--sx, 0px) calc(var(--sy, 0px) + 8px) 18px rgba(30, 30, 20, .08);
+}
+.cards .card:hover, .cards .card:focus-within, .cards .card.flash { --tilt: 0deg; --lift: -4px; box-shadow: calc(var(--sx, 0px) * 1.4) calc(var(--sy, 0px) * 1.4 + 14px) 28px rgba(20, 30, 30, .22), 0 2px 4px rgba(20, 30, 30, .10); }
+.cards .card.tilting { transition: transform .1s linear, box-shadow .1s linear; }
+.cards .card.perfected { --tilt: 0deg; box-shadow: var(--sx, 0px) calc(var(--sy, 0px) + 2px) 6px rgba(20, 60, 30, .12); }
+.cards .card.perfected:hover, .cards .card.perfected:focus-within { box-shadow: calc(var(--sx, 0px) * 1.4) calc(var(--sy, 0px) * 1.4 + 10px) 22px rgba(20, 60, 30, .22); }
+.cards .card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1; opacity: 0; transition: opacity .3s; background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .7), rgba(255, 255, 255, 0) 60%); }
+.cards .card.tilting::before { opacity: .8; }
+:root[data-theme="dark"] .cards .card { box-shadow: var(--sx, 0px) calc(var(--sy, 0px) + 4px) 12px rgba(0, 0, 0, .45); }
+:root[data-theme="dark"] .cards .card::before { background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 60%); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .cards .card { box-shadow: var(--sx, 0px) calc(var(--sy, 0px) + 4px) 12px rgba(0, 0, 0, .45); }
+  :root:not([data-theme="light"]) .cards .card::before { background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 60%); }
+}
+.card:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+/* fan-out when the board opens (transform only, so text stays fully readable) */
+.board.fan { overflow-x: clip; }
+.board.fan .cards > .card { animation: fan .62s cubic-bezier(.2, .8, .25, 1) var(--d, 0ms) backwards; }
+@keyframes fan {
+  from { transform: perspective(900px) rotateX(0deg) rotateY(0deg) rotate(var(--fx, -4deg)) translate(var(--dx, 0px), var(--dy, 40px)); }
+  to { transform: perspective(900px) rotateX(0deg) rotateY(0deg) rotate(var(--tilt, 0deg)) translate(0px, 0px); }
+}
+
+/* the stamp: a faint mark on perfected cards, a slam when one is earned */
+.cards .card.perfected::after { content: "PERFECTED"; position: absolute; right: 16px; bottom: 52px; z-index: -1; pointer-events: none; font: 800 22px/1 var(--font); letter-spacing: .16em; color: var(--green-text); border: 3px solid currentColor; border-radius: 6px; padding: 5px 10px 5px 14px; opacity: .15; transform: rotate(-9deg); }
+.cards .card.perfected.slam::after { z-index: 2; animation: slam .85s cubic-bezier(.2, .9, .3, 1) both; }
+@keyframes slam {
+  0% { opacity: 0; transform: rotate(-9deg) scale(3); }
+  34% { opacity: .95; transform: rotate(-9deg) scale(.9); }
+  46% { transform: rotate(-11deg) scale(1.06); }
+  60% { transform: rotate(-8.5deg) scale(.98); }
+  72% { opacity: .9; transform: rotate(-9deg) scale(1); }
+  100% { opacity: .15; transform: rotate(-9deg) scale(1); }
+}
+.cards .card.slam { animation: thud .4s .26s ease-out; }
+@keyframes thud { 30% { scale: .985; } 60% { scale: 1.006; } }
+
+/* progress rings sweep and pulse */
+.ring { border-radius: 50%; }
+.ring > span { transition: --p .9s cubic-bezier(.2, .7, .2, 1); } .ring > span.nt { transition: none; }
+.ring.pulse { animation: ringpulse .85s ease-out; }
+@keyframes ringpulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 transparent; } 35% { transform: scale(1.2); box-shadow: 0 0 0 7px color-mix(in srgb, var(--green) 35%, transparent); } 100% { transform: scale(1); box-shadow: 0 0 0 16px transparent; } }
+@supports (mask-composite: intersect) {
+  .ring.big { margin: 10px; }
+  .ring.big > span::before, .ring.big > span::after { content: ""; position: absolute; inset: -11px; border-radius: 50%; pointer-events: none; mask: radial-gradient(circle closest-side, transparent calc(100% - 8px), #000 calc(100% - 7px)); }
+  .ring.big > span::before { background: repeating-conic-gradient(from -1deg, var(--line) 0 2.4deg, transparent 2.4deg 9deg); }
+  .ring.big > span::after { background: repeating-conic-gradient(from -1deg, var(--green) 0 2.4deg, transparent 2.4deg 9deg); mask: radial-gradient(circle closest-side, transparent calc(100% - 8px), #000 calc(100% - 7px)), conic-gradient(#000 calc(var(--p) * 1%), transparent 0); mask-composite: intersect; }
+}
+.readiness.lit, .summary.applause { background: radial-gradient(ellipse 60% 150% at 8% -30%, var(--glow), transparent 70%), var(--surface); }
+.summary.applause { background: radial-gradient(ellipse 60% 100% at 50% -35%, var(--glow), transparent 72%), var(--surface); animation: lightup 1s ease-out both; }
+@keyframes lightup { from { filter: brightness(.82); } to { filter: none; } }
+
+/* curtain call */
+.curtain { position: fixed; inset: 0; z-index: 90; pointer-events: none; display: grid; place-items: center; overflow: hidden; animation: cdim 1.5s linear both; }
+@keyframes cdim { 0% { background: rgba(5, 10, 12, 0); } 10% { background: rgba(5, 10, 12, .8); } 80% { background: rgba(5, 10, 12, .8); } 100% { background: rgba(5, 10, 12, 0); } }
+.curtain .cur { position: absolute; top: 0; bottom: 0; width: 51%; background: repeating-linear-gradient(90deg, #0a3a40 0, #167a85 16px, #0a3a40 32px); box-shadow: 0 0 40px rgba(0, 0, 0, .5); }
+.curtain .cur.l { left: 0; border-right: 4px solid var(--gold); animation: curl 1.5s cubic-bezier(.6, 0, .2, 1) both; }
+.curtain .cur.r { right: 0; border-left: 4px solid var(--gold); animation: curr 1.5s cubic-bezier(.6, 0, .2, 1) both; }
+@keyframes curl { 0%, 6% { transform: translateX(0); } 40%, 100% { transform: translateX(-102%); } }
+@keyframes curr { 0%, 6% { transform: translateX(0); } 40%, 100% { transform: translateX(102%); } }
+.curtain .beam { position: absolute; inset: 0; background: radial-gradient(ellipse 36% 54% at 50% 48%, rgba(255, 236, 176, .5), rgba(255, 236, 176, .14) 55%, transparent 72%); opacity: 0; animation: cbeam 1.5s ease-out both; }
+@keyframes cbeam { 0%, 20% { opacity: 0; } 46%, 80% { opacity: 1; } 100% { opacity: 0; } }
+.curtain .plaque { position: relative; text-align: center; color: #fff; background: rgba(6, 18, 20, .78); border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold); padding: 16px 30px 14px; max-width: min(88vw, 520px); animation: cplaque 1.5s cubic-bezier(.2, .8, .2, 1) both; }
+.curtain .plaque b { display: block; font: 800 clamp(22px, 5vw, 32px)/1.15 var(--font); letter-spacing: -.01em; }
+.curtain .plaque span { display: block; margin-top: 6px; font-size: 16px; color: #e6f1f2; overflow-wrap: anywhere; }
+@keyframes cplaque { 0%, 24% { opacity: 0; transform: scale(.86); } 44%, 82% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.03); } }
+.curtain .sparks { position: absolute; left: 50%; top: 48%; width: 0; height: 0; }
+.curtain .sparks i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: #ffe9a8; opacity: 0; animation: cspark 1s calc(380ms + var(--w, 0ms)) ease-out both; }
+@keyframes cspark { 0% { opacity: 0; transform: rotate(var(--a)) translateY(0) scale(.3); } 25% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--r) * -2.2)) scale(1); } }
+.curtain.quiet { animation: cquiet 1.8s ease both; }
+@keyframes cquiet { 0% { background: rgba(5, 10, 12, 0); } 18% { background: rgba(5, 10, 12, .7); } 82% { background: rgba(5, 10, 12, .7); } 100% { background: rgba(5, 10, 12, 0); } }
+.curtain.quiet .plaque { animation: cquietp 1.8s ease both; } .curtain.quiet .beam { animation: cquietp 1.8s ease both; }
+@keyframes cquietp { 0%, 10% { opacity: 0; } 25%, 80% { opacity: 1; } 100% { opacity: 0; } }
+
+/* stage graphics: first run and empty states */
+.spot { display: inline-block; vertical-align: top; }
+.spot svg { display: block; max-width: 100%; height: auto; }
+.spot .cone { transform-origin: 80px 4px; transform: rotate(calc(var(--lx, 0) * 8deg)); transition: transform .35s ease-out; animation: lampon .9s ease-out both; }
+.spot .pool { fill: rgba(255, 233, 168, .45); } .spot .lamp { fill: #9fb0b3; } .spot .stool rect { fill: #d2dcde; } .spot .stool path { stroke: #d2dcde; }
+@keyframes lampon { 0% { opacity: 0; } 14% { opacity: .95; } 22% { opacity: .15; } 36%, 100% { opacity: 1; } }
+.spot.small { display: block; width: max-content; background: var(--stage-bg); border-radius: 14px; padding: 4px 14px; margin: 10px 0; } .spot.small svg { width: 112px; }
+.empty .spot.small { display: block; width: max-content; margin: 0 auto 12px; }
+.hero-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: 24px; align-items: center; }
+.hero-wrap .hero { margin-bottom: 18px; }
+.stage-art { position: relative; border-radius: 18px; background: linear-gradient(180deg, var(--stage-bg), var(--stage-bg2)); padding: 10px 14px 14px; text-align: center; color: #fff; margin-bottom: 18px; overflow: hidden; box-shadow: var(--shadow); }
+.stage-art .spot.big { display: block; } .stage-art .spot.big svg { width: min(100%, 230px); margin: 0 auto; }
+.stage-cue { margin: 0; font-size: 15px; font-weight: 700; color: #f4e6bd; } .stage-cue::after { content: ""; }
+@media (max-width: 800px) { .hero-wrap { grid-template-columns: 1fr; gap: 0; } .stage-art { order: 2; padding: 6px 12px 10px; } .stage-art .spot.big svg { width: 150px; } }
+
+/* practice: spotlight and timer ring */
+.practice.live { position: relative; isolation: isolate; }
+.practice.live::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 64% 68% at 50% var(--spot-y, 42%), rgba(255, 226, 150, .16) 0%, rgba(255, 226, 150, 0) 52%, rgba(7, 34, 38, .55) 100%); mask-image: linear-gradient(#000, #000 58%, transparent 97%); animation: lightup2 .9s ease-out both; }
+.practice.live.held::before { animation: none; }
+@keyframes lightup2 { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 800px) { .practice.live::before { background: radial-gradient(ellipse 90% 70% at 50% var(--spot-y, 42%), rgba(255, 226, 150, .14) 0%, rgba(255, 226, 150, 0) 55%, rgba(7, 34, 38, .4) 100%); } }
+.pr-top .tring, .pr-top .tzone { flex: none; }
+.pr-top #pr-clock { margin-left: auto; } .pr-top .timer { margin-left: 0; }
+.clockset { display: inline-flex; align-items: center; gap: 10px; flex: none; margin-left: auto; } #pr-clock ~ .clockset { margin-left: 0; }
+.tring { display: inline-grid; width: 48px; height: 48px; }
+.tring svg { transform: rotate(-90deg); overflow: visible; } .tring circle { fill: none; stroke-width: 5; }
+.tring .zone { opacity: .3; } .tring .zs { stroke: var(--warn); } .tring .zg { stroke: var(--green); } .tring .zl { stroke: var(--bad); }
+.tring .prog { stroke: var(--warn); stroke-linecap: butt; transition: stroke .3s; } .tring.z1 .prog { stroke: var(--green); } .tring.z2 .prog { stroke: var(--bad); }
+.tring.z1 { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--green) 55%, transparent)); }
+.tzone { font-size: 13px; font-weight: 800; letter-spacing: .02em; color: var(--warn); } .tzone.z1 { color: var(--green-text); } .tzone.z2 { color: var(--bad); }
+.pr-card.flip-in { animation: flipin .65s cubic-bezier(.2, .85, .25, 1) both; }
+@keyframes flipin { from { transform: perspective(1100px) rotateY(-86deg); } 60% { transform: perspective(1100px) rotateY(7deg); } to { transform: perspective(1100px) rotateY(0deg); } }
+.pr-card.deal-in { animation: dealin .5s cubic-bezier(.2, .85, .25, 1) both; }
+@keyframes dealin { from { transform: translate(0, 34px) rotate(-1.6deg); } to { transform: translate(0, 0) rotate(0deg); } }
+.progressbar span { animation: grow .6s cubic-bezier(.2, .8, .2, 1) both, glow .9s ease-out; }
+@keyframes grow { from { width: var(--from, 0%); } }
+@keyframes glow { 0% { box-shadow: 0 0 0 0 transparent; } 30% { box-shadow: 0 0 12px 2px var(--accent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.pr-card.miss-in { animation: missin .5s ease-out both; }
+@keyframes missin { 0% { transform: translate(0, 20px) rotate(0deg); } 25% { transform: translate(-7px, 8px) rotate(-.6deg); } 50% { transform: translate(6px, 3px) rotate(.5deg); } 75% { transform: translate(-3px, 1px); } 100% { transform: translate(0, 0); } }
+#fact-score.pop { animation: pop .35s ease-out; } .badge-done { transform-origin: 100% 50%; }
+.cards .card.slam .badge-done { animation: pop .6s .3s both; }
+@keyframes pop { 0% { transform: scale(.6); } 55% { transform: scale(1.18); } 100% { transform: scale(1); } }
+.tile, .stepper a { transition: transform .2s, box-shadow .2s, background-color .15s; } .tile:hover, .stepper a:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.applause-sparks { position: absolute; left: 90px; top: 38px; width: 0; height: 0; pointer-events: none; z-index: 2; }
+.applause-sparks i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); opacity: 0; animation: cspark 1.1s calc(150ms + var(--w, 0ms)) ease-out both; }
+.summary { position: relative; }
+
+/* calm mode: no travel, no spin; fades and static states carry the same information */
+@media (prefers-reduced-motion: reduce) {
+  .cards .card, .cards .card:hover, .cards .card:focus-within, .cards .card.flash { transform: none; transition: none; }
+  .cards .card.slam { animation: none; }
+  .cards .card.perfected.slam::after { animation: stampfade 1.2s ease both; }
+  @keyframes stampfade { 0% { opacity: 0; } 25% { opacity: .9; } 100% { opacity: .15; } }
+  .board.fan .cards > .card { animation: none; }
+  .ring > span, .tring .prog, .progressbar span { transition: none; animation: none; }
+  .tile, .stepper a { transition: none; } .tile:hover, .stepper a:hover { transform: none; } #fact-score.pop, .cards .card.slam .badge-done { animation: none; }
+  .ring.pulse { animation: none; }
+  .btn, .seg-btn, .chipbtn { transition: none; } .btn:active, .btn.primary:hover { transform: none; }
+  .spot .cone { animation: none; transition: none; transform: none; }
+  .practice.live::before, .summary.applause { animation: none; }
+  .pr-card.flip-in, .pr-card.deal-in, .pr-card.miss-in { animation: calmfade .25s ease both; }
+  @keyframes calmfade { from { opacity: .4; } to { opacity: 1; } }
+}
+
 </style>
 <script defer src="./app-chrome.js" data-app="rehearsal-desk" data-keys="rehearsal-desk-v1" data-zip="rehearsal-desk-local.zip"></script>
 </head>
@@ -1813,7 +1967,7 @@ function renderBoard() {
       '<button class="btn small" data-action="new-section">New section</button></div>';
   }
   const visible = secs.map((x) => ({ s: x.s, cards: x.cards.filter(matches).sort(byOrder) })).filter((x) => x.cards.length || (admin && !UI.search && UI.filter === 'all' && (x.s.kind === 'custom' || x.s.kind === 'collected')));
-  if (!visible.length) html += '<div class="empty"><strong>No cards match.</strong><p>Change the filter or search, or analyse a resume on Home.</p></div>';
+  if (!visible.length) html += '<div class="empty">' + spotSvg('spot small') + '<strong>No cards match.</strong><p>Change the filter or search, or analyse a resume on Home.</p></div>';
   visible.forEach((x, i) => {
     const s = x.s; const all = secs.find((y) => y.s.id === s.id).cards; const p = all.filter((c) => c.status === 'perfected').length;
     const batch = S.batches.find((b) => b.secId === s.id);
@@ -1960,7 +2114,7 @@ function readinessPanel(rd) {
   if (!rd.total) return '';
   const first = rd.priority[0];
   const next = rd.gaps && first ? '<a class="btn primary" href="#/edit/' + esc(first.id) + '">Fill in: ' + esc(trunc(first.q, 60)) + '</a>' : rd.due ? '<a class="btn primary" href="#/practice">Practise ' + rd.due + ' due answers</a>' : '<a class="btn primary" href="#/practice">Run a mock interview</a>';
-  return '<div class="panel readiness"><div class="ready-head"><span class="ring big" role="img" aria-label="' + rd.pct + ' percent of answers perfected"><span style="--p:' + rd.pct + '"></span><b>' + rd.pct + '%</b></span><div><h2>Interview readiness</h2><p class="muted">' + rd.perfected + ' of ' + rd.total + ' answers perfected \u00b7 ' + rd.gaps + ' still have gaps \u00b7 ' + rd.due + ' due for practice</p><div class="row">' + next + '</div></div></div>' +
+  return '<div class="panel readiness lit"><div class="ready-head"><span class="ring big" role="img" aria-label="' + rd.pct + ' percent of answers perfected"><span style="--p:' + rd.pct + '"></span><b>' + rd.pct + '%</b></span><div><h2>Interview readiness</h2><p class="muted">' + rd.perfected + ' of ' + rd.total + ' answers perfected \u00b7 ' + rd.gaps + ' still have gaps \u00b7 ' + rd.due + ' due for practice</p><div class="row">' + next + '</div></div></div>' +
     (rd.priority.length ? '<h3>Prepare these first</h3><ul class="plain-list">' + rd.priority.map((c) => '<li><span>' + esc(c.q) + '</span><a class="btn small" href="#/edit/' + esc(c.id) + '">Edit</a></li>').join('') + '</ul>' : '<p>The most important answers are done. Keep practising them.</p>') + '</div>';
 }
 function renderHome() {
@@ -1978,9 +2132,9 @@ function renderHome() {
     '<div class="tile"><b>' + cardsN + '</b><span>question cards</span></div>' +
     '<div class="tile"><b>' + (ch ? ch.passed + '/' + ch.total : '-') + '</b><span>readability checks passed</span></div></div>' : '';
   return '<section class="home">' +
-    '<div class="hero"><h1>Rehearse the answers you will actually give.</h1>' +
+    '<div class="hero-wrap"><div class="hero"><h1>Rehearse the answers you will actually give.</h1>' +
     '<p>Paste your resume. Rehearsal Desk finds your jobs and projects, writes starter answers from your own facts, and turns them into cards you can edit, perfect and practise. Add a job description for questions about that role.</p>' +
-    '<p class="privacy"><strong>Private by design.</strong> Your resume and answers are saved in this browser only, so they are here when you come back. Nothing is uploaded. You can clear everything at any time with <em>Clear my data</em>.</p></div>' +
+    '<p class="privacy"><strong>Private by design.</strong> Your resume and answers are saved in this browser only, so they are here when you come back. Nothing is uploaded. You can clear everything at any time with <em>Clear my data</em>.</p></div>' + (S.sample ? heroStage() : '') + '</div>' +
     stepper(rd) + nudge +
     (S.sample ? '<div class="notice">Showing a fictional sample (Jordan Avery, a senior data analyst). Replace the text below with your own and press Analyse. Nothing here is saved until then.</div>' : '') +
     readinessPanel(rd) +
@@ -2139,7 +2293,7 @@ function practiceHome(p) {
     '<label class="field"><span>What to practise</span><select id="pr-scope" data-action="pr-scope">' + [['due', 'Answers due for review'], ['draft', 'Answers that need work'], ['perfected', 'Perfected answers'], ['all', 'Everything']].map(([v, l]) => '<option value="' + v + '"' + (p.scope === v ? ' selected' : '') + '>' + l + '</option>').join('') + secs.map((x) => '<option value="' + esc(x.s.id) + '"' + (p.scope === x.s.id ? ' selected' : '') + '>' + esc(x.s.title) + '</option>').join('') + '</select></label>' +
     '<label class="field"><span>How much do you want to see while you answer?</span><select id="pr-level" data-action="pr-level">' + LEVELS.map(([l, v]) => '<option value="' + v + '"' + (p.level === v ? ' selected' : '') + '>' + l + '</option>').join('') + '</select></label>' +
     '<p class="muted">' + deckSize + ' question' + (deckSize === 1 ? '' : 's') + ' match. A round is up to 25.</p>' +
-    '<button class="btn primary big" data-action="pr-start"' + (deckSize ? '' : ' disabled') + '>Start the drill</button>' + (!deckSize && p.scope === 'due' ? '<p class="hint">Nothing is due. Fill in the gaps in a few answers on the <a href="#/board">cards</a> first, or choose another group.</p>' : '') + '</div>' +
+    '<button class="btn primary big" data-action="pr-start"' + (deckSize ? '' : ' disabled') + '>Start the drill</button>' + (!deckSize && p.scope === 'due' ? spotSvg('spot small') + '<p class="hint">Nothing is due. Fill in the gaps in a few answers on the <a href="#/board">cards</a> first, or choose another group.</p>' : '') + '</div>' +
     '<div class="panel"><h3>Mock interview</h3><p class="hint">A timed run in interview order: your opening answer, questions on your jobs and projects, the job, then a question for them. No hints. Cards that still have gaps are included, so fix those first.</p>' +
     '<div class="seg" role="group" aria-label="Length">' + [20, 30, 45].map((m) => '<button class="seg-btn" data-action="pr-minutes" data-v="' + m + '" aria-pressed="' + (p.minutes === m) + '">' + m + ' min</button>').join('') + '</div>' +
     '<div class="row"><button class="btn primary big" data-action="pr-mock">Start the mock interview</button></div></div></div></section>';
@@ -2167,17 +2321,18 @@ function practiceCard(p) {
       (facts.length ? '<fieldset class="facts"><legend>Facts to hit. Tick the ones you said.</legend>' + facts.map((f, i) => '<label class="check"><input type="checkbox" data-action="pr-fact" data-i="' + i + '"' + (hit.includes(i) ? ' checked' : '') + '> ' + esc(f) + '</label>').join('') + '<p class="muted" id="fact-score">' + hit.length + ' of ' + facts.length + '</p></fieldset>' : '') +
       '<div class="row"><button class="btn" data-action="pr-rate" data-ok="0">Needs work <kbd>1</kbd></button><button class="btn primary" data-action="pr-rate" data-ok="1">Nailed it <kbd>2</kbd></button><button class="btn small" data-action="edit" data-id="' + esc(c.id) + '">Edit this answer</button></div>';
   }
-  return '<section class="practice"><div class="pr-top"><button class="btn small" data-action="pr-home">End round</button><span class="muted">' + (mock ? 'Mock interview' : 'Drill') + ' · question ' + (p.i + 1) + ' of ' + p.deck.length + '</span>' +
+  const from = p._pi === undefined ? p.i : p._pi; p._pi = p.i;
+  return '<section class="practice live"><div class="pr-top"><button class="btn small" data-action="pr-home">End round</button><span class="muted">' + (mock ? 'Mock interview' : 'Drill') + ' · question ' + (p.i + 1) + ' of ' + p.deck.length + '</span>' +
     (mock ? '<span class="timer" id="pr-clock" data-deadline="' + p.deadline + '">' + fmtClock((p.deadline - Date.now()) / 1000) + ' left</span>' : '') +
-    '<span class="timer" id="pr-timer" data-t0="' + p.t0 + '" data-target="' + target + '" data-frozen="' + (p.reveal ? p.spoken : '') + '">' + fmtClock(p.reveal ? p.spoken : 0) + ' / ' + fmtClock(target) + '</span></div>' +
-    '<div class="progressbar" role="progressbar" aria-label="Round progress" aria-valuemin="0" aria-valuemax="' + p.deck.length + '" aria-valuenow="' + p.i + '"><span style="width:' + (p.i / p.deck.length * 100) + '%"></span></div>' +
+    '<span class="clockset">' + timerRingHtml(p.reveal ? p.spoken : 0, target, p.reveal) + '<span class="timer" id="pr-timer" data-t0="' + p.t0 + '" data-target="' + target + '" data-frozen="' + (p.reveal ? p.spoken : '') + '">' + fmtClock(p.reveal ? p.spoken : 0) + ' / ' + fmtClock(target) + '</span></span></div>' +
+    '<div class="progressbar" role="progressbar" aria-label="Round progress" aria-valuemin="0" aria-valuemax="' + p.deck.length + '" aria-valuenow="' + p.i + '"><span style="width:' + (p.i / p.deck.length * 100) + '%;--from:' + (from / p.deck.length * 100) + '%"></span></div>' +
     '<div class="pr-card card hue-' + (HUE_OF[c.cat] || 'slate') + '"><div class="card-top"><span class="cat">' + esc((CATS[c.cat] || {}).label || '') + '</span>' + (c.practice ? '<span class="chip">practised ' + c.practice.n + 'x</span>' : '<span class="chip">new</span>') + '</div><h2 class="q">' + esc(c.q) + '</h2>' + body + '</div></section>';
 }
 function practiceSummary(p) {
   const r = p.results; const ok = r.filter((x) => x.ok).length, bad = r.filter((x) => x.ok === false), skipped = r.filter((x) => x.ok === null).length;
   const timed = r.filter((x) => x.spoken); const avg = timed.length ? Math.round(timed.reduce((n, x) => n + x.spoken, 0) / timed.length) : 0;
   const tomorrow = p.deck.filter((id) => { const c = getCard(id); return c && c.practice && c.practice.due && c.practice.due - Date.now() < 36 * 3600 * 1000; }).length;
-  return '<section class="practice"><div class="panel"><h2>Round finished</h2><div class="tiles"><div class="tile"><b>' + ok + '</b><span>nailed it</span></div><div class="tile"><b>' + bad.length + '</b><span>need work</span></div><div class="tile"><b>' + skipped + '</b><span>skipped</span></div><div class="tile"><b>' + (avg ? fmtClock(avg) : '-') + '</b><span>average answer time</span></div></div>' +
+  return '<section class="practice"><div class="panel summary' + (!bad.length && ok ? ' applause' : '') + '"><h2>Round finished</h2><div class="tiles"><div class="tile"><b>' + ok + '</b><span>nailed it</span></div><div class="tile"><b>' + bad.length + '</b><span>need work</span></div><div class="tile"><b>' + skipped + '</b><span>skipped</span></div><div class="tile"><b>' + (avg ? fmtClock(avg) : '-') + '</b><span>average answer time</span></div></div>' +
     (bad.length ? '<h3>Practise these again</h3><ul class="plain-list">' + bad.map((x) => { const c = getCard(x.id); return c ? '<li><span>' + esc(c.q) + '</span> <button class="btn small" data-action="edit" data-id="' + esc(c.id) + '">Edit</button></li>' : ''; }).join('') + '</ul>' : '<p>Strong round. These answers come back for review on a growing schedule.</p>') +
     '<p class="muted">' + tomorrow + ' of these will be due again within a day or two.</p>' +
     '<div class="row">' + (bad.length ? '<button class="btn primary" data-action="pr-again-missed">Practise the ones that need work</button>' : '') + '<button class="btn" data-action="pr-home">Back to practice</button></div></div></section>';
@@ -2213,6 +2368,210 @@ function renderCollected() {
     (UI.notice ? '<p class="status" role="status">' + esc(UI.notice) + '</p>' : '') +
     '<h3>Earlier imports</h3>' + (S.batches.length ? '<ul class="batches">' + S.batches.map((b) => '<li><strong>' + esc((S.sections[b.secId] || {}).title || 'Section moved or deleted') + '</strong>' + (b.label ? ' <span class="chip">' + esc(b.label) + '</span>' : '') + ' <span class="muted">' + b.count + ' questions</span></li>').join('') + '</ul>' : '<p class="muted">None yet.</p>') + '</section>';
 }
+
+/* ---- app/stage.js ---- */
+// Stage and spotlight layer: pointer tilt on cards, the fan-out, ring sweeps, the section curtain call,
+// the timer ring, and small stage graphics for first-run and empty states.
+// Everything here is finite or event driven: nothing loops, so an idle page costs no frames.
+// With reduced motion the same information appears with fades or not at all.
+
+const calm = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const hasHover = () => !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+
+// ---------- pointer tilt and moving light on cards ----------
+let tiltEl = null, tiltRaf = 0, tiltPt = null;
+function tiltClear(el) {
+  if (!el) return;
+  el.classList.remove('tilting');
+  ['--rx', '--ry', '--mx', '--my', '--sx', '--sy'].forEach((k) => el.style.removeProperty(k));
+}
+function tiltApply() {
+  tiltRaf = 0;
+  const el = tiltEl, e = tiltPt; if (!el || !e || !el.isConnected) return;
+  const r = el.getBoundingClientRect(); if (!r.width || !r.height) return;
+  const px = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), py = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+  el.classList.add('tilting');
+  el.style.setProperty('--ry', ((px - 0.5) * 3.6).toFixed(2) + 'deg');
+  el.style.setProperty('--rx', ((0.5 - py) * 2.6).toFixed(2) + 'deg');
+  el.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+  el.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+  el.style.setProperty('--sx', ((0.5 - px) * 18).toFixed(1) + 'px');
+  el.style.setProperty('--sy', ((0.5 - py) * 12).toFixed(1) + 'px');
+}
+function onTiltMove(e) {
+  if (e.pointerType === 'touch' || calm()) return;
+  const t = e.target; if (!t || !t.closest) return;
+  const card = t.closest('.cards .card');
+  if (card !== tiltEl) { tiltClear(tiltEl); tiltEl = card; }
+  if (!card) return;
+  // Hold still over controls so a click never lands on a moving target.
+  if (t.closest('button, a, input, label, textarea, select')) return;
+  tiltPt = e;
+  if (!tiltRaf) tiltRaf = requestAnimationFrame(tiltApply);
+}
+function bindStage() {
+  if (!hasHover()) return;
+  document.addEventListener('pointermove', onTiltMove, { passive: true });
+  document.addEventListener('pointerleave', () => { tiltClear(tiltEl); tiltEl = null; });
+  window.addEventListener('blur', () => { tiltClear(tiltEl); tiltEl = null; });
+  // The hero light follows the pointer a little.
+  document.addEventListener('pointermove', (e) => {
+    if (calm()) return;
+    const art = e.target && e.target.closest ? e.target.closest('.stage-art') : null; if (!art) return;
+    const r = art.getBoundingClientRect();
+    art.style.setProperty('--lx', (((e.clientX - r.left) / r.width) * 2 - 1).toFixed(2));
+  }, { passive: true });
+}
+
+// ---------- fan-out when the board opens ----------
+function stageFan() {
+  const board = document.querySelector('.board'); if (!board || calm()) return;
+  let n = 0;
+  board.querySelectorAll('.sec').forEach((sec, si) => {
+    const cs = Array.prototype.slice.call(sec.querySelectorAll('.cards > .card')); if (!cs.length) return;
+    const r0 = cs[0].getBoundingClientRect();
+    cs.forEach((c, i) => {
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--dx', Math.round(r0.left - r.left + Math.min(i, 5) * 5) + 'px');
+      c.style.setProperty('--dy', Math.round(r0.top - r.top + Math.min(i, 5) * 4) + 'px');
+      c.style.setProperty('--d', Math.min(i, 7) * 50 + Math.min(si, 2) * 80 + 'ms');
+      c.style.setProperty('--fx', (i % 2 ? 1 : -1) * (2 + Math.min(i, 4)) + 'deg');
+      n++;
+    });
+  });
+  if (n) { board.classList.add('fan'); setTimeout(() => board.classList.remove('fan'), 1300); }
+}
+
+// ---------- progress rings sweep to their value ----------
+function ringSnapshot() {
+  const m = {};
+  document.querySelectorAll('.sec[data-sec] .ring > span').forEach((s) => { m[s.closest('.sec').dataset.sec] = parseFloat(s.style.getPropertyValue('--p')) || 0; });
+  return m;
+}
+function ringSweep(snap, pulseSec) {
+  if (calm()) return;
+  const jobs = [];
+  document.querySelectorAll('.ring > span').forEach((s) => {
+    const to = parseFloat(s.style.getPropertyValue('--p')) || 0;
+    const sec = s.closest('.sec');
+    const from = snap ? (sec && snap[sec.dataset.sec] !== undefined ? snap[sec.dataset.sec] : to) : 0;
+    if (from !== to) jobs.push([s, from, to, !!(sec && sec.dataset.sec === pulseSec)]);
+  });
+  if (!jobs.length) return;
+  jobs.forEach(([s, from]) => { s.classList.add('nt'); s.style.setProperty('--p', from); });
+  void document.body.offsetWidth;
+  requestAnimationFrame(() => {
+    jobs.forEach(([s, from, to, pulse]) => {
+      s.classList.remove('nt'); s.style.setProperty('--p', to);
+      if (pulse) { const ring = s.parentNode; ring.classList.remove('pulse'); void ring.offsetWidth; ring.classList.add('pulse'); setTimeout(() => ring.classList.remove('pulse'), 900); }
+    });
+  });
+}
+
+// ---------- stamp on a freshly perfected card ----------
+function stageSlam(id) {
+  const el = document.querySelector('[data-card="' + CSS.escape(id) + '"]'); if (!el) return;
+  el.classList.remove('slam'); void el.offsetWidth; el.classList.add('slam');
+  setTimeout(() => el.classList.remove('slam'), 1400);
+}
+
+// ---------- curtain call when a whole section is perfected ----------
+let curtain = null, curtainTimer = 0;
+function endCurtain() {
+  clearTimeout(curtainTimer);
+  if (curtain) { curtain.remove(); curtain = null; }
+}
+function liveSay(text) {
+  let live = document.getElementById('stage-live');
+  if (!live) { live = document.createElement('div'); live.id = 'stage-live'; live.className = 'sr'; live.setAttribute('role', 'status'); document.body.appendChild(live); }
+  live.textContent = ''; setTimeout(() => { live.textContent = text; }, 30);
+}
+function stageCurtain(title, n, everySection) {
+  endCurtain();
+  const line = everySection ? 'Every section is perfected' : 'Section perfected';
+  const sub = title + ' · ' + n + ' of ' + n + ' answers';
+  liveSay(line + '. ' + sub + '.');
+  const quiet = calm();
+  const el = document.createElement('div');
+  el.className = 'curtain' + (quiet ? ' quiet' : '');
+  el.setAttribute('aria-hidden', 'true');
+  let sparks = '';
+  if (!quiet) for (let i = 0; i < 14; i++) sparks += '<i style="--a:' + (i * 25.7 + (i % 3) * 7).toFixed(0) + 'deg;--r:' + (70 + (i * 37) % 70) + 'px;--w:' + (i * 31 % 140) + 'ms"></i>';
+  el.innerHTML = (quiet ? '' : '<span class="cur l"></span><span class="cur r"></span>') + '<span class="beam"></span><div class="plaque"><b>' + esc(line) + '</b><span>' + esc(sub) + '</span></div><div class="sparks">' + sparks + '</div>';
+  document.body.appendChild(el);
+  curtain = el;
+  curtainTimer = setTimeout(endCurtain, quiet ? 1800 : 1500);
+}
+document.addEventListener('keydown', (e) => { if (curtain && e.key === 'Escape') endCurtain(); });
+document.addEventListener('pointerdown', () => { if (curtain) endCurtain(); }, true);
+
+/** Call after a card was toggled to perfected. Plays the curtain only when it completes its section. */
+function stageAfterPerfect(id) {
+  const c = getCard(id); if (!c || c.status !== 'perfected') return;
+  const all = cardsIn(c.secId); if (!all.length || !all.every((x) => x.status === 'perfected')) return;
+  const secs = sectionsInOrder().filter((x) => x.cards.length);
+  const every = secs.length > 1 && secs.every((x) => x.cards.every((y) => y.status === 'perfected'));
+  const s = S.sections[c.secId];
+  stageCurtain(s ? s.title : 'This section', all.length, every);
+}
+
+// ---------- practice: spotlight and timer ring ----------
+const TR = 19, TC = 2 * Math.PI * TR;
+const zoneOf = (s, tg) => (s < tg * 0.5 ? 0 : s <= tg * 1.4 ? 1 : 2);
+const ZONE_LIVE = ['Keep going', 'Good length', 'Running long'];
+const ZONE_DONE = ['Too short', 'Good length', 'Long'];
+function arc(a, b, cls) {
+  const len = (b - a) * TC;
+  return '<circle class="' + cls + '" cx="24" cy="24" r="' + TR + '" stroke-dasharray="' + len.toFixed(2) + ' ' + (TC - len + 1).toFixed(2) + '" stroke-dashoffset="' + (-a * TC).toFixed(2) + '"/>';
+}
+function timerRingHtml(spoken, target, frozen) {
+  const tg = Math.max(10, target), M = tg * 1.8, z = zoneOf(spoken, tg), f = Math.min(1, spoken / M);
+  return '<span class="tring z' + z + (frozen ? ' frozen' : '') + '" id="pr-ring" aria-hidden="true"><svg viewBox="0 0 48 48" width="48" height="48">' +
+    arc(0, 0.5 / 1.8, 'zone zs') + arc(0.5 / 1.8, 1.4 / 1.8, 'zone zg') + arc(1.4 / 1.8, 1, 'zone zl') +
+    '<circle class="prog" cx="24" cy="24" r="' + TR + '" stroke-dasharray="' + (f * TC).toFixed(2) + ' ' + TC.toFixed(2) + '"/></svg></span>' +
+    '<span class="tzone z' + z + '" id="pr-zone">' + (frozen ? ZONE_DONE : ZONE_LIVE)[z] + '</span>';
+}
+function stageTimer(s, target) {
+  const ring = document.getElementById('pr-ring'); if (!ring) return;
+  const tg = Math.max(10, target), M = tg * 1.8, z = zoneOf(s, tg), f = Math.min(1, s / M);
+  const prog = ring.querySelector('.prog'); if (prog) prog.setAttribute('stroke-dasharray', (f * TC).toFixed(2) + ' ' + TC.toFixed(2));
+  ring.className = 'tring z' + z;
+  const zl = document.getElementById('pr-zone');
+  if (zl) { zl.className = 'tzone z' + z; if (zl.textContent !== ZONE_LIVE[z]) zl.textContent = ZONE_LIVE[z]; }
+}
+/** Centre the spotlight on the question card and light it up (once per round, not on every card). */
+function stageSpot(held) {
+  const sec = document.querySelector('.practice.live'); if (!sec) return;
+  const card = sec.querySelector('.pr-card');
+  if (card) { const r = card.getBoundingClientRect(); const y = Math.max(28, Math.min(62, ((r.top + r.height / 2) / window.innerHeight) * 100)); sec.style.setProperty('--spot-y', y.toFixed(0) + '%'); }
+  if (held) sec.classList.add('held');
+}
+
+// ---------- stage graphics ----------
+let spotN = 0;
+function spotSvg(cls) {
+  const gid = 'sg' + (++spotN);
+  return '<span class="' + (cls || 'spot') + '" aria-hidden="true"><svg viewBox="0 0 160 120" width="160" height="120" focusable="false">' +
+    '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".95"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></linearGradient></defs>' +
+    '<g class="cone"><path d="M72 4h16l34 100H38z" fill="url(#' + gid + ')"/></g>' +
+    '<ellipse class="pool" cx="80" cy="104" rx="46" ry="9"/>' +
+    '<rect class="lamp" x="68" y="0" width="24" height="9" rx="3"/>' +
+    '<g class="stool"><rect x="72" y="86" width="16" height="3" rx="1.5"/><path d="M75 89l-4 14M85 89l4 14M80 89v14" stroke-width="2" fill="none"/></g></svg></span>';
+}
+function heroStage() {
+  return '<div class="stage-art" aria-hidden="true">' + spotSvg('spot big') + '<p class="stage-cue">Paste your resume to step into the light.</p></div>';
+}
+
+/** A short burst of sparks above the round summary when every answer was a hit. */
+function stageApplause() {
+  const panel = document.querySelector('.summary.applause'); if (!panel || calm()) return;
+  let h = '<div class="applause-sparks" aria-hidden="true">';
+  for (let i = 0; i < 16; i++) h += '<i style="--a:' + (i * 22.5 + (i % 2) * 9).toFixed(0) + 'deg;--r:' + (50 + (i * 29) % 70) + 'px;--w:' + (i * 23 % 120) + 'ms"></i>';
+  panel.insertAdjacentHTML('afterbegin', h + '</div>');
+  setTimeout(() => { const el = panel.querySelector('.applause-sparks'); if (el) el.remove(); }, 1600);
+}
+
+bindStage();
 
 /* ---- app/story.js ---- */
 // "My story" tab (admin only): a board like the question cards, but one section per company or project and
@@ -2478,6 +2837,7 @@ function render() {
   UI.route = route; UI.editId = id;
   renderNav();
   const main = $('#main');
+  const wasLive = !!document.querySelector('.practice.live');
   const html = route === 'home' ? renderHome() : route === 'resume' ? renderResume() : route === 'match' ? renderMatch() : route === 'board' ? renderBoard() : route === 'edit' ? renderEdit(id) : route === 'practice' ? renderPractice() : route === 'jds' ? renderJds() : route === 'story' ? renderStory() : renderCollected();
   main.innerHTML = html;
   main.className = 'main route-' + route;
@@ -2491,11 +2851,20 @@ function render() {
       updateFocus();
     });
   } else if (prev !== route) window.scrollTo(0, 0);
-  if (route === 'practice') startTimer();
+  if (route === 'board' && prev !== 'board') stageFan();
+  if (route === 'home' || (route === 'board' && prev !== 'board')) ringSweep(null);
+  if (route === 'practice') { startTimer(); stageSpot(wasLive); practiceMotion(); stageApplause(); }
   if (route === 'edit') { const c = getCard(id); editStart = c ? c.a : ''; UI.sw = null; clearInterval(swHandle); }
   if (route === 'resume' && UI.resumeTab === 'design') updatePageEstimate();
 }
 const offsetTopSafe = () => { const h = $('.topbar'), f = $('#focusbar'); return (h ? h.offsetHeight : 0) + (f ? f.offsetHeight : 0) + 8; };
+
+// One-shot motion for the practice card: turn over on reveal, deal in for the next question.
+function practiceMotion() {
+  const m = UI.pm; UI.pm = null; const card = $('.pr-card'); if (!m || !card) return;
+  card.classList.add(m === 'flip' ? 'flip-in' : m === 'miss' ? 'miss-in' : 'deal-in');
+  setTimeout(() => card.classList.remove('flip-in', 'deal-in', 'miss-in'), 800);
+}
 
 function leaveEditor() { const c = getCard(UI.editId); if (c) commitVersion(c.id, editStart); flush(); }
 
@@ -2510,6 +2879,7 @@ function startTimer() {
     const s = Math.floor((Date.now() - t0) / 1000), tg = +el.dataset.target;
     el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' / ' + Math.floor(tg / 60) + ':' + String(tg % 60).padStart(2, '0');
     el.classList.toggle('over', s > tg);
+    stageTimer(s, tg);
   }, 500);
 }
 
@@ -2528,13 +2898,13 @@ window.addEventListener('beforeprint', () => { if (UI.route === 'resume' && UI.r
 // ---------- practice rounds ----------
 function shuffled(a) { const x = a.slice(); for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [x[i], x[j]] = [x[j], x[i]]; } return x; }
 function startRound(mode) {
-  const p = UI.practice; p.mode = mode; p.results = []; p.hits = {}; p.i = 0; p.reveal = false; p.spoken = 0;
+  const p = UI.practice; p.mode = mode; p.results = []; p.hits = {}; p.i = 0; p._pi = 0; p.reveal = false; p.spoken = 0;
   if (mode === 'mock') { p.deck = buildMock(orderedCards(), p.minutes).map((c) => c.id); p.deadline = Date.now() + p.minutes * 60000; }
   else { p.deck = shuffled(practiceDeck(p.scope).map((c) => c.id)).slice(0, 25); p.deadline = 0; }
-  p.t0 = Date.now(); render(); window.scrollTo({ top: 0 });
+  p.t0 = Date.now(); UI.pm = 'deal'; render(); window.scrollTo({ top: 0 });
 }
-function revealNow() { const p = UI.practice; if (!p || !p.deck || p.reveal) return; p.spoken = Math.round((Date.now() - p.t0) / 1000); p.reveal = true; render(); }
-function rateNow(ok) { const p = UI.practice; if (!p || !p.deck || !p.reveal) return; const id = p.deck[p.i]; rateCard(id, ok, p.spoken); p.results.push({ id, ok, spoken: p.spoken }); p.i++; p.reveal = false; p.t0 = Date.now(); p.spoken = 0; render(); }
+function revealNow() { const p = UI.practice; if (!p || !p.deck || p.reveal) return; p.spoken = Math.round((Date.now() - p.t0) / 1000); p.reveal = true; UI.pm = 'flip'; render(); }
+function rateNow(ok) { const p = UI.practice; if (!p || !p.deck || !p.reveal) return; const id = p.deck[p.i]; rateCard(id, ok, p.spoken); p.results.push({ id, ok, spoken: p.spoken }); p.i++; p.reveal = false; p.t0 = Date.now(); p.spoken = 0; UI.pm = ok ? 'deal' : 'miss'; render(); }
 
 // ---------- stopwatch in the editor ----------
 let swHandle = null;
@@ -2613,7 +2983,12 @@ async function onClick(e) {
     case 'filter': UI.filter = t.dataset.v; rerenderBoardKeepScroll(); break;
     case 'edit': UI.ret = { y: window.scrollY }; UI.focusCard = null; go('#/edit/' + id); break;
     case 'back-to-card': UI.focusCard = id; go('#/board'); break;
-    case 'perfect': { togglePerfected(id); if (UI.route === 'board') rerenderBoardKeepScroll(); else render(); break; }
+    case 'perfect': {
+      const st = togglePerfected(id); const c0 = getCard(id);
+      if (UI.route === 'board') rerenderBoardKeepScroll(c0 && st === 'perfected' ? c0.secId : null); else render();
+      if (st === 'perfected') { stageSlam(id); stageAfterPerfect(id); }
+      break;
+    }
     case 'reset-answer': resetToStarter(id); render(); break;
     case 'restore': restoreVersion(id, +t.dataset.i); render(); break;
     case 'delete-card': askDialog('Delete this card?', { text: 'This cannot be undone.', ok: 'Delete' }, () => { deleteCard(id); go('#/board'); }); break;
@@ -2641,12 +3016,12 @@ async function onClick(e) {
     case 'pr-minutes': UI.practice.minutes = +t.dataset.v; render(); break;
     case 'pr-level-now': UI.practice.level = +t.dataset.v; render(); break;
     case 'pr-reveal': revealNow(); break;
-    case 'pr-skip': { const p = UI.practice; p.results.push({ id: p.deck[p.i], ok: null }); p.i++; p.reveal = false; p.t0 = Date.now(); p.spoken = 0; render(); break; }
+    case 'pr-skip': { const p = UI.practice; p.results.push({ id: p.deck[p.i], ok: null }); p.i++; p.reveal = false; p.t0 = Date.now(); p.spoken = 0; UI.pm = 'deal'; render(); break; }
     case 'pr-rate': rateNow(t.dataset.ok === '1'); break;
     case 'pr-home': UI.practice = Object.assign(newPractice(), { scope: UI.practice.scope, level: UI.practice.level, minutes: UI.practice.minutes }); render(); break;
-    case 'pr-again-missed': { const p = UI.practice; const ids = p.results.filter((x) => x.ok === false).map((x) => x.id); Object.assign(p, { deck: ids, i: 0, reveal: false, t0: Date.now(), spoken: 0, results: [], hits: {} }); render(); break; }
+    case 'pr-again-missed': { const p = UI.practice; const ids = p.results.filter((x) => x.ok === false).map((x) => x.id); Object.assign(p, { deck: ids, i: 0, reveal: false, t0: Date.now(), spoken: 0, results: [], hits: {}, _pi: 0 }); UI.pm = 'deal'; render(); break; }
     case 'edit-prev': case 'edit-next': go('#/edit/' + id); break;
-    case 'perfect-next': { togglePerfected(id); const n = nextToWork(id) || neighbourCard(id, 1); go(n ? '#/edit/' + n.id : '#/board'); break; }
+    case 'perfect-next': { togglePerfected(id); stageAfterPerfect(id); const n = nextToWork(id) || neighbourCard(id, 1); go(n ? '#/edit/' + n.id : '#/board'); break; }
     case 'next-gap': { const ta = $('#answer'); if (!ta) break; const m = /\[add:[^\]]*\]/g; const from = ta.selectionEnd || 0; let r = null, x; while ((x = m.exec(ta.value))) { if (x.index >= from) { r = x; break; } } if (!r) { m.lastIndex = 0; r = m.exec(ta.value); } if (r) { ta.focus(); ta.setSelectionRange(r.index, r.index + r[0].length); } else { const ss = $('#save-state'); if (ss) ss.textContent = 'No gaps left in this answer.'; } break; }
     case 'star-frame': { const ta = $('#answer'); if (!ta) break; const add = (ta.value && !/\n$/.test(ta.value) ? '\n\n' : '') + STAR_FRAME; ta.value += add; ta.dispatchEvent(new Event('input', { bubbles: true })); ta.focus(); break; }
     case 'insert-fact': { const ta = $('#answer'); const c = getCard(UI.editId); if (!ta || !c) break; const f = factsFor(c, S.resume, (matchFor(S.activeJd) || {}).rows)[+t.dataset.i]; if (!f) break; const pre = ta.value && !/[\s]$/.test(ta.value.slice(0, ta.selectionStart)) ? ' ' : ''; ta.setRangeText(pre + f.say + '. ', ta.selectionStart, ta.selectionEnd, 'end'); ta.dispatchEvent(new Event('input', { bubbles: true })); ta.focus(); break; }
@@ -2660,10 +3035,10 @@ async function onClick(e) {
     default: storyAction(a, t); break;
   }
 }
-function rerenderBoardKeepScroll() {
-  const y = window.scrollY; const keep = UI.focusCard;
+function rerenderBoardKeepScroll(pulseSec) {
+  const y = window.scrollY; const keep = UI.focusCard; const snap = ringSnapshot();
   const main = $('#main'); main.innerHTML = UI.route === 'story' ? renderStory() : renderBoard(); renderNav();
-  window.scrollTo(0, y); updateFocus();
+  window.scrollTo(0, y); updateFocus(); ringSweep(snap, pulseSec);
 }
 
 // ---------- inputs ----------
@@ -2694,7 +3069,7 @@ function onChange(e) {
   if (el.dataset.action === 'include') { const inc = Object.assign({}, S.ui.include, { [el.dataset.k]: el.checked }); setUi({ include: inc }); render(); return; }
   if (el.id === 'pr-scope') { UI.practice.scope = el.value; render(); return; }
   if (el.id === 'pr-level') { UI.practice.level = +el.value; return; }
-  if (el.dataset.action === 'pr-fact') { const p = UI.practice; const id = p.deck[p.i]; const set = new Set(p.hits[id] || []); if (el.checked) set.add(+el.dataset.i); else set.delete(+el.dataset.i); p.hits[id] = [...set]; const sc = $('#fact-score'); if (sc) sc.textContent = set.size + ' of ' + document.querySelectorAll('.facts input').length; return; }
+  if (el.dataset.action === 'pr-fact') { const p = UI.practice; const id = p.deck[p.i]; const set = new Set(p.hits[id] || []); if (el.checked) set.add(+el.dataset.i); else set.delete(+el.dataset.i); p.hits[id] = [...set]; const sc = $('#fact-score'); if (sc) { sc.textContent = set.size + ' of ' + document.querySelectorAll('.facts input').length; sc.classList.remove('pop'); void sc.offsetWidth; sc.classList.add('pop'); } return; }
   if (el.closest('.jd-detail') && el.dataset.f === 'status') { updateJdFields(el.closest('.jd-detail').dataset.id, { status: el.value }); render(); return; }
   if (el.closest('.jd-detail') && el.dataset.f === 'interviewDate') { updateJdFields(el.closest('.jd-detail').dataset.id, { interviewDate: el.value }); return; }
   if (el.id === 'story-file' && el.files && el.files[0]) { storyFile(el.files[0]); el.value = ''; return; }

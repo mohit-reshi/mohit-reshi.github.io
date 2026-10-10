@@ -85,6 +85,7 @@ function render() {
   UI.route = route; UI.editId = id;
   renderNav();
   const main = $('#main');
+  const wasLive = !!document.querySelector('.practice.live');
   const html = route === 'home' ? renderHome() : route === 'resume' ? renderResume() : route === 'match' ? renderMatch() : route === 'board' ? renderBoard() : route === 'edit' ? renderEdit(id) : route === 'practice' ? renderPractice() : route === 'jds' ? renderJds() : route === 'story' ? renderStory() : renderCollected();
   main.innerHTML = html;
   main.className = 'main route-' + route;
@@ -98,11 +99,20 @@ function render() {
       updateFocus();
     });
   } else if (prev !== route) window.scrollTo(0, 0);
-  if (route === 'practice') startTimer();
+  if (route === 'board' && prev !== 'board') stageFan();
+  if (route === 'home' || (route === 'board' && prev !== 'board')) ringSweep(null);
+  if (route === 'practice') { startTimer(); stageSpot(wasLive); practiceMotion(); stageApplause(); }
   if (route === 'edit') { const c = getCard(id); editStart = c ? c.a : ''; UI.sw = null; clearInterval(swHandle); }
   if (route === 'resume' && UI.resumeTab === 'design') updatePageEstimate();
 }
 const offsetTopSafe = () => { const h = $('.topbar'), f = $('#focusbar'); return (h ? h.offsetHeight : 0) + (f ? f.offsetHeight : 0) + 8; };
+
+// One-shot motion for the practice card: turn over on reveal, deal in for the next question.
+function practiceMotion() {
+  const m = UI.pm; UI.pm = null; const card = $('.pr-card'); if (!m || !card) return;
+  card.classList.add(m === 'flip' ? 'flip-in' : m === 'miss' ? 'miss-in' : 'deal-in');
+  setTimeout(() => card.classList.remove('flip-in', 'deal-in', 'miss-in'), 800);
+}
 
 function leaveEditor() { const c = getCard(UI.editId); if (c) commitVersion(c.id, editStart); flush(); }
 
@@ -117,6 +127,7 @@ function startTimer() {
     const s = Math.floor((Date.now() - t0) / 1000), tg = +el.dataset.target;
     el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' / ' + Math.floor(tg / 60) + ':' + String(tg % 60).padStart(2, '0');
     el.classList.toggle('over', s > tg);
+    stageTimer(s, tg);
   }, 500);
 }
 
@@ -135,13 +146,13 @@ window.addEventListener('beforeprint', () => { if (UI.route === 'resume' && UI.r
 // ---------- practice rounds ----------
 function shuffled(a) { const x = a.slice(); for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [x[i], x[j]] = [x[j], x[i]]; } return x; }
 function startRound(mode) {
-  const p = UI.practice; p.mode = mode; p.results = []; p.hits = {}; p.i = 0; p.reveal = false; p.spoken = 0;
+  const p = UI.practice; p.mode = mode; p.results = []; p.hits = {}; p.i = 0; p._pi = 0; p.reveal = false; p.spoken = 0;
   if (mode === 'mock') { p.deck = buildMock(orderedCards(), p.minutes).map((c) => c.id); p.deadline = Date.now() + p.minutes * 60000; }
   else { p.deck = shuffled(practiceDeck(p.scope).map((c) => c.id)).slice(0, 25); p.deadline = 0; }
-  p.t0 = Date.now(); render(); window.scrollTo({ top: 0 });
+  p.t0 = Date.now(); UI.pm = 'deal'; render(); window.scrollTo({ top: 0 });
 }
-function revealNow() { const p = UI.practice; if (!p || !p.deck || p.reveal) return; p.spoken = Math.round((Date.now() - p.t0) / 1000); p.reveal = true; render(); }
-function rateNow(ok) { const p = UI.practice; if (!p || !p.deck || !p.reveal) return; const id = p.deck[p.i]; rateCard(id, ok, p.spoken); p.results.push({ id, ok, spoken: p.spoken }); p.i++; p.reveal = false; p.t0 = Date.now(); p.spoken = 0; render(); }
+function revealNow() { const p = UI.practice; if (!p || !p.deck || p.reveal) return; p.spoken = Math.round((Date.now() - p.t0) / 1000); p.reveal = true; UI.pm = 'flip'; render(); }
+function rateNow(ok) { const p = UI.practice; if (!p || !p.deck || !p.reveal) return; const id = p.deck[p.i]; rateCard(id, ok, p.spoken); p.results.push({ id, ok, spoken: p.spoken }); p.i++; p.reveal = false; p.t0 = Date.now(); p.spoken = 0; UI.pm = ok ? 'deal' : 'miss'; render(); }
 
 // ---------- stopwatch in the editor ----------
 let swHandle = null;
@@ -220,7 +231,12 @@ async function onClick(e) {
     case 'filter': UI.filter = t.dataset.v; rerenderBoardKeepScroll(); break;
     case 'edit': UI.ret = { y: window.scrollY }; UI.focusCard = null; go('#/edit/' + id); break;
     case 'back-to-card': UI.focusCard = id; go('#/board'); break;
-    case 'perfect': { togglePerfected(id); if (UI.route === 'board') rerenderBoardKeepScroll(); else render(); break; }
+    case 'perfect': {
+      const st = togglePerfected(id); const c0 = getCard(id);
+      if (UI.route === 'board') rerenderBoardKeepScroll(c0 && st === 'perfected' ? c0.secId : null); else render();
+      if (st === 'perfected') { stageSlam(id); stageAfterPerfect(id); }
+      break;
+    }
     case 'reset-answer': resetToStarter(id); render(); break;
     case 'restore': restoreVersion(id, +t.dataset.i); render(); break;
     case 'delete-card': askDialog('Delete this card?', { text: 'This cannot be undone.', ok: 'Delete' }, () => { deleteCard(id); go('#/board'); }); break;
@@ -248,12 +264,12 @@ async function onClick(e) {
     case 'pr-minutes': UI.practice.minutes = +t.dataset.v; render(); break;
     case 'pr-level-now': UI.practice.level = +t.dataset.v; render(); break;
     case 'pr-reveal': revealNow(); break;
-    case 'pr-skip': { const p = UI.practice; p.results.push({ id: p.deck[p.i], ok: null }); p.i++; p.reveal = false; p.t0 = Date.now(); p.spoken = 0; render(); break; }
+    case 'pr-skip': { const p = UI.practice; p.results.push({ id: p.deck[p.i], ok: null }); p.i++; p.reveal = false; p.t0 = Date.now(); p.spoken = 0; UI.pm = 'deal'; render(); break; }
     case 'pr-rate': rateNow(t.dataset.ok === '1'); break;
     case 'pr-home': UI.practice = Object.assign(newPractice(), { scope: UI.practice.scope, level: UI.practice.level, minutes: UI.practice.minutes }); render(); break;
-    case 'pr-again-missed': { const p = UI.practice; const ids = p.results.filter((x) => x.ok === false).map((x) => x.id); Object.assign(p, { deck: ids, i: 0, reveal: false, t0: Date.now(), spoken: 0, results: [], hits: {} }); render(); break; }
+    case 'pr-again-missed': { const p = UI.practice; const ids = p.results.filter((x) => x.ok === false).map((x) => x.id); Object.assign(p, { deck: ids, i: 0, reveal: false, t0: Date.now(), spoken: 0, results: [], hits: {}, _pi: 0 }); UI.pm = 'deal'; render(); break; }
     case 'edit-prev': case 'edit-next': go('#/edit/' + id); break;
-    case 'perfect-next': { togglePerfected(id); const n = nextToWork(id) || neighbourCard(id, 1); go(n ? '#/edit/' + n.id : '#/board'); break; }
+    case 'perfect-next': { togglePerfected(id); stageAfterPerfect(id); const n = nextToWork(id) || neighbourCard(id, 1); go(n ? '#/edit/' + n.id : '#/board'); break; }
     case 'next-gap': { const ta = $('#answer'); if (!ta) break; const m = /\[add:[^\]]*\]/g; const from = ta.selectionEnd || 0; let r = null, x; while ((x = m.exec(ta.value))) { if (x.index >= from) { r = x; break; } } if (!r) { m.lastIndex = 0; r = m.exec(ta.value); } if (r) { ta.focus(); ta.setSelectionRange(r.index, r.index + r[0].length); } else { const ss = $('#save-state'); if (ss) ss.textContent = 'No gaps left in this answer.'; } break; }
     case 'star-frame': { const ta = $('#answer'); if (!ta) break; const add = (ta.value && !/\n$/.test(ta.value) ? '\n\n' : '') + STAR_FRAME; ta.value += add; ta.dispatchEvent(new Event('input', { bubbles: true })); ta.focus(); break; }
     case 'insert-fact': { const ta = $('#answer'); const c = getCard(UI.editId); if (!ta || !c) break; const f = factsFor(c, S.resume, (matchFor(S.activeJd) || {}).rows)[+t.dataset.i]; if (!f) break; const pre = ta.value && !/[\s]$/.test(ta.value.slice(0, ta.selectionStart)) ? ' ' : ''; ta.setRangeText(pre + f.say + '. ', ta.selectionStart, ta.selectionEnd, 'end'); ta.dispatchEvent(new Event('input', { bubbles: true })); ta.focus(); break; }
@@ -267,10 +283,10 @@ async function onClick(e) {
     default: storyAction(a, t); break;
   }
 }
-function rerenderBoardKeepScroll() {
-  const y = window.scrollY; const keep = UI.focusCard;
+function rerenderBoardKeepScroll(pulseSec) {
+  const y = window.scrollY; const keep = UI.focusCard; const snap = ringSnapshot();
   const main = $('#main'); main.innerHTML = UI.route === 'story' ? renderStory() : renderBoard(); renderNav();
-  window.scrollTo(0, y); updateFocus();
+  window.scrollTo(0, y); updateFocus(); ringSweep(snap, pulseSec);
 }
 
 // ---------- inputs ----------
@@ -301,7 +317,7 @@ function onChange(e) {
   if (el.dataset.action === 'include') { const inc = Object.assign({}, S.ui.include, { [el.dataset.k]: el.checked }); setUi({ include: inc }); render(); return; }
   if (el.id === 'pr-scope') { UI.practice.scope = el.value; render(); return; }
   if (el.id === 'pr-level') { UI.practice.level = +el.value; return; }
-  if (el.dataset.action === 'pr-fact') { const p = UI.practice; const id = p.deck[p.i]; const set = new Set(p.hits[id] || []); if (el.checked) set.add(+el.dataset.i); else set.delete(+el.dataset.i); p.hits[id] = [...set]; const sc = $('#fact-score'); if (sc) sc.textContent = set.size + ' of ' + document.querySelectorAll('.facts input').length; return; }
+  if (el.dataset.action === 'pr-fact') { const p = UI.practice; const id = p.deck[p.i]; const set = new Set(p.hits[id] || []); if (el.checked) set.add(+el.dataset.i); else set.delete(+el.dataset.i); p.hits[id] = [...set]; const sc = $('#fact-score'); if (sc) { sc.textContent = set.size + ' of ' + document.querySelectorAll('.facts input').length; sc.classList.remove('pop'); void sc.offsetWidth; sc.classList.add('pop'); } return; }
   if (el.closest('.jd-detail') && el.dataset.f === 'status') { updateJdFields(el.closest('.jd-detail').dataset.id, { status: el.value }); render(); return; }
   if (el.closest('.jd-detail') && el.dataset.f === 'interviewDate') { updateJdFields(el.closest('.jd-detail').dataset.id, { interviewDate: el.value }); return; }
   if (el.id === 'story-file' && el.files && el.files[0]) { storyFile(el.files[0]); el.value = ''; return; }

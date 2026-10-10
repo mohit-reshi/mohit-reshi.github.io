@@ -22,7 +22,7 @@ function readinessPanel(rd) {
   if (!rd.total) return '';
   const first = rd.priority[0];
   const next = rd.gaps && first ? '<a class="btn primary" href="#/edit/' + esc(first.id) + '">Fill in: ' + esc(trunc(first.q, 60)) + '</a>' : rd.due ? '<a class="btn primary" href="#/practice">Practise ' + rd.due + ' due answers</a>' : '<a class="btn primary" href="#/practice">Run a mock interview</a>';
-  return '<div class="panel readiness"><div class="ready-head"><span class="ring big" role="img" aria-label="' + rd.pct + ' percent of answers perfected"><span style="--p:' + rd.pct + '"></span><b>' + rd.pct + '%</b></span><div><h2>Interview readiness</h2><p class="muted">' + rd.perfected + ' of ' + rd.total + ' answers perfected \u00b7 ' + rd.gaps + ' still have gaps \u00b7 ' + rd.due + ' due for practice</p><div class="row">' + next + '</div></div></div>' +
+  return '<div class="panel readiness lit"><div class="ready-head"><span class="ring big" role="img" aria-label="' + rd.pct + ' percent of answers perfected"><span style="--p:' + rd.pct + '"></span><b>' + rd.pct + '%</b></span><div><h2>Interview readiness</h2><p class="muted">' + rd.perfected + ' of ' + rd.total + ' answers perfected \u00b7 ' + rd.gaps + ' still have gaps \u00b7 ' + rd.due + ' due for practice</p><div class="row">' + next + '</div></div></div>' +
     (rd.priority.length ? '<h3>Prepare these first</h3><ul class="plain-list">' + rd.priority.map((c) => '<li><span>' + esc(c.q) + '</span><a class="btn small" href="#/edit/' + esc(c.id) + '">Edit</a></li>').join('') + '</ul>' : '<p>The most important answers are done. Keep practising them.</p>') + '</div>';
 }
 export function renderHome() {
@@ -40,9 +40,9 @@ export function renderHome() {
     '<div class="tile"><b>' + cardsN + '</b><span>question cards</span></div>' +
     '<div class="tile"><b>' + (ch ? ch.passed + '/' + ch.total : '-') + '</b><span>readability checks passed</span></div></div>' : '';
   return '<section class="home">' +
-    '<div class="hero"><h1>Rehearse the answers you will actually give.</h1>' +
+    '<div class="hero-wrap"><div class="hero"><h1>Rehearse the answers you will actually give.</h1>' +
     '<p>Paste your resume. Rehearsal Desk finds your jobs and projects, writes starter answers from your own facts, and turns them into cards you can edit, perfect and practise. Add a job description for questions about that role.</p>' +
-    '<p class="privacy"><strong>Private by design.</strong> Your resume and answers are saved in this browser only, so they are here when you come back. Nothing is uploaded. You can clear everything at any time with <em>Clear my data</em>.</p></div>' +
+    '<p class="privacy"><strong>Private by design.</strong> Your resume and answers are saved in this browser only, so they are here when you come back. Nothing is uploaded. You can clear everything at any time with <em>Clear my data</em>.</p></div>' + (S.sample ? heroStage() : '') + '</div>' +
     stepper(rd) + nudge +
     (S.sample ? '<div class="notice">Showing a fictional sample (Jordan Avery, a senior data analyst). Replace the text below with your own and press Analyse. Nothing here is saved until then.</div>' : '') +
     readinessPanel(rd) +
@@ -201,7 +201,7 @@ function practiceHome(p) {
     '<label class="field"><span>What to practise</span><select id="pr-scope" data-action="pr-scope">' + [['due', 'Answers due for review'], ['draft', 'Answers that need work'], ['perfected', 'Perfected answers'], ['all', 'Everything']].map(([v, l]) => '<option value="' + v + '"' + (p.scope === v ? ' selected' : '') + '>' + l + '</option>').join('') + secs.map((x) => '<option value="' + esc(x.s.id) + '"' + (p.scope === x.s.id ? ' selected' : '') + '>' + esc(x.s.title) + '</option>').join('') + '</select></label>' +
     '<label class="field"><span>How much do you want to see while you answer?</span><select id="pr-level" data-action="pr-level">' + LEVELS.map(([l, v]) => '<option value="' + v + '"' + (p.level === v ? ' selected' : '') + '>' + l + '</option>').join('') + '</select></label>' +
     '<p class="muted">' + deckSize + ' question' + (deckSize === 1 ? '' : 's') + ' match. A round is up to 25.</p>' +
-    '<button class="btn primary big" data-action="pr-start"' + (deckSize ? '' : ' disabled') + '>Start the drill</button>' + (!deckSize && p.scope === 'due' ? '<p class="hint">Nothing is due. Fill in the gaps in a few answers on the <a href="#/board">cards</a> first, or choose another group.</p>' : '') + '</div>' +
+    '<button class="btn primary big" data-action="pr-start"' + (deckSize ? '' : ' disabled') + '>Start the drill</button>' + (!deckSize && p.scope === 'due' ? spotSvg('spot small') + '<p class="hint">Nothing is due. Fill in the gaps in a few answers on the <a href="#/board">cards</a> first, or choose another group.</p>' : '') + '</div>' +
     '<div class="panel"><h3>Mock interview</h3><p class="hint">A timed run in interview order: your opening answer, questions on your jobs and projects, the job, then a question for them. No hints. Cards that still have gaps are included, so fix those first.</p>' +
     '<div class="seg" role="group" aria-label="Length">' + [20, 30, 45].map((m) => '<button class="seg-btn" data-action="pr-minutes" data-v="' + m + '" aria-pressed="' + (p.minutes === m) + '">' + m + ' min</button>').join('') + '</div>' +
     '<div class="row"><button class="btn primary big" data-action="pr-mock">Start the mock interview</button></div></div></div></section>';
@@ -229,17 +229,18 @@ function practiceCard(p) {
       (facts.length ? '<fieldset class="facts"><legend>Facts to hit. Tick the ones you said.</legend>' + facts.map((f, i) => '<label class="check"><input type="checkbox" data-action="pr-fact" data-i="' + i + '"' + (hit.includes(i) ? ' checked' : '') + '> ' + esc(f) + '</label>').join('') + '<p class="muted" id="fact-score">' + hit.length + ' of ' + facts.length + '</p></fieldset>' : '') +
       '<div class="row"><button class="btn" data-action="pr-rate" data-ok="0">Needs work <kbd>1</kbd></button><button class="btn primary" data-action="pr-rate" data-ok="1">Nailed it <kbd>2</kbd></button><button class="btn small" data-action="edit" data-id="' + esc(c.id) + '">Edit this answer</button></div>';
   }
-  return '<section class="practice"><div class="pr-top"><button class="btn small" data-action="pr-home">End round</button><span class="muted">' + (mock ? 'Mock interview' : 'Drill') + ' · question ' + (p.i + 1) + ' of ' + p.deck.length + '</span>' +
+  const from = p._pi === undefined ? p.i : p._pi; p._pi = p.i;
+  return '<section class="practice live"><div class="pr-top"><button class="btn small" data-action="pr-home">End round</button><span class="muted">' + (mock ? 'Mock interview' : 'Drill') + ' · question ' + (p.i + 1) + ' of ' + p.deck.length + '</span>' +
     (mock ? '<span class="timer" id="pr-clock" data-deadline="' + p.deadline + '">' + fmtClock((p.deadline - Date.now()) / 1000) + ' left</span>' : '') +
-    '<span class="timer" id="pr-timer" data-t0="' + p.t0 + '" data-target="' + target + '" data-frozen="' + (p.reveal ? p.spoken : '') + '">' + fmtClock(p.reveal ? p.spoken : 0) + ' / ' + fmtClock(target) + '</span></div>' +
-    '<div class="progressbar" role="progressbar" aria-label="Round progress" aria-valuemin="0" aria-valuemax="' + p.deck.length + '" aria-valuenow="' + p.i + '"><span style="width:' + (p.i / p.deck.length * 100) + '%"></span></div>' +
+    '<span class="clockset">' + timerRingHtml(p.reveal ? p.spoken : 0, target, p.reveal) + '<span class="timer" id="pr-timer" data-t0="' + p.t0 + '" data-target="' + target + '" data-frozen="' + (p.reveal ? p.spoken : '') + '">' + fmtClock(p.reveal ? p.spoken : 0) + ' / ' + fmtClock(target) + '</span></span></div>' +
+    '<div class="progressbar" role="progressbar" aria-label="Round progress" aria-valuemin="0" aria-valuemax="' + p.deck.length + '" aria-valuenow="' + p.i + '"><span style="width:' + (p.i / p.deck.length * 100) + '%;--from:' + (from / p.deck.length * 100) + '%"></span></div>' +
     '<div class="pr-card card hue-' + (HUE_OF[c.cat] || 'slate') + '"><div class="card-top"><span class="cat">' + esc((CATS[c.cat] || {}).label || '') + '</span>' + (c.practice ? '<span class="chip">practised ' + c.practice.n + 'x</span>' : '<span class="chip">new</span>') + '</div><h2 class="q">' + esc(c.q) + '</h2>' + body + '</div></section>';
 }
 function practiceSummary(p) {
   const r = p.results; const ok = r.filter((x) => x.ok).length, bad = r.filter((x) => x.ok === false), skipped = r.filter((x) => x.ok === null).length;
   const timed = r.filter((x) => x.spoken); const avg = timed.length ? Math.round(timed.reduce((n, x) => n + x.spoken, 0) / timed.length) : 0;
   const tomorrow = p.deck.filter((id) => { const c = getCard(id); return c && c.practice && c.practice.due && c.practice.due - Date.now() < 36 * 3600 * 1000; }).length;
-  return '<section class="practice"><div class="panel"><h2>Round finished</h2><div class="tiles"><div class="tile"><b>' + ok + '</b><span>nailed it</span></div><div class="tile"><b>' + bad.length + '</b><span>need work</span></div><div class="tile"><b>' + skipped + '</b><span>skipped</span></div><div class="tile"><b>' + (avg ? fmtClock(avg) : '-') + '</b><span>average answer time</span></div></div>' +
+  return '<section class="practice"><div class="panel summary' + (!bad.length && ok ? ' applause' : '') + '"><h2>Round finished</h2><div class="tiles"><div class="tile"><b>' + ok + '</b><span>nailed it</span></div><div class="tile"><b>' + bad.length + '</b><span>need work</span></div><div class="tile"><b>' + skipped + '</b><span>skipped</span></div><div class="tile"><b>' + (avg ? fmtClock(avg) : '-') + '</b><span>average answer time</span></div></div>' +
     (bad.length ? '<h3>Practise these again</h3><ul class="plain-list">' + bad.map((x) => { const c = getCard(x.id); return c ? '<li><span>' + esc(c.q) + '</span> <button class="btn small" data-action="edit" data-id="' + esc(c.id) + '">Edit</button></li>' : ''; }).join('') + '</ul>' : '<p>Strong round. These answers come back for review on a growing schedule.</p>') +
     '<p class="muted">' + tomorrow + ' of these will be due again within a day or two.</p>' +
     '<div class="row">' + (bad.length ? '<button class="btn primary" data-action="pr-again-missed">Practise the ones that need work</button>' : '') + '<button class="btn" data-action="pr-home">Back to practice</button></div></div></section>';

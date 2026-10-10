@@ -199,3 +199,157 @@ kbd { font: 12px var(--mono); border: 1px solid currentColor; border-radius: 4px
 .story-a p { margin: 0 0 .5em; } .story-a ul { margin: 0 0 .5em; padding-left: 1.2em; } .story-a li { margin: 0 0 .25em; }
 .card .reveal { margin-top: 4px; }
 .card textarea, .card input { width: 100%; }
+
+/* ---------- Stage and spotlight ---------- */
+:root { --glow: rgba(255, 205, 100, .30); --stage-bg: #0d2528; --stage-bg2: #12393e; --gold: #e1ae4c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --glow: rgba(255, 205, 100, .13); } }
+:root[data-theme="dark"] { --glow: rgba(255, 205, 100, .13); }
+@property --p { syntax: "<number>"; inherits: false; initial-value: 0; }
+
+/* buttons: a little give */
+.btn, .seg-btn, .chipbtn { transition: background-color .15s, transform .12s, box-shadow .15s, filter .15s; }
+.btn:active, .chipbtn:active { transform: scale(.97); }
+.btn.primary:hover { box-shadow: 0 4px 14px rgba(15, 92, 99, .35); transform: translateY(-1px); } .btn.primary:active { transform: scale(.97); box-shadow: none; }
+
+/* cards: depth, moving light, lift */
+.cards .card {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) rotate(var(--tilt, 0deg)) translate(0px, var(--lift, 0px));
+  transition: transform .4s cubic-bezier(.2, .7, .2, 1), box-shadow .4s ease;
+  box-shadow: var(--sx, 0px) calc(var(--sy, 0px) + 3px) 8px rgba(30, 30, 20, .10), var(--sx, 0px) calc(var(--sy, 0px) + 8px) 18px rgba(30, 30, 20, .08);
+}
+.cards .card:hover, .cards .card:focus-within, .cards .card.flash { --tilt: 0deg; --lift: -4px; box-shadow: calc(var(--sx, 0px) * 1.4) calc(var(--sy, 0px) * 1.4 + 14px) 28px rgba(20, 30, 30, .22), 0 2px 4px rgba(20, 30, 30, .10); }
+.cards .card.tilting { transition: transform .1s linear, box-shadow .1s linear; }
+.cards .card.perfected { --tilt: 0deg; box-shadow: var(--sx, 0px) calc(var(--sy, 0px) + 2px) 6px rgba(20, 60, 30, .12); }
+.cards .card.perfected:hover, .cards .card.perfected:focus-within { box-shadow: calc(var(--sx, 0px) * 1.4) calc(var(--sy, 0px) * 1.4 + 10px) 22px rgba(20, 60, 30, .22); }
+.cards .card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1; opacity: 0; transition: opacity .3s; background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .7), rgba(255, 255, 255, 0) 60%); }
+.cards .card.tilting::before { opacity: .8; }
+:root[data-theme="dark"] .cards .card { box-shadow: var(--sx, 0px) calc(var(--sy, 0px) + 4px) 12px rgba(0, 0, 0, .45); }
+:root[data-theme="dark"] .cards .card::before { background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 60%); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .cards .card { box-shadow: var(--sx, 0px) calc(var(--sy, 0px) + 4px) 12px rgba(0, 0, 0, .45); }
+  :root:not([data-theme="light"]) .cards .card::before { background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 60%); }
+}
+.card:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+/* fan-out when the board opens (transform only, so text stays fully readable) */
+.board.fan { overflow-x: clip; }
+.board.fan .cards > .card { animation: fan .62s cubic-bezier(.2, .8, .25, 1) var(--d, 0ms) backwards; }
+@keyframes fan {
+  from { transform: perspective(900px) rotateX(0deg) rotateY(0deg) rotate(var(--fx, -4deg)) translate(var(--dx, 0px), var(--dy, 40px)); }
+  to { transform: perspective(900px) rotateX(0deg) rotateY(0deg) rotate(var(--tilt, 0deg)) translate(0px, 0px); }
+}
+
+/* the stamp: a faint mark on perfected cards, a slam when one is earned */
+.cards .card.perfected::after { content: "PERFECTED"; position: absolute; right: 16px; bottom: 52px; z-index: -1; pointer-events: none; font: 800 22px/1 var(--font); letter-spacing: .16em; color: var(--green-text); border: 3px solid currentColor; border-radius: 6px; padding: 5px 10px 5px 14px; opacity: .15; transform: rotate(-9deg); }
+.cards .card.perfected.slam::after { z-index: 2; animation: slam .85s cubic-bezier(.2, .9, .3, 1) both; }
+@keyframes slam {
+  0% { opacity: 0; transform: rotate(-9deg) scale(3); }
+  34% { opacity: .95; transform: rotate(-9deg) scale(.9); }
+  46% { transform: rotate(-11deg) scale(1.06); }
+  60% { transform: rotate(-8.5deg) scale(.98); }
+  72% { opacity: .9; transform: rotate(-9deg) scale(1); }
+  100% { opacity: .15; transform: rotate(-9deg) scale(1); }
+}
+.cards .card.slam { animation: thud .4s .26s ease-out; }
+@keyframes thud { 30% { scale: .985; } 60% { scale: 1.006; } }
+
+/* progress rings sweep and pulse */
+.ring { border-radius: 50%; }
+.ring > span { transition: --p .9s cubic-bezier(.2, .7, .2, 1); } .ring > span.nt { transition: none; }
+.ring.pulse { animation: ringpulse .85s ease-out; }
+@keyframes ringpulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 transparent; } 35% { transform: scale(1.2); box-shadow: 0 0 0 7px color-mix(in srgb, var(--green) 35%, transparent); } 100% { transform: scale(1); box-shadow: 0 0 0 16px transparent; } }
+@supports (mask-composite: intersect) {
+  .ring.big { margin: 10px; }
+  .ring.big > span::before, .ring.big > span::after { content: ""; position: absolute; inset: -11px; border-radius: 50%; pointer-events: none; mask: radial-gradient(circle closest-side, transparent calc(100% - 8px), #000 calc(100% - 7px)); }
+  .ring.big > span::before { background: repeating-conic-gradient(from -1deg, var(--line) 0 2.4deg, transparent 2.4deg 9deg); }
+  .ring.big > span::after { background: repeating-conic-gradient(from -1deg, var(--green) 0 2.4deg, transparent 2.4deg 9deg); mask: radial-gradient(circle closest-side, transparent calc(100% - 8px), #000 calc(100% - 7px)), conic-gradient(#000 calc(var(--p) * 1%), transparent 0); mask-composite: intersect; }
+}
+.readiness.lit, .summary.applause { background: radial-gradient(ellipse 60% 150% at 8% -30%, var(--glow), transparent 70%), var(--surface); }
+.summary.applause { background: radial-gradient(ellipse 60% 100% at 50% -35%, var(--glow), transparent 72%), var(--surface); animation: lightup 1s ease-out both; }
+@keyframes lightup { from { filter: brightness(.82); } to { filter: none; } }
+
+/* curtain call */
+.curtain { position: fixed; inset: 0; z-index: 90; pointer-events: none; display: grid; place-items: center; overflow: hidden; animation: cdim 1.5s linear both; }
+@keyframes cdim { 0% { background: rgba(5, 10, 12, 0); } 10% { background: rgba(5, 10, 12, .8); } 80% { background: rgba(5, 10, 12, .8); } 100% { background: rgba(5, 10, 12, 0); } }
+.curtain .cur { position: absolute; top: 0; bottom: 0; width: 51%; background: repeating-linear-gradient(90deg, #0a3a40 0, #167a85 16px, #0a3a40 32px); box-shadow: 0 0 40px rgba(0, 0, 0, .5); }
+.curtain .cur.l { left: 0; border-right: 4px solid var(--gold); animation: curl 1.5s cubic-bezier(.6, 0, .2, 1) both; }
+.curtain .cur.r { right: 0; border-left: 4px solid var(--gold); animation: curr 1.5s cubic-bezier(.6, 0, .2, 1) both; }
+@keyframes curl { 0%, 6% { transform: translateX(0); } 40%, 100% { transform: translateX(-102%); } }
+@keyframes curr { 0%, 6% { transform: translateX(0); } 40%, 100% { transform: translateX(102%); } }
+.curtain .beam { position: absolute; inset: 0; background: radial-gradient(ellipse 36% 54% at 50% 48%, rgba(255, 236, 176, .5), rgba(255, 236, 176, .14) 55%, transparent 72%); opacity: 0; animation: cbeam 1.5s ease-out both; }
+@keyframes cbeam { 0%, 20% { opacity: 0; } 46%, 80% { opacity: 1; } 100% { opacity: 0; } }
+.curtain .plaque { position: relative; text-align: center; color: #fff; background: rgba(6, 18, 20, .78); border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold); padding: 16px 30px 14px; max-width: min(88vw, 520px); animation: cplaque 1.5s cubic-bezier(.2, .8, .2, 1) both; }
+.curtain .plaque b { display: block; font: 800 clamp(22px, 5vw, 32px)/1.15 var(--font); letter-spacing: -.01em; }
+.curtain .plaque span { display: block; margin-top: 6px; font-size: 16px; color: #e6f1f2; overflow-wrap: anywhere; }
+@keyframes cplaque { 0%, 24% { opacity: 0; transform: scale(.86); } 44%, 82% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.03); } }
+.curtain .sparks { position: absolute; left: 50%; top: 48%; width: 0; height: 0; }
+.curtain .sparks i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: #ffe9a8; opacity: 0; animation: cspark 1s calc(380ms + var(--w, 0ms)) ease-out both; }
+@keyframes cspark { 0% { opacity: 0; transform: rotate(var(--a)) translateY(0) scale(.3); } 25% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--r) * -2.2)) scale(1); } }
+.curtain.quiet { animation: cquiet 1.8s ease both; }
+@keyframes cquiet { 0% { background: rgba(5, 10, 12, 0); } 18% { background: rgba(5, 10, 12, .7); } 82% { background: rgba(5, 10, 12, .7); } 100% { background: rgba(5, 10, 12, 0); } }
+.curtain.quiet .plaque { animation: cquietp 1.8s ease both; } .curtain.quiet .beam { animation: cquietp 1.8s ease both; }
+@keyframes cquietp { 0%, 10% { opacity: 0; } 25%, 80% { opacity: 1; } 100% { opacity: 0; } }
+
+/* stage graphics: first run and empty states */
+.spot { display: inline-block; vertical-align: top; }
+.spot svg { display: block; max-width: 100%; height: auto; }
+.spot .cone { transform-origin: 80px 4px; transform: rotate(calc(var(--lx, 0) * 8deg)); transition: transform .35s ease-out; animation: lampon .9s ease-out both; }
+.spot .pool { fill: rgba(255, 233, 168, .45); } .spot .lamp { fill: #9fb0b3; } .spot .stool rect { fill: #d2dcde; } .spot .stool path { stroke: #d2dcde; }
+@keyframes lampon { 0% { opacity: 0; } 14% { opacity: .95; } 22% { opacity: .15; } 36%, 100% { opacity: 1; } }
+.spot.small { display: block; width: max-content; background: var(--stage-bg); border-radius: 14px; padding: 4px 14px; margin: 10px 0; } .spot.small svg { width: 112px; }
+.empty .spot.small { display: block; width: max-content; margin: 0 auto 12px; }
+.hero-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: 24px; align-items: center; }
+.hero-wrap .hero { margin-bottom: 18px; }
+.stage-art { position: relative; border-radius: 18px; background: linear-gradient(180deg, var(--stage-bg), var(--stage-bg2)); padding: 10px 14px 14px; text-align: center; color: #fff; margin-bottom: 18px; overflow: hidden; box-shadow: var(--shadow); }
+.stage-art .spot.big { display: block; } .stage-art .spot.big svg { width: min(100%, 230px); margin: 0 auto; }
+.stage-cue { margin: 0; font-size: 15px; font-weight: 700; color: #f4e6bd; } .stage-cue::after { content: ""; }
+@media (max-width: 800px) { .hero-wrap { grid-template-columns: 1fr; gap: 0; } .stage-art { order: 2; padding: 6px 12px 10px; } .stage-art .spot.big svg { width: 150px; } }
+
+/* practice: spotlight and timer ring */
+.practice.live { position: relative; isolation: isolate; }
+.practice.live::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 64% 68% at 50% var(--spot-y, 42%), rgba(255, 226, 150, .16) 0%, rgba(255, 226, 150, 0) 52%, rgba(7, 34, 38, .55) 100%); mask-image: linear-gradient(#000, #000 58%, transparent 97%); animation: lightup2 .9s ease-out both; }
+.practice.live.held::before { animation: none; }
+@keyframes lightup2 { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 800px) { .practice.live::before { background: radial-gradient(ellipse 90% 70% at 50% var(--spot-y, 42%), rgba(255, 226, 150, .14) 0%, rgba(255, 226, 150, 0) 55%, rgba(7, 34, 38, .4) 100%); } }
+.pr-top .tring, .pr-top .tzone { flex: none; }
+.pr-top #pr-clock { margin-left: auto; } .pr-top .timer { margin-left: 0; }
+.clockset { display: inline-flex; align-items: center; gap: 10px; flex: none; margin-left: auto; } #pr-clock ~ .clockset { margin-left: 0; }
+.tring { display: inline-grid; width: 48px; height: 48px; }
+.tring svg { transform: rotate(-90deg); overflow: visible; } .tring circle { fill: none; stroke-width: 5; }
+.tring .zone { opacity: .3; } .tring .zs { stroke: var(--warn); } .tring .zg { stroke: var(--green); } .tring .zl { stroke: var(--bad); }
+.tring .prog { stroke: var(--warn); stroke-linecap: butt; transition: stroke .3s; } .tring.z1 .prog { stroke: var(--green); } .tring.z2 .prog { stroke: var(--bad); }
+.tring.z1 { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--green) 55%, transparent)); }
+.tzone { font-size: 13px; font-weight: 800; letter-spacing: .02em; color: var(--warn); } .tzone.z1 { color: var(--green-text); } .tzone.z2 { color: var(--bad); }
+.pr-card.flip-in { animation: flipin .65s cubic-bezier(.2, .85, .25, 1) both; }
+@keyframes flipin { from { transform: perspective(1100px) rotateY(-86deg); } 60% { transform: perspective(1100px) rotateY(7deg); } to { transform: perspective(1100px) rotateY(0deg); } }
+.pr-card.deal-in { animation: dealin .5s cubic-bezier(.2, .85, .25, 1) both; }
+@keyframes dealin { from { transform: translate(0, 34px) rotate(-1.6deg); } to { transform: translate(0, 0) rotate(0deg); } }
+.progressbar span { animation: grow .6s cubic-bezier(.2, .8, .2, 1) both, glow .9s ease-out; }
+@keyframes grow { from { width: var(--from, 0%); } }
+@keyframes glow { 0% { box-shadow: 0 0 0 0 transparent; } 30% { box-shadow: 0 0 12px 2px var(--accent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.pr-card.miss-in { animation: missin .5s ease-out both; }
+@keyframes missin { 0% { transform: translate(0, 20px) rotate(0deg); } 25% { transform: translate(-7px, 8px) rotate(-.6deg); } 50% { transform: translate(6px, 3px) rotate(.5deg); } 75% { transform: translate(-3px, 1px); } 100% { transform: translate(0, 0); } }
+#fact-score.pop { animation: pop .35s ease-out; } .badge-done { transform-origin: 100% 50%; }
+.cards .card.slam .badge-done { animation: pop .6s .3s both; }
+@keyframes pop { 0% { transform: scale(.6); } 55% { transform: scale(1.18); } 100% { transform: scale(1); } }
+.tile, .stepper a { transition: transform .2s, box-shadow .2s, background-color .15s; } .tile:hover, .stepper a:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.applause-sparks { position: absolute; left: 90px; top: 38px; width: 0; height: 0; pointer-events: none; z-index: 2; }
+.applause-sparks i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); opacity: 0; animation: cspark 1.1s calc(150ms + var(--w, 0ms)) ease-out both; }
+.summary { position: relative; }
+
+/* calm mode: no travel, no spin; fades and static states carry the same information */
+@media (prefers-reduced-motion: reduce) {
+  .cards .card, .cards .card:hover, .cards .card:focus-within, .cards .card.flash { transform: none; transition: none; }
+  .cards .card.slam { animation: none; }
+  .cards .card.perfected.slam::after { animation: stampfade 1.2s ease both; }
+  @keyframes stampfade { 0% { opacity: 0; } 25% { opacity: .9; } 100% { opacity: .15; } }
+  .board.fan .cards > .card { animation: none; }
+  .ring > span, .tring .prog, .progressbar span { transition: none; animation: none; }
+  .tile, .stepper a { transition: none; } .tile:hover, .stepper a:hover { transform: none; } #fact-score.pop, .cards .card.slam .badge-done { animation: none; }
+  .ring.pulse { animation: none; }
+  .btn, .seg-btn, .chipbtn { transition: none; } .btn:active, .btn.primary:hover { transform: none; }
+  .spot .cone { animation: none; transition: none; transform: none; }
+  .practice.live::before, .summary.applause { animation: none; }
+  .pr-card.flip-in, .pr-card.deal-in, .pr-card.miss-in { animation: calmfade .25s ease both; }
+  @keyframes calmfade { from { opacity: .4; } to { opacity: 1; } }
+}

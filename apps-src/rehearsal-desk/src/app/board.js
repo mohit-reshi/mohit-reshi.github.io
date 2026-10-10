@@ -64,7 +64,7 @@ export function renderBoard() {
       '<button class="btn small" data-action="new-section">New section</button></div>';
   }
   const visible = secs.map((x) => ({ s: x.s, cards: x.cards.filter(matches).sort(byOrder) })).filter((x) => x.cards.length || (admin && !UI.search && UI.filter === 'all' && (x.s.kind === 'custom' || x.s.kind === 'collected')));
-  if (!visible.length) html += '<div class="empty"><strong>No cards match.</strong><p>Change the filter or search, or analyse a resume on Home.</p></div>';
+  if (!visible.length) html += '<div class="empty">' + spotSvg('spot small') + '<strong>No cards match.</strong><p>Change the filter or search, or analyse a resume on Home.</p></div>';
   visible.forEach((x, i) => {
     const s = x.s; const all = secs.find((y) => y.s.id === s.id).cards; const p = all.filter((c) => c.status === 'perfected').length;
     const batch = S.batches.find((b) => b.secId === s.id);
