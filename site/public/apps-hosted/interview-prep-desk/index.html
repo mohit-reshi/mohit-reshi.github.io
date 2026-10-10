@@ -373,6 +373,250 @@ kbd { font-family: var(--font-mono); font-size: 11px; border: 1px solid currentC
 .flash { outline: 3px solid var(--focus); outline-offset: 4px; border-radius: 4px; transition: outline-color .6s; }
 @media (prefers-reduced-motion: reduce) { .flash { transition: none; } }
 
+
+/* ===================== Signal scan layer =====================
+   Identity: the app reads a role like an instrument. A sweep finds skills in the text, they lift into a
+   weighted row, a radar shows the role's topic weights and how much practice fills it in.
+   Everything here is plain CSS and SVG. Text-bearing elements never fade to transparent (axe reads them
+   mid-animation), they wipe or slide instead. The global reduced-motion rule above turns all of it off;
+   the block at the end swaps in short fades. */
+:root {
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --beginner: #226f3a; --intermediate: #8a5a0c;
+  --sig-0: var(--accent); --sig-1: var(--t-n); --sig-2: var(--t-k); --sig-3: var(--t-s);
+}
+.fx-hidden *, .fx-hidden *::before, .fx-hidden *::after { animation-play-state: paused !important; }
+.fx-off, .fx-off *, .fx-off::before, .fx-off::after { animation-play-state: paused !important; }
+
+/* Brand mark */
+.brand h1 { display: flex; align-items: center; gap: 9px; }
+.sig-mark { width: 22px; height: 22px; flex: none; color: var(--accent); }
+.sig-mark rect { fill: currentColor; transform-box: fill-box; transform-origin: 50% 100%; animation: fx-bar .9s var(--ease) both; animation-delay: calc(var(--i) * 90ms); }
+.sig-mark rect:nth-child(3) { fill: var(--t-n); }
+@keyframes fx-bar { from { transform: scaleY(.15); } }
+
+/* Button feel */
+.btn, .chip.toggle-chip, .tab, .topic-card, .lesson-row, .rel-card, .pager-btn, .path-card, .sr { transition: transform .16s var(--ease), background-color .16s, border-color .16s, box-shadow .2s; }
+.btn:active, .chip.toggle-chip:active, .pager-btn:active { transform: scale(.97); }
+.topic-card:hover, .rel-card:hover, .pager-btn:hover, .lesson-row:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.topic-card:active, .rel-card:active, .lesson-row:active { transform: translateY(0) scale(.99); }
+.rate .btn { transition: transform .16s var(--ease), background-color .2s, border-color .2s; }
+.rate .missed:hover, .rate .missed:focus-visible { background: var(--bad-soft); }
+.rate .partly:hover, .rate .partly:focus-visible { background: var(--warn-soft); }
+.rate .got:hover, .rate .got:focus-visible { background: var(--ok-soft); }
+.btn.primary.ready { animation: fx-ready 1.2s var(--ease) 1; }
+@keyframes fx-ready { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); } 70% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 0%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+/* Mount and view transitions (the .fx-in class lives on <main> for about a second after a view changes) */
+.fx-in > .panel, .fx-in > .learn-home, .fx-in > .lesson-layout, .fx-in > .backbar { animation: fx-view .42s var(--ease) both; }
+@keyframes fx-view { from { transform: translateY(10px); clip-path: inset(0 0 12% 0); } }
+.fx-in .meter > span, .fx-in .progressbar > span:not([data-keep]) { transform-origin: left center; animation: fx-grow .9s var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms + 120ms); }
+@keyframes fx-grow { from { transform: scaleX(0); } }
+.fx-in .topic-card { animation: fx-view .45s var(--ease) both; animation-delay: calc(var(--i, 0) * 25ms); }
+
+/* ---- Scan box: a mirrored, non-interactive layer behind the textarea ---- */
+.scan-wrap { position: relative; border-radius: 8px; background: var(--surface); }
+.scan-wrap textarea { display: block; position: relative; z-index: 1; background: transparent; transition: border-color .3s, box-shadow .3s; }
+.scan-wrap.scanning textarea { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.scan-layer { position: absolute; inset: 1px; overflow: hidden; border-radius: 7px; pointer-events: none; z-index: 0; }
+.scan-inner { position: absolute; left: 0; top: 0; width: 100%; }
+.mk { position: absolute; border-radius: 4px; opacity: 0; --mkc: var(--sig-0); transition: opacity .3s, background-color .5s, box-shadow .6s; }
+.mk[data-g="1"] { --mkc: var(--sig-1); }
+.mk[data-g="2"] { --mkc: var(--sig-2); }
+.mk.on { opacity: 1; background: color-mix(in srgb, var(--mkc) 30%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--mkc) 60%, transparent), 0 0 16px color-mix(in srgb, var(--mkc) 50%, transparent); }
+.mk[data-opt="1"].on { background: color-mix(in srgb, var(--mkc) 14%, transparent); }
+.scan-layer.rest .mk.on { background: color-mix(in srgb, var(--mkc) 15%, transparent); box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--mkc) 75%, transparent); }
+.scan-layer.rest .mk[data-opt="1"].on { background: transparent; box-shadow: inset 0 -2px 0 -0.5px color-mix(in srgb, var(--mkc) 55%, transparent); border-bottom: 2px dashed color-mix(in srgb, var(--mkc) 70%, transparent); border-radius: 0; }
+.beam { position: absolute; left: 0; right: 0; top: 0; height: 46px; margin-top: -46px; opacity: 0; will-change: transform;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 26%, transparent)); border-bottom: 2px solid var(--accent); box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 50%, transparent); }
+.scan-layer.scanning .beam { opacity: 1; }
+.scan-readout { font-size: 13px; color: var(--ink-2); }
+.scan-readout:empty { height: 0; margin: -7px 0; overflow: hidden; }
+.scan-readout b { color: var(--ink); font-weight: 600; }
+.scan-key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-2); }
+.scan-key i { display: inline-block; width: 14px; height: 8px; border-radius: 3px; margin-right: 5px; vertical-align: 0; }
+
+/* ---- Weighted row (signal pills) ---- */
+.signal { display: flex; flex-wrap: wrap; gap: 6px; }
+.sig-pill { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; gap: 6px; align-items: center; min-height: 28px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px; font-size: 12.5px; background: var(--surface); }
+.sig-pill::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--accent-soft); transform-origin: left center; transform: scaleX(var(--w, 1)); }
+.sig-pill.opt { border-style: dashed; }
+.sig-pill.opt::before { opacity: .55; }
+.sig-pill.strength::before { background: var(--ok-soft); }
+.sig-pill b { font-weight: 600; }
+.sig-pill .x { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.sig-more { font-size: 12.5px; color: var(--ink-2); align-self: center; }
+.pending { visibility: hidden; }
+.land { animation: fx-land .55s var(--ease) both; }
+.land::before { animation: fx-grow .8s var(--ease) both; }
+@keyframes fx-land { 0% { transform: scale(.82); } 55% { transform: scale(1.07); } 100% { transform: scale(1); } }
+.fly { position: fixed; left: 0; top: 0; z-index: 80; pointer-events: none; white-space: nowrap; will-change: transform; box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 40%, transparent); }
+
+/* ---- Ranked questions rise, with a match gauge ---- */
+.fx-scan .qitem { animation: fx-rise .55s var(--ease) both; animation-delay: calc(var(--base, 0ms) + min(var(--i, 0), 14) * 60ms); }
+@keyframes fx-rise { from { transform: translateY(16px) scale(.985); clip-path: inset(0 0 100% 0 round 8px); } to { clip-path: inset(0 0 0 0 round 8px); } }
+.fx-scan .sig-pill:not(.pending) { }
+.fx-scan .radar-card, .fx-scan .fit-card { animation: fx-view .5s var(--ease) both; animation-delay: calc(var(--base, 0ms) * .5); }
+.qhead.has-gauge { grid-template-columns: auto minmax(0, 1fr) auto; }
+.gauge { position: relative; grid-column: 3; grid-row: 1 / span 2; width: 40px; height: 40px; align-self: center; }
+.gauge svg { display: block; width: 100%; height: 100%; transform: rotate(-90deg); }
+.gauge circle { fill: none; stroke-width: 3.6; }
+.gauge .g-bg { stroke: var(--surface-2); }
+.gauge .g-fg { stroke: var(--accent); stroke-linecap: round; stroke-dasharray: 100 100; }
+.gauge b { position: absolute; inset: 0; display: grid; place-items: center; font: 600 11.5px/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+.fx-scan .gauge .g-fg { animation: fx-gauge 1s var(--ease) both; animation-delay: calc(var(--base, 0ms) + min(var(--i, 0), 14) * 60ms + 200ms); }
+@keyframes fx-gauge { from { stroke-dashoffset: 100; } }
+.gauge-key { display: inline-flex; align-items: center; gap: 6px; }
+.gauge-key svg { width: 16px; height: 16px; transform: rotate(-90deg); }
+
+/* ---- Radar ---- */
+.radar-card { container-type: inline-size; }
+.rd-body { display: grid; gap: 14px; align-items: center; }
+@container (min-width: 600px) { .rd-body { grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 22px; } }
+.rd-slot { min-width: 0; }
+.rd-svg { display: block; margin-inline: auto; max-width: 100%; touch-action: manipulation; cursor: crosshair; overflow: visible; }
+.rd-grid { fill: none; stroke: var(--line); stroke-dasharray: 2 4; }
+.rd-grid.rim { stroke-dasharray: none; stroke: var(--line); }
+.rd-spoke { stroke: var(--line); stroke-width: 1; opacity: .8; }
+.rd-spoke.hot { stroke: var(--accent); stroke-width: 2; opacity: 1; }
+.rd-rim { fill: none; stroke-width: 4; stroke-linecap: round; opacity: .85; }
+.rd-role { fill: var(--accent); fill-opacity: .12; stroke: var(--accent); stroke-width: 1.8; stroke-linejoin: round; }
+.rd-you { fill: none; stroke: var(--beginner); stroke-width: 2; stroke-dasharray: 6 4; stroke-linejoin: round; }
+.rd-prac { fill: var(--accent); fill-opacity: .5; stroke: var(--accent); stroke-width: 1; stroke-linejoin: round; }
+.rd-cap { fill: none; stroke: var(--ink-2); stroke-width: 1.2; stroke-dasharray: 3 4; stroke-linejoin: round; opacity: .7; }
+.rd-node { fill: var(--surface); stroke: var(--accent); stroke-width: 1.8; }
+.rd-node.m { fill: var(--beginner); stroke: var(--beginner); }
+.rd-num circle { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.rd-num text { fill: var(--accent-ink); font: 700 10.5px var(--font-body); text-anchor: middle; dominant-baseline: central; }
+.rd-hot { fill: none; stroke: var(--ink); stroke-width: 2; }
+.rd-sweep path { fill: var(--accent); }
+.rd-readout { font-size: 14px; min-height: 3.2em; margin: 0; }
+.rd-readout b { font-weight: 600; }
+.rd-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.rd-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--ink-2); }
+.rd-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -2px; }
+.rd-legend .l-role { background: color-mix(in srgb, var(--accent) 22%, transparent); border: 1.5px solid var(--accent); }
+.rd-legend .l-you { border: 1.5px dashed var(--beginner); }
+.rd-legend .l-prac { background: color-mix(in srgb, var(--accent) 55%, transparent); }
+.rd-legend .l-g0, .rd-legend .l-g1, .rd-legend .l-g2, .rd-legend .l-g3 { height: 4px; vertical-align: 2px; }
+.rd-list summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--accent); min-height: 24px; }
+.rd-list ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2px 18px; max-height: 280px; overflow: auto; }
+.rd-list li { font-size: 13px; padding: 3px 0; }
+.rd-list .muted { font-size: 12px; }
+.rd-empty { font-size: 14px; color: var(--ink-2); margin: 0; }
+
+/* ---- Session: calm live feel ---- */
+.live-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.live-who { display: inline-flex; align-items: center; gap: 9px; font-weight: 600; font-size: 13.5px; }
+.live-state { font-weight: 400; color: var(--ink-2); }
+.pulse { position: relative; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex: none; }
+.pulse::before, .pulse::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; }
+.live-bar.talk .pulse::before { animation: fx-ripple 1.5s ease-out infinite; }
+.live-bar.talk .pulse::after { animation: fx-ripple 1.5s ease-out .75s infinite; }
+.live-bar.listen .pulse::before { animation: fx-ripple 3.4s ease-out infinite; }
+@keyframes fx-ripple { 0% { transform: scale(.7); opacity: .75; } 100% { transform: scale(3); opacity: 0; } }
+.live-bar.review .pulse { background: var(--beginner); }
+.rail { display: flex; align-items: center; gap: 3px; flex: 1 1 150px; min-width: 120px; }
+.rail i { flex: 1 1 0; height: 8px; min-width: 5px; border-radius: 4px; background: var(--line); transition: background-color .4s, transform .3s var(--ease); }
+.rail i.brk { margin-left: 7px; }
+.rail i.r2 { background: var(--beginner); } .rail i.r1 { background: var(--intermediate); } .rail i.r0 { background: var(--advanced); } .rail i.skip { background: var(--ink-2); opacity: .5; }
+.rail i.cur { background: var(--accent); transform: scaleY(1.5); }
+.live-stage { font-size: 12.5px; }
+.tring { width: 34px; height: 34px; flex: none; transform: rotate(-90deg); }
+.tring circle { fill: none; stroke-width: 4.2; }
+.tr-b0 { stroke: var(--beginner); opacity: .4; } .tr-b1 { stroke: var(--intermediate); opacity: .4; } .tr-b2 { stroke: var(--advanced); opacity: .4; }
+.tr-p { stroke: var(--ink); stroke-dasharray: 100 100; transition: stroke-dashoffset 1s linear; }
+.tband { font-size: 12.5px; color: var(--ink-2); min-width: 5.2em; }
+.timer.low { background: var(--warn-soft); }
+.qcard.enter-next > :not(.stage-top):not(.progressbar):not(.qnav):not(.live-bar), .qcard.enter-prev > :not(.stage-top):not(.progressbar):not(.qnav):not(.live-bar) { animation: fx-qin .42s var(--ease) both; }
+.qcard.enter-prev > :not(.stage-top):not(.progressbar):not(.qnav):not(.live-bar) { animation-name: fx-qin-back; }
+.qcard.enter-next > :nth-child(5), .qcard.enter-next > :nth-child(6) { animation-delay: 50ms; }
+.qcard.enter-next > :nth-child(n+7), .qcard.enter-prev > :nth-child(n+7) { animation-delay: 100ms; }
+@keyframes fx-qin { from { transform: translateX(22px); clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes fx-qin-back { from { transform: translateX(-22px); clip-path: inset(0 0 0 100%); } to { clip-path: inset(0 0 0 0); } }
+.qcard.enter-reveal .coverage, .qcard.enter-reveal .compare, .qcard.enter-reveal .rate { animation: fx-view .45s var(--ease) both; }
+.qcard.enter-reveal .compare { animation-delay: .1s; }
+.qcard.enter-reveal .rate { animation-delay: .2s; }
+.qcard.enter-reveal .coverage .chip { animation: fx-land .5s var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms + 150ms); }
+.cov-meter { height: 6px; }
+.cov-meter > span { background: var(--beginner); transform-origin: left center; animation: fx-grow 1s var(--ease) .15s both; }
+.run-chip { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 1px 9px; background: var(--ok-soft); animation: fx-land .5s var(--ease) both; }
+.milestone { display: flex; align-items: center; gap: 10px; border-radius: 10px; padding: 8px 14px; background: var(--accent-soft); border: 1px solid var(--accent); font-weight: 600; animation: fx-view .5s var(--ease) both, fx-fadeout .6s ease 4.4s forwards; }
+.milestone svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
+@keyframes fx-fadeout { to { transform: translateY(-6px); clip-path: inset(0 0 100% 0); } }
+
+/* ---- Summary ---- */
+.sum-hero { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; }
+.donut { position: relative; width: 148px; height: 148px; flex: none; }
+.donut svg { display: block; width: 100%; height: 100%; transform: rotate(-90deg); }
+.donut circle { fill: none; stroke-width: 11; }
+.donut .d-bg { stroke: var(--surface-2); }
+.donut .d-arc { stroke-dashoffset: 0; animation: fx-arc 1s var(--ease) both; animation-delay: calc(var(--d, 0) * 1ms + 200ms); }
+.donut .d-got { stroke: var(--beginner); } .donut .d-partly { stroke: var(--intermediate); } .donut .d-missed { stroke: var(--advanced); } .donut .d-skip { stroke: var(--ink-2); opacity: .45; }
+@keyframes fx-arc { from { stroke-dasharray: 0 100; } }
+.donut-c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.1; }
+.donut-c b { font: 700 30px var(--font-display); font-variant-numeric: tabular-nums; }
+.donut-c span { font-size: 12px; color: var(--ink-2); }
+.sum-note { margin: 0; max-width: 46ch; }
+.fx-mock-end { animation: fx-view .9s var(--ease) both; }
+
+/* ---- Progress hero ---- */
+.p-hero { display: grid; gap: 20px; align-items: center; }
+@media (min-width: 900px) { .p-hero { grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 32px; } }
+.rings { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.rings-svg { position: relative; width: 150px; height: 150px; flex: none; }
+.rings-svg svg { display: block; width: 100%; height: 100%; transform: rotate(-90deg); }
+.rings-svg circle { fill: none; stroke-width: 10; }
+.rings-svg .r-bg { stroke: var(--surface-2); }
+.rings-svg .r-fg { stroke-linecap: round; stroke-dasharray: 100 100; animation: fx-ringfill 1.3s var(--ease) both; animation-delay: calc(var(--i, 0) * 160ms + 150ms); }
+@keyframes fx-ringfill { from { stroke-dashoffset: 100; } }
+.r-a { stroke: var(--accent); } .r-b { stroke: var(--beginner); } .r-c { stroke: var(--t-k); }
+.ring-keys { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; }
+.ring-keys li { display: flex; align-items: baseline; gap: 8px; }
+.ring-keys i { width: 12px; height: 12px; border-radius: 4px; flex: none; transform: translateY(1px); }
+.ring-keys b { font-family: var(--font-display); font-size: 17px; font-variant-numeric: tabular-nums; }
+.k-a { background: var(--accent); } .k-b { background: var(--beginner); } .k-c { background: var(--t-k); }
+.next-ms { display: flex; flex-direction: column; gap: 6px; }
+.next-ms .meter { height: 8px; }
+.ms-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.ms-pip { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px; border: 1px solid var(--line); color: var(--ink-2); }
+.ms-pip.hit { background: var(--accent-soft); border-color: transparent; color: var(--ink); }
+
+/* ---- Empty states ---- */
+.empty-art { display: block; margin: 0 auto 10px; width: 132px; height: 62px; overflow: visible; }
+.empty-art rect.ln { fill: var(--line); }
+.empty-art rect.eb { fill: var(--accent); opacity: .55; animation: fx-esweep 2.6s ease-in-out 2 both; }
+@keyframes fx-esweep { 0% { transform: translateX(-12px); } 100% { transform: translateX(124px); } }
+.empty .btn { margin-top: 10px; }
+
+/* ---- Learn ---- */
+.read-prog { position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; pointer-events: none; opacity: 0; transition: opacity .25s; }
+.read-prog.on { opacity: 1; }
+.read-prog span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--t-n)); transform-origin: left center; transform: scaleX(0); }
+.toc .chip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.learn-done.cele .btn { animation: fx-land .6s var(--ease) both; }
+.learn-done.cele { animation: fx-celebrate 1.2s ease-out 1; }
+@keyframes fx-celebrate { 0% { box-shadow: inset 0 -3px 0 var(--beginner); } 100% { box-shadow: inset 0 -3px 0 transparent; } }
+.hero-stat b { display: inline-block; }
+
+/* ---- Reduced motion: no movement, short fades only ---- */
+@media (prefers-reduced-motion: reduce) {
+  .fx-scan .qitem, .fx-scan .radar-card, .fx-in > .panel, .fx-in > .learn-home, .fx-in > .lesson-layout, .qcard.enter-next > *, .qcard.enter-prev > *, .qcard.enter-reveal .coverage, .qcard.enter-reveal .compare, .milestone, .sum-hero, .fx-mock-end {
+    animation: fx-fade .35s ease both !important; animation-delay: 0ms !important; }
+  .qcard.enter-next > .stage-top, .qcard.enter-next > .progressbar, .qcard.enter-next > .qnav { animation: none !important; }
+  .land, .run-chip { animation: none !important; }
+  .mk { transition: opacity .3s !important; }
+  .rail i, .tr-p { transition: none !important; }
+  .sig-pill.pending, .pending { visibility: visible; }
+}
+@keyframes fx-fade { from { opacity: .001; } to { opacity: 1; } }
+
+.rings-c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.1; }
+.rings-c b { font: 700 24px var(--font-display); font-variant-numeric: tabular-nums; }
+.rings-c span { font-size: 10px; color: var(--ink-2); }
+.all-skills > summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--accent); min-height: 24px; }
+.all-skills[open] > summary { margin-bottom: 8px; }
+.rd-bar { stroke: var(--accent); stroke-width: 6; stroke-linecap: round; opacity: .6; }
 </style>
 <script defer src="./app-chrome.js" data-app="interview-prep-desk" data-keys="pbiEtlPrep.v1" data-zip="interview-prep-desk-local.zip"></script>
 </head>
@@ -962,12 +1206,13 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
     if (!entries.length) return;
     const s = {
       ids: entries.map(e => e.id), reasons: {}, idx: 0, revealed: false, answers: {}, results: {}, qStart: Date.now(),
-      title: opts.title || "Practice", mock: !!opts.mock, deadline: opts.minutes ? Date.now() + opts.minutes * 60000 : null, done: false
+      startedAt: Date.now(), run: 0, title: opts.title || "Practice", mock: !!opts.mock, deadline: opts.minutes ? Date.now() + opts.minutes * 60000 : null, done: false
     };
     entries.forEach(e => { s.reasons[e.id] = e.reasons || []; });
     if (opts.idx > 0 && opts.idx < s.ids.length) s.idx = opts.idx;
     state.sessions[tab] = s;
     rememberSession(tab, s);
+    fx.enter = "next"; fx.prevProg = null;
     render();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -990,12 +1235,15 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
     const q = BY_ID.get(id);
     const cov = E.coverage(s.answers[id] || "", q.k);
     s.results[id] = { rating, pct: cov.pct };
+    const fxB0 = counts();
     const p = store.progress[id] || { box: 0, n: 0 };
     p.n = (p.n || 0) + 1;
     p.rating = rating;
     p.last = Date.now();
     p.box = rating === 2 ? Math.min((p.box || 0) + 1, 5) : rating === 1 ? Math.max(1, Math.min(p.box || 0, 2)) : 0;
     store.progress[id] = p;
+    s.run = rating === 2 ? (s.run || 0) + 1 : 0;
+    s.milestone = milestoneFor(fxB0, counts());
     // Keep only the latest typed answer per question: the new one replaces the old one.
     if ((s.answers[id] || "").trim()) store.answers[id] = { text: s.answers[id], at: Date.now(), rating };
     save();
@@ -1003,8 +1251,9 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
   }
   function next(tab) {
     const s = state.sessions[tab];
+    fx.prevProg = s.idx / s.ids.length * 100; fx.enter = "next";
     if (s.idx < s.ids.length - 1) { s.idx++; s.revealed = false; s.showPrev = false; s.qStart = Date.now(); }
-    else s.done = true;
+    else { s.done = true; s.endedAt = Date.now(); }
     rememberSession(tab, s);
     render();
     scrollToMain();
@@ -1015,6 +1264,7 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
     const ta = $("#ans"); if (ta) s.answers[s.ids[s.idx]] = ta.value;
     if (delta > 0) return next(tab);
     if (s.idx === 0) return;
+    fx.prevProg = s.idx / s.ids.length * 100; fx.enter = "prev";
     s.idx--; s.revealed = false; s.showPrev = false; s.qStart = Date.now();
     rememberSession(tab, s);
     render();
@@ -1040,10 +1290,11 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
     renderTabs();
     const main = $("#main");
     const s = state.sessions[state.tab];
-    if (s) { main.innerHTML = renderSession(state.tab, s); bindSession(); return; }
+    if (s) { main.innerHTML = renderSession(state.tab, s); bindSession(); fxAfterRender(); return; }
     const fn = { jd: renderJd, resume: renderResume, match: renderMatch, browse: renderBrowse, learn: renderLearn, mock: renderMock, progress: renderProgress }[state.tab];
     main.innerHTML = fn();
     if (state.tab === "browse") updateBrowse();
+    fxAfterRender();
   }
 
   function inputCard(key, title, lead, cfgKey, withSettings) {
@@ -1055,7 +1306,8 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
           <p class="lead">${lead}</p>
         </div>
         ${state.isSample[key] ? `<span class="sample-note">Example text loaded. Replace it with your own.</span>` : ""}
-        <textarea id="in-${key}" data-input="${key}" spellcheck="false" aria-label="${esc(title)} text">${esc(state.inputs[key])}</textarea>
+        <div class="scan-wrap" data-key="${key}"><div class="scan-layer" aria-hidden="true"></div><textarea id="in-${key}" data-input="${key}" spellcheck="false" aria-label="${esc(title)} text" placeholder="Paste text here, or upload a file below.">${esc(state.inputs[key])}</textarea></div>
+        <div class="scan-readout" id="readout-${key}" role="status">${fx.scanned[key] === state.inputs[key] && state.inputs[key].trim() ? esc(readoutText(state.inputs[key])) : ""}</div>
         <div class="row">
           <span class="btn small file-btn">Upload PDF, DOCX or TXT<input type="file" accept=".pdf,.docx,.txt,.md" data-file="${key}" aria-label="Upload file for ${esc(title)}"></span>
           <button class="btn small" data-action="clear" data-key="${key}">Clear</button>
@@ -1099,15 +1351,15 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
 
   function questionList(entries, opts) {
     opts = opts || {};
-    return `<ol class="qlist">${entries.map(e => {
+    return `<ol class="qlist">${entries.map((e, ix) => {
       const q = e.q;
       const open = state.browse.open.has(q.id) && opts.expandable;
       const reasons = (e.reasons || []).slice(0, 4);
       const kinds = e.kinds || [];
       const les = !opts.noLearn && LES.get(q.l);
-      return `<li class="qitem" data-qid="${q.id}">
-        <button class="qhead" data-action="${opts.expandable ? "toggle" : "noop"}" data-id="${q.id}" aria-expanded="${open}">
-          <span class="qid">${q.id}</span><span class="qtitle">${esc(q.q)}</span>
+      return `<li class="qitem" data-qid="${q.id}" style="--i:${ix}">
+        <button class="qhead${opts.maxScore && e.score != null ? " has-gauge" : ""}" data-action="${opts.expandable ? "toggle" : "noop"}" data-id="${q.id}" aria-expanded="${open}">
+          <span class="qid">${q.id}</span><span class="qtitle">${esc(q.q)}</span>${opts.maxScore && e.score != null ? gaugeHtml(e.score, opts.maxScore) : ""}
           <span class="qmeta">${diffBadge(q.d)}<span>${esc(topicName(q.t))}</span>${statusBadge(q.id)}${isBookmarked(q.id) ? "<span>★ Saved</span>" : ""}
           ${reasons.length ? `<span class="why">Matched: ${reasons.map((r, i) => `<b class="${kinds[i] === "gap" ? "gapword" : ""}">${esc(r)}${kinds[i] === "gap" ? " (gap)" : ""}</b>`).join(", ")}</span>` : ""}</span>
         </button>
@@ -1122,14 +1374,15 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
   }
 
   function resultsCard(kind, a, intro) {
-    if (!a) return `<div class="card"><div class="empty">Paste text on the left and choose <b>Find my questions</b>. The example text is ready to try.</div></div>`;
+    if (!a) return `<div class="card"><div class="empty">${emptyArt()}Paste text on the left and choose <b>Find my questions</b>. The example text is ready to try.</div></div>`;
     return `<div class="card stack">
       <div class="stage-top"><div class="stack" style="gap:4px"><span class="eyebrow">${intro}</span>
         <h2 style="font-size:20px">Your ${a.selected.length} most likely questions</h2></div>
         <button class="btn primary" data-action="start" data-kind="${kind}">Start practice</button></div>
       <p class="muted">Ranked against all ${QS.length} questions in the bank. Level used: <b>${esc(DIFF_LEVEL(a.level))}</b>${a.detected.years ? ` (${a.detected.years}+ years mentioned)` : ""}. Easier questions come first, as in a real interview. Change the number or level on the left for a different set.</p>
       ${mixBar(a.selected)}
-      ${questionList(a.selected)}
+      <span class="muted gauge-key"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16" fill="none" stroke="var(--surface-2)" stroke-width="6"/><circle cx="20" cy="20" r="16" fill="none" stroke="var(--accent)" stroke-width="6" stroke-dasharray="75 100" pathLength="100"/></svg>The ring on each question shows how closely it matches the text. 100 is the best match in this list.</span>
+      ${questionList(a.selected, { maxScore: Math.max.apply(null, a.selected.map(r => r.score)) })}
     </div>`;
   }
   const DIFF_LEVEL = l => ({ junior: "Junior", mid: "Mid-level", senior: "Senior" }[l] || l);
@@ -1140,10 +1393,10 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
       <div class="stack">
         ${resumeCard()}
         ${inputCard("jd", "Job description", "Paste the job description. Skills are weighted by how often they appear; anything under “Nice to have” counts half.", "jd", true)}
-        ${a ? `<div class="card stack"><span class="eyebrow">What this job asks for</span>${skillChips(a.skills)}
+        ${a ? `<div class="card stack"><span class="eyebrow">What this job asks for</span>${signalRow(a.skills)}<details class="all-skills"><summary>All ${a.skills.length} skills by group</summary>${skillChips(a.skills)}</details>
           <div class="legend"><span class="chip req">Required</span><span class="chip opt">Nice to have</span></div></div>` : ""}
       </div>
-      ${resultsCard("jd", a, "Most likely to be asked")}
+      <div class="stack">${a ? radarCard("jd") : ""}${resultsCard("jd", a, "Most likely to be asked")}</div>
     </section>`;
   }
   function renderResume() {
@@ -1151,9 +1404,9 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
     return `<section class="panel" aria-labelledby="tab-resume">
       <div class="stack">
         ${inputCard("resume", "Resume", "Paste your resume. Interviewers drill into what you claim, so questions lean one level deeper and include project-style behavioral questions.", "resume", true)}
-        ${a ? `<div class="card stack"><span class="eyebrow">Skills found on your resume</span>${skillChips(a.skills, () => "strength")}</div>` : ""}
+        ${a ? `<div class="card stack"><span class="eyebrow">Skills found on your resume</span>${signalRow(a.skills, "strength")}<details class="all-skills"><summary>All ${a.skills.length} skills by group</summary>${skillChips(a.skills, () => "strength")}</details></div>` : ""}
       </div>
-      ${resultsCard("resume", a, "Questions your resume invites")}
+      <div class="stack">${a ? radarCard("resume") : ""}${resultsCard("resume", a, "Questions your resume invites")}</div>
     </section>`;
   }
   function renderMatch() {
@@ -1162,9 +1415,9 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
       const rows = a.rows.filter(r => r.kind === kind);
       if (!rows.length) return "";
       return `<div class="stack" style="gap:6px"><span class="eyebrow">${title} (${rows.length})</span><span class="muted">${note}</span>
-        <div class="row">${rows.map(r => `<span class="chip ${kind}" title="${r.available} questions in the bank">${esc(r.label)}${r.optional ? " · nice to have" : ""}</span>`).join("")}</div></div>`;
+        <div class="row">${rows.map(r => `<span class="chip ${kind}" data-sig="${r.id}" title="${r.available} questions in the bank">${esc(r.label)}${r.optional ? " · nice to have" : ""}</span>`).join("")}</div></div>`;
     };
-    const gapTable = a ? `<div class="card stack"><div class="stage-top"><span class="eyebrow">Fit check</span>
+    const gapTable = a ? `<div class="card stack fit-card"><div class="stage-top"><span class="eyebrow">Fit check</span>
         ${a.fit != null ? `<span class="chip ${a.fit >= 75 ? "strength" : a.fit >= 50 ? "" : "gap"}">${a.fit}% of required skills shown on resume</span>` : ""}</div>
         ${a.fit != null ? `<div class="meter" role="img" aria-label="${a.fit}% fit"><span style="width:${a.fit}%"></span></div>` : ""}
         ${group("gap", "Gaps to prepare", "The JD asks for these and your resume doesn't show them. They get 1.5× weight.")}
@@ -1180,7 +1433,7 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
         ${inputCard("matchResume", "Your resume", "What you'll be asked to back up.", "match", false)}
         <div class="card stack">${settingsRow("match", state.settings.match)}</div>
       </div>
-      <div class="stack">${gapTable}${resultsCard("match", a, "Gaps first, then your strengths")}</div>
+      <div class="stack">${a ? radarCard("match") : ""}${gapTable}${resultsCard("match", a, "Gaps first, then your strengths")}</div>
     </section>`;
   }
 
@@ -1252,7 +1505,7 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
         <button class="btn primary" data-action="practice-filtered" ${list.length ? "" : "disabled"}>Practise ${Math.min(list.length, 50)}${list.length > 50 ? " of these" : ""}</button></div></div>
       ${act.length ? `<div class="row active-filters">${act.map(f => `<span class="chip req">${esc(f.label)}<button data-action="rm-filter" data-type="${f.type}" data-v="${f.v}" aria-label="Remove filter ${esc(f.label)}">✕</button></span>`).join("")}
         <button class="btn small" data-action="f-reset">Clear all</button></div>` : `<p class="muted" style="margin:0">Showing the whole bank. Use the filters to narrow it down.</p>`}
-      ${list.length ? questionList(shown.map(q => ({ q })), { expandable: true }) : `<div class="empty">No questions match these filters.</div>`}
+      ${list.length ? questionList(shown.map(q => ({ q })), { expandable: true }) : `<div class="empty">${emptyArt()}No questions match these filters.<br><button class="btn small" data-action="f-reset">Clear all filters</button></div>`}
       ${list.length > b.shown ? `<button class="btn" data-action="more">Show ${Math.min(40, list.length - b.shown)} more</button>` : ""}`;
   }
   function updateBrowse() {
@@ -1657,6 +1910,7 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
     const weakest = byTopic.filter(x => x.seen).sort((a, b) => (b.w / b.seen) - (a.w / a.seen)).slice(0, 3).filter(x => x.w);
     return `<section class="panel single" aria-labelledby="tab-progress">
       ${resumeCard()}
+      ${progressHero()}
       <div class="card stack">
         <div class="summary-tiles">
           <div class="tile"><div class="num">${ids.length}</div><div class="lbl">Questions practised of ${QS.length}</div></div>
@@ -1674,8 +1928,8 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
       </div>
       <div class="card stack">
         <span class="eyebrow">Mastery by topic</span>
-        <div class="topic-bars">${byTopic.map(x => `
-          <div class="topic-bar">
+        <div class="topic-bars">${byTopic.map((x, ix) => `
+          <div class="topic-bar" style="--i:${ix}">
             <button class="linkbtn name" data-action="progress-topic" data-t="${x.t}" aria-label="Browse the ${x.total} questions in ${esc(topicName(x.t))}">${esc(topicName(x.t))}</button>
             <span class="n">${x.m} mastered · ${x.seen} practised · ${x.total}</span>
             <div class="meter stacked" role="img" aria-label="${x.m} of ${x.total} mastered, ${x.seen} practised"><span class="seen" style="width:${x.total ? x.seen / x.total * 100 : 0}%"></span><span class="done" style="width:${x.total ? x.m / x.total * 100 : 0}%"></span></div>
@@ -1715,15 +1969,16 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
       <div class="card stack qcard">
         <div class="stage-top">
           <div class="row"><button class="btn small" data-action="exit">End session</button>
-            <span class="eyebrow">${esc(s.title)} · Question ${s.idx + 1} of ${s.ids.length}</span></div>
+            <span class="eyebrow">${esc(s.title)} · Question ${s.idx + 1} of ${s.ids.length}</span>${runChip(s)}</div>
           <div class="row">${s.deadline ? `<span class="timer ${s.deadline < Date.now() ? "over" : ""}" id="deadline">Round: ${fmtTime(Math.round((s.deadline - Date.now()) / 1000))} ${s.deadline < Date.now() ? "over" : "left"}</span>` : ""}
-            <span class="timer" id="qtimer" data-suggest="${SUGGESTED_SECONDS[q.d]}">${fmtTime(Math.floor((Date.now() - s.qStart) / 1000))} / ${fmtTime(SUGGESTED_SECONDS[q.d])}</span></div>
+            ${timerRing(s, q)}<span class="timer" id="qtimer" data-suggest="${SUGGESTED_SECONDS[q.d]}">${fmtTime(Math.floor((Date.now() - s.qStart) / 1000))} / ${fmtTime(SUGGESTED_SECONDS[q.d])}</span><span class="tband" id="tband"></span></div>
         </div>
         <div class="progressbar"><span style="width:${(s.idx) / s.ids.length * 100}%"></span></div>
+        ${liveBar(s, q)}
         ${navRow}
         <div class="row">${diffBadge(q.d)}<span class="muted">${esc(topicName(q.t))} · ${q.id}</span>${statusBadge(q.id)}
           ${reasons.length ? `<span class="why">Why this one: <b>${reasons.map(esc).join(", ")}</b></span>` : ""}</div>
-        <h2>${esc(q.q)}</h2>
+        ${milestoneBanner(s)}<h2>${esc(q.q)}</h2>
         ${LES.get(q.l) ? `<div class="row">${learnLink(LES.get(q.l), q.id, "Stuck? Learn the topic")}</div>` : ""}
         ${!s.revealed ? `<label class="field">Your answer — type it or say it out loud first (optional)
           <textarea class="answer" id="ans" data-input="answer">${esc(ans)}</textarea></label>
@@ -1734,8 +1989,8 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
             <button class="btn" data-action="bookmark" data-id="${q.id}">${isBookmarked(q.id) ? "★ Bookmarked" : "☆ Bookmark"}</button></div>`
           : `<div class="coverage">
               <div class="row" style="justify-content:space-between"><b>${cov.pct == null ? "No key points listed for this answer" : ans.trim() ? `You covered ${cov.hit.length} of ${cov.hit.length + cov.miss.length} key points (${cov.pct}%)` : "Key points to cover"}</b>
-              <span class="muted">A rough guide, not a grade</span></div>
-              <div class="row">${cov.hit.map(t => `<span class="chip hit">✓ ${esc(t)}</span>`).join("")}${cov.miss.map(t => `<span class="chip miss">${esc(t)}</span>`).join("")}</div>
+              <span class="muted">A rough guide, not a grade</span></div>${covMeter(cov, ans)}
+              <div class="row">${covChips(cov)}</div>
             </div>
             <div class="compare" role="group" aria-label="Compare your answers with the model answer">
               ${prev ? `<section class="cmp-col" aria-label="Previous attempt"><h3>Previous attempt <span class="muted">${prevWhen}</span></h3><div class="cmp-text">${esc(prev.text)}</div></section>` : ""}
@@ -1762,6 +2017,7 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
     return `<section class="panel single" aria-label="Session summary">
       <div class="card stack">
         <div class="stage-top"><h2 style="font-size:22px">${esc(s.title)} finished</h2><button class="btn" data-action="exit">Back</button></div>
+        <div class="sum-hero">${summaryRing(s, got, partly, missed, answered.length)}<p class="sum-note">${s.mock ? "Interview over. " : ""}You answered ${answered.length} of ${s.ids.length} questions.${elapsedText(s)}</p></div>
         <div class="summary-tiles">
           <div class="tile"><div class="num">${answered.length}/${s.ids.length}</div><div class="lbl">Answered</div></div>
           <div class="tile"><div class="num" style="color:var(--beginner)">${got}</div><div class="lbl">Got it</div></div>
@@ -1792,12 +2048,14 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
         const sug = +qt.dataset.suggest;
         qt.textContent = fmtTime(el) + " / " + fmtTime(sug);
         qt.classList.toggle("over", el > sug);
+        fxTimer(el, sug);
       }
       const dl = $("#deadline");
       if (dl && s.deadline) {
         const left = Math.round((s.deadline - Date.now()) / 1000);
         dl.textContent = "Round: " + fmtTime(left) + (left < 0 ? " over" : " left");
         dl.classList.toggle("over", left < 0);
+        dl.classList.toggle("low", left >= 0 && left <= 300);
       }
     }, 1000);
   }
@@ -1870,6 +2128,7 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
     if (key === "io") return;
     state.inputs[key] = t.value;
     state.isSample[key] = false;
+    fxInput(key);
   });
 
 
@@ -1965,6 +2224,7 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
       case "toggle-learned": {
         const id = btn.dataset.id;
         store.learned = isLearned(id) ? store.learned.filter(x => x !== id) : store.learned.concat(id);
+        if (isLearned(id)) fx.celebrate = id;
         save(); render(); break;
       }
       case "practice-lesson": {
@@ -1997,6 +2257,7 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
           if (!state.inputs[kind].trim()) { setStatus(kind, "Paste some text or upload a file first.", true); return; }
           analyzeSingle(kind);
         }
+        fxArm(kind);
         render(); break;
       }
       case "start": {
@@ -2025,7 +2286,7 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
         if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); h.scrollIntoView({ block: "start" }); h.classList.add("flash"); setTimeout(() => h.classList.remove("flash"), 2200); }
         break;
       }
-      case "reveal": { const s = state.sessions[tab]; const ta = $("#ans"); if (ta) s.answers[s.ids[s.idx]] = ta.value; s.revealed = true; render(); break; }
+      case "reveal": { const s = state.sessions[tab]; const ta = $("#ans"); if (ta) s.answers[s.ids[s.idx]] = ta.value; s.revealed = true; fx.enter = "reveal"; render(); break; }
       case "skip": next(tab); break;
       case "rate": rate(tab, +btn.dataset.v); break;
       case "exit": delete state.sessions[tab]; clearInterval(tick); render(); break;
@@ -2112,6 +2373,704 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
     themeBtn.textContent = "Theme: " + t;
   });
 
+  // ===================== Signal scan layer (motion and instruments) =====================
+  // Presentation only. Nothing here changes scoring, data or storage. Every effect has a static
+  // equivalent: with reduced motion on, the same information is drawn in its final state.
+  const RM = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+  const calm = () => !!RM.matches;
+  const fx = { pending: null, scanned: {}, enter: null, key: "", timers: [], flown: new Set(), prevProg: null, celebrate: null, reading: false,
+    radarSeen: {}, ver: 0, scanTok: 0, spy: null, live: null };
+  const FX_KEYS = { jd: ["jd"], resume: ["resume"], match: ["matchJd", "matchResume"] };
+  const GROUP_IDX = { "Power BI": 0, "ETL & platform": 1, "Ways of working": 2 };
+  const clamp01 = x => Math.max(0, Math.min(1, x));
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  const easeInOut = t => 0.5 - Math.cos(Math.PI * clamp01(t)) / 2;
+  const normText = t => String(t == null ? "" : t).replace(/\r\n?/g, "\n");
+  const SVGNS = "http://www.w3.org/2000/svg";
+  function svgEl(tag, attrs, parent) {
+    const el = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const later = (fn, ms) => { fx.timers.push(setTimeout(fn, ms)); };
+
+  // Pause CSS loops while the tab is hidden or the element is offscreen.
+  document.addEventListener("visibilitychange", () => document.documentElement.classList.toggle("fx-hidden", document.hidden));
+  const watcher = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("fx-off", !e.isIntersecting))) : null;
+  function watchLoops(root) {
+    if (!watcher) return;
+    watcher.disconnect();
+    root.querySelectorAll(".live-anim, .empty-art").forEach(el => watcher.observe(el));
+  }
+  // Run fn once the element is on screen (or straight away without IntersectionObserver).
+  function whenVisible(el, fn) {
+    if (!("IntersectionObserver" in window)) { fn(); return; }
+    const o = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { o.disconnect(); fn(); } }, { threshold: 0.15 });
+    o.observe(el);
+  }
+
+  function countUp(el, dur) {
+    if (!el || calm()) return;
+    const to = parseInt(el.textContent, 10);
+    if (!(to > 0) || String(to) !== el.textContent.trim()) return;
+    const t0 = performance.now();
+    el.textContent = "0";
+    (function step(now) {
+      if (!el.isConnected) return;
+      const p = clamp01((now - t0) / dur);
+      el.textContent = String(Math.round(to * easeOut(p)));
+      if (p < 1) requestAnimationFrame(step);
+    })(t0);
+    setTimeout(() => { if (el.isConnected) el.textContent = String(to); }, dur + 350);
+  }
+
+  // ---------- reading the text: where each skill sits ----------
+  function skillRanges(text) {
+    const found = E.extractSkills(text);
+    const out = [];
+    for (const sk of found) {
+      const def = window.SKILLS.find(s => s.id === sk.id);
+      if (!def) continue;
+      const re = new RegExp(def.pattern, "gi");
+      let m, guard = 0;
+      while ((m = re.exec(text)) && guard++ < 40) {
+        if (!m[0]) { re.lastIndex++; continue; }
+        if (m[0].length > 40) continue;
+        out.push({ s: m.index, e: m.index + m[0].length, id: sk.id, label: sk.label, group: sk.group, opt: sk.optional });
+      }
+    }
+    out.sort((a, b) => a.s - b.s || (b.e - b.s) - (a.e - a.s));
+    const res = [];
+    let end = -1;
+    for (const r of out) { if (r.s >= end) { res.push(r); end = r.e; } }
+    return res.slice(0, 160);
+  }
+  // Lay the text out in a hidden twin of the textarea and read where each match falls.
+  function measure(ta, text, ranges) {
+    const cs = getComputedStyle(ta);
+    const mir = document.createElement("div");
+    mir.setAttribute("aria-hidden", "true");
+    mir.style.cssText = "position:absolute;left:-99999px;top:0;visibility:hidden;white-space:pre-wrap;overflow-wrap:break-word;word-wrap:break-word;box-sizing:border-box;border:0;pointer-events:none;";
+    ["fontFamily", "fontSize", "fontWeight", "fontStyle", "letterSpacing", "lineHeight", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "tabSize", "wordSpacing", "textTransform"]
+      .forEach(p => { mir.style[p] = cs[p]; });
+    mir.style.width = ta.clientWidth + "px";
+    const spans = [];
+    let at = 0;
+    for (const r of ranges) {
+      if (r.s > at) mir.appendChild(document.createTextNode(text.slice(at, r.s)));
+      const sp = document.createElement("span");
+      sp.textContent = text.slice(r.s, r.e);
+      mir.appendChild(sp); spans.push(sp); at = r.e;
+    }
+    mir.appendChild(document.createTextNode(text.slice(at)));
+    document.body.appendChild(mir);
+    const base = mir.getBoundingClientRect();
+    const boxes = spans.map(sp => Array.from(sp.getClientRects()).map(rc => ({ x: rc.left - base.left, y: rc.top - base.top, w: rc.width, h: rc.height })));
+    const h = mir.scrollHeight;
+    mir.remove();
+    return { boxes, h };
+  }
+  function readoutText(text) {
+    const sk = E.extractSkills(text);
+    if (!sk.length) return "No Power BI or ETL skills recognised in this text.";
+    const words = text.trim().split(/\s+/).length;
+    const top = sk.filter(s => !/^(Power BI|Excel|Azure platform|Copilot)/.test(s.label)).slice(0, 3).map(s => s.label);
+    return `Found ${sk.length} skill${sk.length === 1 ? "" : "s"} in ${words} words.${top.length ? " Strongest: " + top.join(", ") + "." : ""}`;
+  }
+  // Build the highlight layer for one textarea. Returns null when the text no longer matches what was scanned.
+  function paintLayer(wrap) {
+    const key = wrap.dataset.key;
+    const ta = wrap.querySelector("textarea");
+    const layer = wrap.querySelector(".scan-layer");
+    layer.textContent = "";
+    layer.classList.remove("scanning", "rest");
+    wrap.classList.remove("scanned", "scanning");
+    const text = normText(ta.value);
+    if (!text.trim() || normText(fx.scanned[key]).replace(/^\n/, "") !== text || !ta.clientWidth) return null;
+    const ranges = skillRanges(text);
+    const { boxes, h } = measure(ta, text, ranges);
+    const inner = document.createElement("div");
+    inner.className = "scan-inner";
+    inner.style.height = h + "px";
+    const beam = document.createElement("div");
+    beam.className = "beam";
+    const marks = [];
+    ranges.forEach((r, i) => boxes[i].forEach((b, j) => {
+      const el = document.createElement("i");
+      el.className = "mk";
+      el.dataset.g = GROUP_IDX[r.group] == null ? 0 : GROUP_IDX[r.group];
+      if (r.opt) el.dataset.opt = "1";
+      el.style.cssText = `left:${(b.x - 1.5).toFixed(1)}px;top:${(b.y + 1).toFixed(1)}px;width:${(b.w + 3).toFixed(1)}px;height:${Math.max(6, b.h - 2).toFixed(1)}px`;
+      inner.appendChild(el);
+      marks.push({ el, y: b.y, r, first: j === 0 });
+    }));
+    layer.append(inner, beam);
+    const sync = () => { inner.style.transform = `translateY(${-ta.scrollTop}px)`; };
+    ta.addEventListener("scroll", sync, { passive: true });
+    sync();
+    wrap.classList.add("scanned");
+    return { wrap, ta, layer, inner, beam, marks, h, key, sync };
+  }
+  function restLayer(plan) {
+    plan.layer.classList.add("rest");
+    requestAnimationFrame(() => plan.marks.forEach(m => m.el.classList.add("on")));
+  }
+
+  // The sweep: a beam passes down the text; each skill lights as it is crossed.
+  function runScan(plan, dur, tok, onLight, onDone) {
+    const { ta, wrap, layer, inner, beam, marks, h } = plan;
+    layer.classList.add("scanning");
+    wrap.classList.add("scanning");
+    const travel = Math.max(h, ta.clientHeight);
+    const maxScroll = Math.max(0, ta.scrollHeight - ta.clientHeight);
+    let done = false, t0 = null;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      ["wheel", "pointerdown", "keydown", "touchstart"].forEach(ev => ta.removeEventListener(ev, finish));
+      marks.forEach(m => m.el.classList.add("on"));
+      layer.classList.remove("scanning");
+      layer.classList.add("rest");
+      wrap.classList.remove("scanning");
+      onDone();
+    };
+    ["wheel", "pointerdown", "keydown", "touchstart"].forEach(ev => ta.addEventListener(ev, finish, { passive: true }));
+    function frame(now) {
+      if (done) return;
+      if (!ta.isConnected || tok !== fx.scanTok) { done = true; return; }
+      if (t0 == null) t0 = now;
+      const p = clamp01((now - t0) / dur);
+      const y = easeInOut(p) * travel;
+      if (maxScroll > 0) ta.scrollTop = Math.max(0, Math.min(maxScroll, y - ta.clientHeight * 0.45));
+      const st = ta.scrollTop;
+      inner.style.transform = `translateY(${-st}px)`;
+      beam.style.transform = `translateY(${(y - st).toFixed(1)}px)`;
+      for (const m of marks) {
+        if (!m.lit && m.y + 4 <= y) { m.lit = true; m.el.classList.add("on"); onLight(m); }
+      }
+      if (p < 1) requestAnimationFrame(frame); else { ta.scrollTop = 0; finish(); }
+    }
+    requestAnimationFrame(frame);
+  }
+  // A lit skill lifts out of the text and lands in its slot in the weighted row.
+  function flight(m, plan) {
+    if (!m.first || fx.flown.has(m.r.id)) return;
+    const target = document.querySelector(`[data-sig="${m.r.id}"].pending`);
+    if (!target) return;
+    const s = m.el.getBoundingClientRect(), L = plan.layer.getBoundingClientRect();
+    if (s.bottom < L.top || s.top > L.bottom || s.bottom < 0 || s.top > window.innerHeight) return;
+    fx.flown.add(m.r.id);
+    const t = target.getBoundingClientRect();
+    const el = document.createElement("span");
+    el.className = "chip req fly";
+    el.setAttribute("aria-hidden", "true");
+    el.textContent = m.r.label;
+    document.body.appendChild(el);
+    const a = el.animate([
+      { transform: `translate(${s.left}px,${s.top}px) scale(.9)`, opacity: 1 },
+      { transform: `translate(${s.left}px,${s.top - 10}px) scale(1.05)`, opacity: 1, offset: 0.2 },
+      { transform: `translate(${t.left}px,${t.top}px) scale(1)`, opacity: 1 }
+    ], { duration: 720, easing: "cubic-bezier(.3,.7,.2,1)", fill: "forwards" });
+    a.onfinish = () => { el.remove(); landPill(target); };
+    a.oncancel = () => { el.remove(); landPill(target); };
+  }
+  function landPill(el) { el.classList.remove("pending"); el.classList.add("land"); }
+
+  // Entry point after "Find my questions" (or the first view): sweep, lift, rise.
+  function playScan(main, kind) {
+    const panel = main.querySelector(".panel");
+    const wraps = FX_KEYS[kind].map(k => main.querySelector(`.scan-wrap[data-key="${k}"]`)).filter(Boolean);
+    const tok = ++fx.scanTok;
+    fx.flown = new Set();
+    // make sure the text being read is on screen
+    if (wraps[0] && !calm()) {
+      const rc = wraps[0].getBoundingClientRect(), top = $(".topbar").offsetHeight + 8;
+      if (rc.top < top || rc.top > window.innerHeight - 160) window.scrollTo({ top: Math.max(0, window.scrollY + rc.top - top - 8), behavior: "auto" });
+    }
+    const plans = wraps.map(paintLayer);
+    if (calm()) {
+      plans.forEach(p => p && restLayer(p));
+      if (panel) { panel.classList.add("fx-scan"); later(() => panel.classList.remove("fx-scan"), 700); }
+      return;
+    }
+    const maxMarks = Math.max(0, ...plans.map(p => (p ? p.marks.length : 0)));
+    const dur = Math.max(900, Math.min(1500, 700 + maxMarks * 16));
+    if (panel) {
+      panel.style.setProperty("--base", Math.round(dur * 0.5) + "ms");
+      panel.classList.add("fx-scan");
+      panel.querySelectorAll("[data-sig]").forEach(el => el.classList.add("pending"));
+    }
+    wraps.forEach(w => { const ro = document.getElementById("readout-" + w.dataset.key); if (ro) ro.textContent = "Scanning…"; });
+    let left = plans.filter(Boolean).length;
+    const wrapUp = () => {
+      later(() => document.querySelectorAll("[data-sig].pending").forEach((el, i) => setTimeout(() => landPill(el), i * 50)), 120);
+      wraps.forEach(w => { const ro = document.getElementById("readout-" + w.dataset.key); if (ro) ro.textContent = readoutText(normText(w.querySelector("textarea").value)); });
+    };
+    if (!left) { wrapUp(); }
+    plans.forEach((plan, i) => {
+      if (!plan) return;
+      runScan(plan, dur, tok, m => { if (i === 0) flight(m, plan); }, () => { if (--left === 0) wrapUp(); });
+    });
+    later(() => { if (panel) panel.classList.remove("fx-scan"); document.querySelectorAll("[data-sig].pending").forEach(landPill); }, dur + 2600);
+  }
+
+  // ---------- topic radar ----------
+  const TOPIC_IDS = Object.keys(window.TOPICS).map(Number);
+  const TOPIC_Q = {};
+  QS.forEach(q => { (TOPIC_Q[q.t] = TOPIC_Q[q.t] || []).push(q.id); });
+  const GROUP_OF = {};
+  Object.values(window.TOPIC_GROUPS).forEach((ts, gi) => ts.forEach(t => { GROUP_OF[t] = gi; }));
+  const PRACTICE_FULL = 10; // practising this many questions in a topic fills its spoke
+  function practiceByTopic() {
+    const out = {};
+    TOPIC_IDS.forEach(t => {
+      const ids = TOPIC_Q[t] || [];
+      let seen = 0, m = 0;
+      ids.forEach(id => { if (store.progress[id]) { seen++; if (statusOf(id) === "mastered") m++; } });
+      out[t] = { seen, m, total: ids.length };
+    });
+    return out;
+  }
+  function topicWeights(skills) {
+    const w = {};
+    (skills || []).forEach(sk => {
+      const def = window.SKILLS.find(x => x.id === sk.id);
+      if (def) def.topics.forEach(t => { w[t] = (w[t] || 0) + sk.weight; });
+    });
+    return w;
+  }
+  const shortTopic = t => { const n = topicName(t); return n.length > 30 ? n.split(/[,&]/)[0].trim() + " and others" : n; };
+  const BANDS = ["Light signal", "Medium signal", "Strong signal"];
+  const bandOf = f => f >= 0.66 ? 2 : f >= 0.33 ? 1 : 0;
+  function radarCard(kind) {
+    const mode = kind === "practice" ? "practice" : kind;
+    const title = { jd: "Role map", resume: "Resume map", match: "Fit map", practice: "Practice map" }[mode];
+    const lead = {
+      jd: "Each spoke is a topic from the question bank. The outline reaches further where the job description asks for more. The solid fill is your practice.",
+      resume: "Each spoke is a topic from the question bank. The outline shows where your resume is strongest. The solid fill is your practice.",
+      match: "The outline is what the job asks for. The dashed line is what your resume shows. The solid fill is your practice. Where the outline sticks out past the dashed line is a gap.",
+      practice: "Each spoke is a topic from the question bank. The fill grows as you practise; a full spoke is 10 questions practised."
+    }[mode];
+    return `<div class="card stack radar-card" data-radar="${mode}">
+      <div class="stack" style="gap:4px"><span class="eyebrow">${title}</span><p class="lead">${lead}</p></div>
+      <div class="rd-body"><div class="rd-slot" data-mode="${mode}" data-kind="${kind}"></div>
+        <div class="rd-side"><p class="rd-readout" aria-live="off"></p><div class="rd-legend"></div><details class="rd-list"><summary>Topic by topic</summary><ul></ul></details></div></div>
+    </div>`;
+  }
+  function radarModel(host) {
+    const mode = host.dataset.mode, kind = host.dataset.kind;
+    const prac = practiceByTopic();
+    let role = null, you = null;
+    if (mode === "jd" || mode === "resume") role = topicWeights((state.analysis[kind] || {}).skills);
+    if (mode === "match") {
+      role = topicWeights(E.extractSkills(normText(fx.scanned.matchJd || state.inputs.matchJd)));
+      you = topicWeights(E.extractSkills(normText(fx.scanned.matchResume || state.inputs.matchResume)));
+    }
+    return { mode, kind, prac, role, you };
+  }
+  function drawRadar(host, animate) {
+    const card = host.closest(".radar-card");
+    const model = radarModel(host);
+    const { mode, prac, role, you } = model;
+    const N = TOPIC_IDS.length;
+    const W = Math.round(Math.max(240, Math.min(host.clientWidth || 320, 340)));
+    const cx = W / 2, cy = W / 2, R = W / 2 - 24, rMin = R * 0.13;
+    host.textContent = "";
+    // spoke angles, with a small gap between groups
+    const gaps = 0.6, step = 360 / (N + gaps * 4);
+    const ang = [];
+    let a = -90 + step * gaps / 2, prevG = GROUP_OF[TOPIC_IDS[0]];
+    TOPIC_IDS.forEach((t, i) => {
+      if (i && GROUP_OF[t] !== prevG) { a += step * gaps; prevG = GROUP_OF[t]; }
+      ang.push(a); a += step;
+    });
+    const rad = d => d * Math.PI / 180;
+    const pt = (i, r) => [cx + r * Math.cos(rad(ang[i])), cy + r * Math.sin(rad(ang[i]))];
+    const wmax = Math.max(0.0001, ...Object.values(role || {}), ...Object.values(you || {}));
+    const rOf = w => rMin + (R - rMin) * Math.pow(Math.max(0, w) / wmax, 0.85);
+    const roleR = TOPIC_IDS.map(t => role ? (role[t] ? rOf(role[t]) : rMin) : R);
+    const youR = you ? TOPIC_IDS.map(t => (you[t] ? rOf(you[t]) : rMin)) : null;
+    const pracR = TOPIC_IDS.map((t, i) => {
+      const f = Math.pow(Math.min(1, prac[t].seen / PRACTICE_FULL), 0.6);
+      return f > 0 ? rMin + (roleR[i] - rMin) * f : 0;
+    });
+    const svg = svgEl("svg", { class: "rd-svg", viewBox: `0 0 ${W} ${W}`, width: W, height: W, role: "img",
+      "aria-label": mode === "practice" ? "Radar of practice by topic. The same facts are listed under Topic by topic." : "Radar of topic weights for this text and your practice. The same facts are listed under Topic by topic." }, host);
+    // grid
+    [0.25, 0.5, 0.75].forEach(f => svgEl("circle", { class: "rd-grid", cx, cy, r: rMin + (R - rMin) * f }, svg));
+    svgEl("circle", { class: "rd-grid rim", cx, cy, r: R }, svg);
+    const spokes = TOPIC_IDS.map((t, i) => { const p = pt(i, R); return svgEl("line", { class: "rd-spoke", x1: cx, y1: cy, x2: p[0], y2: p[1] }, svg); });
+    // group rim arcs
+    Object.values(window.TOPIC_GROUPS).forEach((ts, gi) => {
+      const i0 = TOPIC_IDS.indexOf(ts[0]), i1 = TOPIC_IDS.indexOf(ts[ts.length - 1]);
+      const a0 = rad(ang[i0] - step * 0.35), a1 = rad(ang[i1] + step * 0.35), r = R + 9;
+      const large = (a1 - a0) > Math.PI ? 1 : 0;
+      svgEl("path", { class: "rd-rim", stroke: `var(--sig-${gi})`, d: `M${cx + r * Math.cos(a0)},${cy + r * Math.sin(a0)} A${r},${r} 0 ${large} 1 ${cx + r * Math.cos(a1)},${cy + r * Math.sin(a1)}` }, svg);
+    });
+    if (mode === "practice") svgEl("polygon", { class: "rd-cap", points: TOPIC_IDS.map((t, i) => pt(i, R).join(",")).join(" ") }, svg);
+    const polyRole = role ? svgEl("polygon", { class: "rd-role" }, svg) : null;
+    const polyYou = youR ? svgEl("polygon", { class: "rd-you" }, svg) : null;
+    const polyPrac = svgEl("polygon", { class: "rd-prac" }, svg);
+    const bars = TOPIC_IDS.map((t, i) => (prac[t].seen ? svgEl("line", { class: "rd-bar", x1: cx, y1: cy, x2: cx, y2: cy }, svg) : null));
+    // nodes where a spoke has weight, and numbered markers on the strongest five
+    const order = TOPIC_IDS.map((t, i) => i).filter(i => role ? role[TOPIC_IDS[i]] : prac[TOPIC_IDS[i]].seen)
+      .sort((x, y) => role ? role[TOPIC_IDS[y]] - role[TOPIC_IDS[x]] : prac[TOPIC_IDS[y]].seen - prac[TOPIC_IDS[x]].seen);
+    const top = order.slice(0, 5);
+    const nodes = TOPIC_IDS.map((t, i) => {
+      const on = role ? !!role[t] : prac[t].seen > 0;
+      if (!on) return null;
+      return svgEl("circle", { class: "rd-node" + (prac[t].m ? " m" : ""), r: 3.4 }, svg);
+    });
+    const nums = top.map((i, k) => {
+      const g = svgEl("g", { class: "rd-num" }, svg);
+      svgEl("circle", { r: 9.5 }, g); const tx = svgEl("text", {}, g); tx.textContent = String(k + 1);
+      return { g, i };
+    });
+    const hot = svgEl("circle", { class: "rd-hot", r: 8, visibility: "hidden" }, svg);
+    // sweep wedge (only visible while animating)
+    const sweep = svgEl("g", { class: "rd-sweep", visibility: "hidden" }, svg);
+    for (let k = 0; k < 9; k++) {
+      const a0 = rad(-k * 3.2), a1 = rad(-(k + 1) * 3.2);
+      svgEl("path", { d: `M${cx},${cy} L${cx + R * Math.cos(a0)},${cy + R * Math.sin(a0)} A${R},${R} 0 0 0 ${cx + R * Math.cos(a1)},${cy + R * Math.sin(a1)} Z`, "fill-opacity": (0.2 * (1 - k / 9)).toFixed(3) }, sweep);
+    }
+    // set polygons to a given extension per spoke (0..1)
+    function setExt(ext, pExt) {
+      const mk = (radii, e) => TOPIC_IDS.map((t, i) => pt(i, radii[i] === 0 ? 0 : rMin + (radii[i] - rMin) * e(i)).join(",")).join(" ");
+      if (polyRole) polyRole.setAttribute("points", mk(roleR, ext));
+      if (polyYou) polyYou.setAttribute("points", mk(youR, ext));
+      polyPrac.setAttribute("points", mk(pracR, pExt));
+      bars.forEach((bl, i) => { if (!bl) return; const p = pt(i, pracR[i] * pExt(i)); bl.setAttribute("x2", p[0]); bl.setAttribute("y2", p[1]); });
+      TOPIC_IDS.forEach((t, i) => {
+        const nd = nodes[i]; if (!nd) return;
+        const base = role ? roleR[i] : pracR[i];
+        const p = pt(i, rMin + (base - rMin) * (role ? ext(i) : pExt(i)));
+        nd.setAttribute("cx", p[0]); nd.setAttribute("cy", p[1]);
+      });
+      nums.forEach(n => {
+        const base = role ? roleR[n.i] : pracR[n.i];
+        const p = pt(n.i, rMin + (base - rMin) * (role ? ext(n.i) : pExt(n.i)));
+        n.g.setAttribute("transform", `translate(${p[0].toFixed(1)},${p[1].toFixed(1)})`);
+      });
+    }
+    // text: legend, default readout and the accessible list
+    const side = card.querySelector(".rd-side");
+    const ro = side.querySelector(".rd-readout");
+    const legend = side.querySelector(".rd-legend");
+    legend.innerHTML = (role ? '<span><i class="l-role"></i>' + (mode === "resume" ? "Where your resume is strong" : "What the job asks for") + "</span>" : "")
+      + (you ? '<span><i class="l-you"></i>What your resume shows</span>' : "") + '<span><i class="l-prac"></i>Your practice</span>'
+      + Object.keys(window.TOPIC_GROUPS).map((g, gi) => `<span><i class="l-g${gi}" style="background:var(--sig-${gi})"></i>${esc(g)}</span>`).join("");
+    const totalSeen = TOPIC_IDS.reduce((s, t) => s + prac[t].seen, 0);
+    const defaultText = () => {
+      if (role && order.length) return `Strongest: <b>${top.map((i, k) => (k + 1) + " " + esc(shortTopic(TOPIC_IDS[i]))).join(", ")}</b>. ${totalSeen ? `You have practised ${totalSeen} of ${QS.length} questions.` : "Practise to fill the map in."} Tap a spoke for detail.`;
+      if (!role && totalSeen) return `You have practised <b>${totalSeen}</b> of ${QS.length} questions across ${TOPIC_IDS.filter(t => prac[t].seen).length} topics. Tap a spoke for detail.`;
+      if (!role) return `Nothing practised yet. Answer a few questions and each spoke fills in. <button class="linkbtn" data-action="tab" data-tab="mock">Try a mock interview</button>`;
+      return "No topics recognised in this text yet.";
+    };
+    const detail = i => {
+      const t = TOPIC_IDS[i], pr = prac[t];
+      const wf = role && role[t] ? role[t] / wmax : 0;
+      const sig = role ? (role[t] ? BANDS[bandOf(wf)] : "Not asked for") : "";
+      const you2 = you ? (you[t] ? "On your resume" : "Not on your resume") : "";
+      return `<b>${esc(topicName(t))}</b>${sig ? ". " + sig : ""}${you2 ? ". " + you2 : ""}. ${pr.seen} of ${pr.total} practised${pr.m ? ", " + pr.m + " mastered" : ""}. <button class="linkbtn" data-action="progress-topic" data-t="${t}">Browse these ${pr.total} questions</button>`;
+    };
+    ro.innerHTML = defaultText();
+    const list = side.querySelector(".rd-list ul");
+    const listOrder = role ? TOPIC_IDS.map((t, i) => i).filter(i => role[TOPIC_IDS[i]]).sort((x, y) => role[TOPIC_IDS[y]] - role[TOPIC_IDS[x]]) : TOPIC_IDS.map((t, i) => i);
+    list.innerHTML = listOrder.map(i => {
+      const t = TOPIC_IDS[i], pr = prac[t];
+      const sig = role ? BANDS[bandOf(role[t] / wmax)] + ", " : "";
+      return `<li><button class="linkbtn" data-action="progress-topic" data-t="${t}">${esc(topicName(t))}</button> <span class="muted">${sig}${pr.seen} of ${pr.total} practised</span></li>`;
+    }).join("") || `<li class="muted">No topics yet.</li>`;
+    // pointer: highlight the nearest spoke
+    let sel = -1;
+    const choose = (i, sticky) => {
+      if (sel >= 0) spokes[sel].classList.remove("hot");
+      sel = i;
+      if (i < 0) { hot.setAttribute("visibility", "hidden"); if (sticky) ro.innerHTML = defaultText(); return; }
+      spokes[i].classList.add("hot");
+      const base = role ? roleR[i] : pracR[i];
+      const p = pt(i, base);
+      hot.setAttribute("cx", p[0]); hot.setAttribute("cy", p[1]); hot.setAttribute("visibility", "visible");
+      ro.innerHTML = detail(i);
+    };
+    const nearest = e => {
+      const r = svg.getBoundingClientRect();
+      const x = (e.clientX - r.left) * (W / r.width) - cx, y = (e.clientY - r.top) * (W / r.height) - cy;
+      if (Math.hypot(x, y) < rMin * 0.8) return -1;
+      let best = -1, bd = 1e9;
+      const th = Math.atan2(y, x) * 180 / Math.PI;
+      ang.forEach((aa, i) => { let d = Math.abs(((th - aa + 540) % 360) - 180); if (d < bd) { bd = d; best = i; } });
+      return bd < step * 0.75 ? best : -1;
+    };
+    svg.addEventListener("pointermove", e => { if (e.pointerType === "mouse") { const i = nearest(e); if (i !== sel) choose(i); } });
+    svg.addEventListener("pointerdown", e => { choose(nearest(e), true); });
+    // animation
+    const full = () => 1;
+    if (animate === false || calm()) { setExt(full, full); return; }
+    setExt(() => 0, () => 0);
+    if (animate === "hold") return;
+    const T = 1250, ext = 520;
+    const tsOf = i => (i / (N - 1)) * 850;
+    const t0 = performance.now();
+    sweep.setAttribute("visibility", "visible");
+    const exts = new Array(N).fill(0), pe = new Array(N).fill(0);
+    (function frame(now) {
+      if (!svg.isConnected) return;
+      const el = now - t0;
+      for (let i = 0; i < N; i++) {
+        exts[i] = easeOut(clamp01((el - tsOf(i)) / ext));
+        pe[i] = easeOut(clamp01((el - tsOf(i) - 380) / ext));
+      }
+      setExt(i => exts[i], i => pe[i]);
+      // sweep angle follows the spokes
+      let k = 0;
+      while (k < N - 1 && el > tsOf(k + 1)) k++;
+      const f = clamp01((el - tsOf(k)) / ((tsOf(Math.min(k + 1, N - 1)) - tsOf(k)) || 1));
+      const aa = k >= N - 1 ? ang[N - 1] + step * clamp01((el - tsOf(N - 1)) / 120) : ang[k] + (ang[k + 1] - ang[k]) * f;
+      sweep.setAttribute("transform", `rotate(${aa.toFixed(2)} ${cx} ${cy}) translate(${cx - cx} 0)`);
+      if (el < T + 500) requestAnimationFrame(frame);
+      else { sweep.setAttribute("visibility", "hidden"); setExt(full, full); }
+    })(t0);
+  }
+  function mountRadars(main, delay, force, mount) {
+    main.querySelectorAll(".rd-slot").forEach(host => {
+      const id = host.dataset.mode + ":" + host.dataset.kind;
+      const isPrac = host.dataset.mode === "practice";
+      const want = !calm() && (isPrac ? mount : (force || fx.radarSeen[id] !== fx.ver));
+      if (!want) { drawRadar(host, false); return; }
+      drawRadar(host, "hold"); // collapsed first, so the card never flashes full
+      whenVisible(host, () => later(() => { if (host.isConnected) { fx.radarSeen[id] = fx.ver; drawRadar(host, true); } }, delay));
+    });
+  }
+
+  const MARK = '<svg class="sig-mark" viewBox="0 0 22 22" aria-hidden="true"><rect x="2" y="12" width="3.6" height="8" rx="1.6" style="--i:0"/><rect x="7.3" y="5" width="3.6" height="15" rx="1.6" style="--i:1"/><rect x="12.6" y="9" width="3.6" height="11" rx="1.6" style="--i:2"/><rect x="17.9" y="2" width="2.6" height="18" rx="1.3" style="--i:3"/></svg>';
+
+  // ---------- weighted row, gauge, small string builders ----------
+  function signalRow(skills, cls) {
+    if (!skills.length) return "";
+    const top = skills.slice(0, 10), max = Math.max(...top.map(s => s.weight)) || 1;
+    return `<div class="stack" style="gap:6px"><div class="signal">${top.map(s =>
+      `<span class="sig-pill ${cls || (s.optional ? "opt" : "")}" data-sig="${s.id}" style="--w:${Math.max(0.28, s.weight / max).toFixed(2)}" title="Mentioned ${s.count} time${s.count === 1 ? "" : "s"}"><b>${esc(s.label)}</b>${s.count > 1 ? `<span class="x">×${s.count}</span>` : ""}</span>`).join("")}
+      ${skills.length > top.length ? `<span class="sig-more">+${skills.length - top.length} more in the full list</span>` : ""}</div>
+      <span class="muted">A longer fill means the text asks for it more.</span></div>`;
+  }
+  function gaugeHtml(score, max) {
+    const v = max > 0 ? Math.max(1, Math.min(100, Math.round(score / max * 100))) : 0;
+    return `<span class="gauge" role="img" aria-label="Match strength ${v} out of 100, where 100 is the best match in this list"><svg viewBox="0 0 40 40" aria-hidden="true"><circle class="g-bg" cx="20" cy="20" r="16" pathLength="100"/><circle class="g-fg" cx="20" cy="20" r="16" pathLength="100" style="stroke-dashoffset:${100 - v}"/></svg><b aria-hidden="true">${v}</b></span>`;
+  }
+  function emptyArt(extra) {
+    return `<svg class="empty-art" viewBox="0 0 132 62" aria-hidden="true"><rect class="ln" x="4" y="8" width="96" height="6" rx="3"/><rect class="ln" x="4" y="22" width="120" height="6" rx="3"/><rect class="ln" x="4" y="36" width="78" height="6" rx="3"/><rect class="ln" x="4" y="50" width="108" height="6" rx="3"/><rect class="eb" x="0" y="2" width="8" height="58" rx="4"/></svg>${extra || ""}`;
+  }
+  const SPARK = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l1.9 5.6 5.6 1.9-5.6 1.9L10 16.5l-1.9-5.6L2.5 9l5.6-1.9z" fill="currentColor"/></svg>';
+
+  // Session pieces
+  function counts() {
+    const ids = Object.keys(store.progress);
+    return { n: ids.length, m: ids.filter(id => statusOf(id) === "mastered").length };
+  }
+  const MS_PRACTISED = [1, 5, 10, 25, 50, 100, 200, 400, 800];
+  const MS_MASTERED = [1, 5, 10, 25, 50, 100];
+  function milestoneFor(b0, b1) {
+    if (b1.m > b0.m && MS_MASTERED.includes(b1.m)) return b1.m === 1 ? "First question mastered" : b1.m + " questions mastered";
+    if (b1.n > b0.n && MS_PRACTISED.includes(b1.n)) return b1.n === 1 ? "First question practised" : b1.n + " questions practised";
+    return null;
+  }
+  function milestoneBanner(s) { return s.milestone ? `<div class="milestone" role="status">${SPARK}<span>${esc(s.milestone)}</span></div>` : ""; }
+  function runChip(s) { return s.run >= 2 ? `<span class="run-chip">${s.run} got it in a row</span>` : ""; }
+  function timerRing(s, q) {
+    return `<svg class="tring" id="tring" viewBox="0 0 36 36" aria-hidden="true"><circle class="tr-b0" cx="18" cy="18" r="15" pathLength="100" stroke-dasharray="50 100"/><circle class="tr-b1" cx="18" cy="18" r="15" pathLength="100" stroke-dasharray="25 100" stroke-dashoffset="-50"/><circle class="tr-b2" cx="18" cy="18" r="15" pathLength="100" stroke-dasharray="25 100" stroke-dashoffset="-75"/><circle class="tr-p" cx="18" cy="18" r="15" pathLength="100" style="stroke-dashoffset:100"/></svg>`;
+  }
+  function fxTimer(el, sug) {
+    const p = $(".tr-p"), b = $("#tband");
+    if (p) p.style.strokeDashoffset = String(100 - Math.min(1, el / (2 * sug)) * 100);
+    if (b) { const txt = el <= sug ? "On pace" : el <= sug * 1.5 ? "Wrap up" : "Over time"; if (b.textContent !== txt) b.textContent = txt; }
+  }
+  function liveBar(s, q) {
+    if (!s.mock) return "";
+    const stages = s.ids.map(id => (s.reasons[id] || [])[0] || "");
+    const stage = stages[s.idx];
+    const dots = s.ids.map((id, i) => {
+      const r = s.results[id];
+      const cls = i === s.idx ? "cur" : r ? "r" + r.rating : i < s.idx ? "skip" : "";
+      return `<i class="${cls}${i > 0 && stages[i] !== stages[i - 1] ? " brk" : ""}"></i>`;
+    }).join("");
+    const inStage = stages.filter(x => x === stage).length, pos = stages.slice(0, s.idx + 1).filter(x => x === stage).length;
+    return `<div class="live-bar live-anim ${s.revealed ? "review" : "talk"}" id="liveBar">
+      <span class="live-who"><span class="pulse" aria-hidden="true"></span>Interviewer <span class="live-state" id="liveState">${s.revealed ? "Reviewing your answer" : "Asking"}</span></span>
+      <span class="rail" role="img" aria-label="Question ${s.idx + 1} of ${s.ids.length}">${dots}</span>
+      <span class="muted live-stage">${esc(stage)}${inStage > 1 ? ` (${pos} of ${inStage})` : ""}</span></div>`;
+  }
+  function covChips(cov) {
+    return cov.hit.map((t, i) => `<span class="chip hit" style="--i:${i}">✓ ${esc(t)}</span>`).join("") + cov.miss.map((t, i) => `<span class="chip miss" style="--i:${cov.hit.length + i}">${esc(t)}</span>`).join("");
+  }
+  function covMeter(cov, ans) { return cov.pct != null && ans.trim() ? `<div class="meter cov-meter" aria-hidden="true"><span style="width:${cov.pct}%"></span></div>` : ""; }
+  function summaryRing(s, got, partly, missed, answered) {
+    const n = s.ids.length || 1, skipped = n - answered;
+    const parts = [["d-got", got], ["d-partly", partly], ["d-missed", missed], ["d-skip", skipped]];
+    let off = 0;
+    const arcs = parts.filter(p => p[1] > 0).map(([cls, v], i) => {
+      const len = v / n * 100, el = `<circle class="d-arc ${cls}" cx="60" cy="60" r="52" pathLength="100" style="stroke-dasharray:${Math.max(0, len - 0.8).toFixed(2)} 100;stroke-dashoffset:${(-off).toFixed(2)};--d:${i * 260}"/>`;
+      off += len; return el;
+    }).join("");
+    return `<div class="donut" role="img" aria-label="${got} got it, ${partly} partly, ${missed} missed, ${skipped} skipped, out of ${n} questions"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="d-bg" cx="60" cy="60" r="52"/>${arcs}</svg>
+      <div class="donut-c" aria-hidden="true"><b>${got}</b><span>of ${n} got it</span></div></div>`;
+  }
+  function elapsedText(s) {
+    if (!s.startedAt || !s.endedAt) return "";
+    const sec = Math.max(1, Math.round((s.endedAt - s.startedAt) / 1000));
+    return ` The round took ${fmtTime(sec)}.`;
+  }
+
+  // Progress hero: three rings, the next milestone, then the practice map
+  function progressHero() {
+    const c = counts();
+    const learned = store.learned.filter(id => LES.has(id)).length;
+    const rings = [[c.n / QS.length, "r-a", 56, "k-a", "Practised", c.n, QS.length], [c.m / QS.length, "r-b", 43, "k-b", "Mastered", c.m, QS.length], [learned / LESSONS.length, "r-c", 30, "k-c", "Lessons learned", learned, LESSONS.length]];
+    const svg = `<div class="rings-svg"><div class="rings-c" aria-hidden="true"><b>${c.n}</b><span>practised</span></div><svg viewBox="0 0 130 130" aria-hidden="true">${rings.map(([f, cls, r], i) => `<circle class="r-bg" cx="65" cy="65" r="${r}"/><circle class="r-fg ${cls}" cx="65" cy="65" r="${r}" pathLength="100" style="stroke-dashoffset:${(100 - Math.max(f > 0 ? 1.5 : 0, f * 100)).toFixed(2)};--i:${i};${f > 0 ? "" : "stroke-opacity:0"}"/>`).join("")}</svg></div>`;
+    const keys = `<ul class="ring-keys">${rings.map(r => `<li><i class="${r[3]}"></i><span><b>${r[5]}</b> of ${r[6]} ${r[4].toLowerCase()}</span></li>`).join("")}</ul>`;
+    const next = MS_PRACTISED.find(v => v > c.n);
+    const prev = [0].concat(MS_PRACTISED).filter(v => v <= c.n).pop();
+    const ms = next ? `<div class="next-ms"><span class="eyebrow">Next milestone</span>
+        <div class="meter" role="img" aria-label="${c.n} of ${next} practised"><span style="width:${(c.n - prev) / (next - prev) * 100}%"></span></div>
+        <span class="muted">${next - c.n} more ${next - c.n === 1 ? "question" : "questions"} practised to reach ${next}.</span>
+        <div class="ms-row">${MS_PRACTISED.map(v => `<span class="ms-pip ${c.n >= v ? "hit" : ""}">${c.n >= v ? "✓ " : ""}${v}</span>`).join("")}</div></div>`
+      : `<div class="next-ms"><span class="eyebrow">Milestones</span><span class="muted">Every question in the bank has been practised.</span></div>`;
+    return `<div class="card p-hero"><div class="stack"><div class="rings">${svg}${keys}</div>${ms}</div>${radarCardInner()}</div>`;
+  }
+  const radarCardInner = () => radarCard("practice").replace('class="card stack radar-card"', 'class="stack radar-card"');
+
+  // ---------- after every render ----------
+  function viewKey() {
+    const s = state.sessions[state.tab];
+    if (s) return state.tab + (s.done ? ":done" : ":session");
+    if (state.tab === "learn") return "learn:" + state.learn.view + ":" + (state.learn.lesson || "") + ":" + (state.learn.topic || "");
+    return state.tab;
+  }
+  function fxAfterRender() {
+    fx.timers.forEach(clearTimeout); fx.timers = [];
+    const main = $("#main");
+    const key = viewKey();
+    const mount = key !== fx.key;
+    fx.key = key;
+    const pend = fx.pending; fx.pending = null;
+    const enter = fx.enter; fx.enter = null;
+    watchLoops(main);
+    main.classList.remove("fx-in");
+    if (mount && !calm()) { main.classList.add("fx-in"); later(() => main.classList.remove("fx-in"), 1500); }
+    else if (mount) { main.classList.add("fx-in"); later(() => main.classList.remove("fx-in"), 600); }
+    const s = state.sessions[state.tab];
+    if (s && !s.done) { fxSession(main, s, enter); fxReading(false); return; }
+    if (s && s.done) { fxSummary(main, s); fxReading(false); return; }
+    // scan boxes, weighted row, ranked list
+    const kindsHere = { jd: "jd", resume: "resume", match: "match" }[state.tab];
+    let delay = 0;
+    if (pend && kindsHere === pend.kind) {
+      playScan(main, pend.kind);
+      delay = 650;
+    } else {
+      fx.scanTok++;
+      main.querySelectorAll(".scan-wrap").forEach(w => { const p = paintLayer(w); if (p) restLayer(p); });
+    }
+    mountRadars(main, delay, !!pend, mount);
+    if (mount) {
+      main.querySelectorAll(".tile .num, .hero-stat b").forEach(el => countUp(el, 900));
+    }
+    main.querySelectorAll(".topic-card").forEach((el, i) => el.style.setProperty("--i", i % 12));
+    fxLearn(main);
+  }
+  function fxSession(main, s, enter) {
+    const card = main.querySelector(".qcard");
+    if (!card) return;
+    if (enter && enter !== "other") card.classList.add("enter-" + (enter === "prev" ? "prev" : enter === "reveal" ? "reveal" : "next"));
+    // progress bar glides from the previous position
+    const bar = card.querySelector(".progressbar span");
+    if (bar && fx.prevProg != null && !calm()) {
+      const target = bar.style.width;
+      bar.style.transition = "none"; bar.style.width = fx.prevProg + "%"; void bar.offsetWidth;
+      bar.style.transition = ""; bar.style.width = target;
+    }
+    fx.prevProg = null;
+    const q = BY_ID.get(s.ids[s.idx]);
+    if (q) fxTimer(Math.floor((Date.now() - s.qStart) / 1000), SUGGESTED_SECONDS[q.d]);
+    // interviewer: asks, then waits
+    const lb = $("#liveBar");
+    if (lb && !s.revealed) {
+      const st = $("#liveState");
+      later(() => { if (lb.isConnected && !s.revealed) { lb.classList.remove("talk"); lb.classList.add("listen"); if (st) st.textContent = "Listening"; } }, enter && enter !== "reveal" ? 1900 : 300);
+    }
+    if (s.milestone) { const m = card.querySelector(".milestone"); s.milestone = null; if (m) later(() => m.remove(), 5200); }
+  }
+  function fxSummary(main, s) {
+    main.querySelectorAll(".summary-tiles .num").forEach(el => countUp(el, 900));
+    const d = main.querySelector(".donut-c b"); if (d) countUp(d, 1000);
+    if (s.mock) { const p = main.querySelector(".panel"); if (p) p.classList.add("fx-mock-end"); }
+  }
+  // Lesson view: reading progress under the top bar and a table-of-contents that follows the page
+  const readProg = document.createElement("div");
+  readProg.className = "read-prog"; readProg.id = "readProg"; readProg.setAttribute("aria-hidden", "true"); readProg.innerHTML = "<span></span>";
+  let readTick = false;
+  function updateReading() {
+    readTick = false;
+    const art = $(".lesson");
+    if (!art || !fx.reading) return;
+    const r = art.getBoundingClientRect(), top = $(".topbar").offsetHeight;
+    const span = r.height - (window.innerHeight - top);
+    const p = span > 0 ? clamp01((top - r.top) / span) : 1;
+    readProg.firstChild.style.transform = `scaleX(${p.toFixed(3)})`;
+  }
+  window.addEventListener("scroll", () => { if (fx.reading && !readTick) { readTick = true; requestAnimationFrame(updateReading); } }, { passive: true });
+  function fxReading(on) {
+    fx.reading = on;
+    readProg.classList.toggle("on", on);
+    if (on) updateReading(); else readProg.firstChild.style.transform = "scaleX(0)";
+  }
+  function fxLearn(main) {
+    const art = main.querySelector(".lesson");
+    if (fx.spy) { fx.spy.disconnect(); fx.spy = null; }
+    if (!art) { fxReading(false); return; }
+    fxReading(true);
+    if (fx.celebrate && isLearned(fx.celebrate)) { const d = art.querySelector(".learn-done"); if (d) d.classList.add("cele"); }
+    fx.celebrate = null;
+    const chips = Array.from(art.querySelectorAll(".toc .chip[data-to]"));
+    if (!("IntersectionObserver" in window) || !chips.length) return;
+    const topH = $(".topbar").offsetHeight;
+    fx.spy = new IntersectionObserver(es => {
+      const vis = es.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+      if (!vis) return;
+      chips.forEach(c => { const on = c.dataset.to === vis.target.id; c.classList.toggle("on", on); if (on) c.setAttribute("aria-current", "location"); else c.removeAttribute("aria-current"); });
+    }, { rootMargin: `-${topH + 8}px 0px -55% 0px` });
+    chips.forEach(c => { const sec = document.getElementById(c.dataset.to); if (sec) fx.spy.observe(sec); });
+  }
+
+  // Arm a scan: remember what text was read, then let render() draw it.
+  function fxArm(kind) {
+    FX_KEYS[kind].forEach(k => { fx.scanned[k] = state.inputs[k]; });
+    fx.ver++;
+    fx.pending = { kind };
+  }
+  function fxInput(key) {
+    if (fx.scanned[key] == null) return;
+    fx.scanned[key] = null;
+    const wrap = document.querySelector(`.scan-wrap[data-key="${key}"]`);
+    if (wrap) { wrap.classList.remove("scanned", "scanning"); const l = wrap.querySelector(".scan-layer"); if (l) l.textContent = ""; }
+    const ro = document.getElementById("readout-" + key); if (ro) ro.textContent = "";
+    const kind = key === "jd" ? "jd" : key === "resume" ? "resume" : "match";
+    const btn = document.querySelector(`[data-action=analyze][data-kind="${kind}"]`);
+    if (btn) { btn.classList.remove("ready"); void btn.offsetWidth; btn.classList.add("ready"); }
+  }
+  let rzTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(rzTimer);
+    rzTimer = setTimeout(() => {
+      const main = $("#main");
+      if (!main) return;
+      main.querySelectorAll(".scan-wrap.scanned:not(.scanning)").forEach(w => { const p = paintLayer(w); if (p) { p.layer.classList.add("rest"); p.marks.forEach(m => m.el.classList.add("on")); } });
+      main.querySelectorAll(".rd-slot").forEach(h => drawRadar(h, false));
+      updateReading();
+    }, 200);
+  });
+
   // ---------- boot ----------
   const setTopbarHeight = () => document.documentElement.style.setProperty("--topbar-h", $(".topbar").offsetHeight + "px");
   window.addEventListener("resize", () => { setTopbarHeight(); renderTabs(); });
@@ -2128,6 +3087,10 @@ Power BI, DAX, Power Query, SQL Server, T-SQL, SSIS, Azure Data Factory, Azure S
   window.addEventListener("hashchange", () => { if (routeFromHash()) { render(); window.scrollTo({ top: 0 }); } });
   // Open in a working state: the example JD, resume and match are analysed up front.
   analyzeSingle("jd"); analyzeSingle("resume"); analyzeMatch();
+  ["jd", "resume", "matchJd", "matchResume"].forEach(k => { fx.scanned[k] = state.inputs[k]; });
+  $(".brand h1").insertAdjacentHTML("afterbegin", MARK);
+  $(".topbar").appendChild(readProg);
+  if (state.tab === "jd") fx.pending = { kind: "jd" }; // first view: the example text is scanned once
   render();
   setTopbarHeight();
 })();
