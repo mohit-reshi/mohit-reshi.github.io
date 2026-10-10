@@ -1,0 +1,22 @@
+[
+  {
+    "file": "01-katori.webp",
+    "title": "Today",
+    "caption": "The calorie ring, macro bars, four meal sections and water for one day. Shown with fictional example data."
+  },
+  {
+    "file": "02-katori.webp",
+    "title": "Add a food",
+    "caption": "Search the food list, pick an amount in grams, a household unit or ml, and see the calories before adding."
+  },
+  {
+    "file": "03-katori.webp",
+    "title": "My meals",
+    "caption": "Saved meals with calories per serving. Weigh the cooked pot once and log any portion by grams."
+  },
+  {
+    "file": "04-katori.webp",
+    "title": "Progress",
+    "caption": "Calories against the goal, averages over the days you logged, weight trend and the foods that add the most."
+  }
+]

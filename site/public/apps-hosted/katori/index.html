@@ -1,0 +1,1434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Katori</title>
+<meta name="description" content="An offline meal, calorie and water tracker. Weigh your ingredients, build meals once, log any portion. Your data stays on your device.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://portfolio-app-sync.mohitreshi.workers.dev; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#1f7a5a">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<style>
+:root { --bg: #f6f5f1; --surface: #ffffff; --surface2: #eceae3; --ink: #1d2321; --ink2: #4c5551; --line: #d8d6cd; --accent: #1f7a5a; --on-accent: #ffffff; --warn: #a8520b; --ok: #1f7a5a; --warn-ink: #8a4108; --ok-ink: #17624a; --danger: #a12a2a; --focus: #1b5fb4; --shadow: 0 1px 2px rgba(0,0,0,.08); --nav-h: 58px; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #121715; --surface: #1b2220; --surface2: #263130; --ink: #e9eeeb; --ink2: #b3beb8; --line: #34413d; --accent: #5fc7a0; --on-accent: #08140f; --warn: #f0a35c; --ok: #5fc7a0; --warn-ink: #f0a35c; --ok-ink: #5fc7a0; --danger: #f08a8a; --focus: #8ab8ff; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #121715; --surface: #1b2220; --surface2: #263130; --ink: #e9eeeb; --ink2: #b3beb8; --line: #34413d; --accent: #5fc7a0; --on-accent: #08140f; --warn: #f0a35c; --ok: #5fc7a0; --warn-ink: #f0a35c; --ok-ink: #5fc7a0; --danger: #f08a8a; --focus: #8ab8ff; color-scheme: dark; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom)); }
+h1 { font-size: 24px; margin: 0; } h2 { font-size: 18px; margin: 0; } h3 { font-size: 16px; margin: 12px 0 6px; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 0; background: var(--surface); padding: 8px 12px; z-index: 100; } .skip:focus { left: 8px; top: 8px; }
+.muted { color: var(--ink2); } .warn { color: var(--warn); } .grow { flex: 1 1 200px; }
+.topbar { display: flex; align-items: center; gap: 14px; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 20px; color: var(--ink); text-decoration: none; }
+.logo { width: 22px; height: 14px; border-radius: 0 0 22px 22px; background: var(--accent); display: inline-block; }
+.nav { display: flex; gap: 4px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line); padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); height: calc(var(--nav-h) + env(safe-area-inset-bottom)); }
+.nav-a { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--ink2); border-radius: 10px; padding: 6px 2px; min-height: 44px; }
+.nav-a.on { color: var(--on-accent); background: var(--accent); }
+@media (min-width: 760px) { body { padding-bottom: 0; } .nav { position: static; border: 0; background: none; padding: 0; height: auto; margin-left: 12px; } .nav-a { flex: none; padding: 8px 14px; font-size: 15px; } }
+.pill { background: #e8b54a; color: #20180a; border-radius: 999px; padding: 1px 10px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-left: auto; }
+.banner { background: var(--danger); color: #fff; padding: 10px 16px; font-weight: 600; }
+.main { max-width: 760px; margin: 0 auto; padding: 14px 14px 30px; }
+.btn { font: inherit; font-weight: 600; min-height: 44px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.btn.small { min-height: 36px; padding: 4px 12px; font-size: 14px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.danger { color: var(--danger); border-color: var(--danger); } .btn.ghost { background: none; }
+.btn:disabled { opacity: .5; cursor: default; } .btn[aria-pressed="true"] { border-color: var(--accent); }
+.btn.file { display: inline-flex; align-items: center; }
+.linkbtn { background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font: inherit; padding: 2px; min-height: 28px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin: 0 0 12px; box-shadow: var(--shadow); }
+.notice { background: var(--surface2); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } .notice.soft { background: transparent; border: 1px dashed var(--line); }
+.warnbox { display: block; border-left: 4px solid var(--warn); } .warnbox ul { margin: 6px 0 0; padding-left: 18px; }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 18px; }
+.field { display: flex; flex-direction: column; gap: 4px; margin: 0 0 10px; font-size: 14px; color: var(--ink2); }
+input, select, textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; min-height: 44px; width: 100%; }
+textarea { resize: vertical; }
+.check { display: flex; gap: 8px; align-items: center; margin: 4px 0 10px; } .check input { width: 22px; height: 22px; min-height: 0; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 8px 0; } .row.end { justify-content: flex-end; }
+.qrow { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; } .qrow .field { flex: 1 1 110px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.chip { display: inline-block; font-size: 12px; background: var(--surface2); border-radius: 999px; padding: 1px 9px; color: var(--ink2); } .chip.warn { color: var(--warn-ink); } .chip.ok { color: var(--ok-ink); }
+.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 12px; } .toolbar h1 { margin-right: auto; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; } .seg-btn { font: inherit; background: var(--surface); color: var(--ink); border: 0; padding: 8px 12px; min-height: 40px; cursor: pointer; } .seg-btn[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); } .seg-btn:disabled { opacity: .5; }
+/* today */
+.daynav { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; } .daytitle { flex: 1; text-align: center; display: flex; flex-direction: column; line-height: 1.2; } .daytitle span { font-size: 13px; color: var(--ink2); } .daypick { position: relative; } .daypick input { width: 44px; padding: 0; color: transparent; } .daypick input::-webkit-datetime-edit { display: none; }
+.summary { display: flex; justify-content: center; gap: 16px; align-items: center; flex-wrap: wrap; } .summary-side { flex: 1 1 220px; min-width: 0; }
+.ring-wrap { position: relative; width: 140px; height: 140px; flex: none; } .ring { width: 100%; height: 100%; } .ring-bg { fill: none; stroke: var(--surface2); stroke-width: 12; } .ring-fg { fill: none; stroke: var(--accent); stroke-width: 12; stroke-linecap: round; } .ring-fg.over { stroke: var(--warn); }
+.ring-mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; } .ring-mid b { font-size: 28px; line-height: 1; } .ring-mid span { font-size: 12px; color: var(--ink2); }
+.sum-line { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 15px; }
+.mbar { margin: 8px 0; } .mbar-top { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink2); margin-bottom: 3px; } .mbar-top b { color: var(--ink); }
+.track { height: 9px; background: var(--surface2); border-radius: 99px; overflow: hidden; } .fill { display: block; height: 100%; background: var(--accent); border-radius: 99px; } .fill.over { background: var(--warn); }
+.slot-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; } .slot-head h2, .slot-head h3 { margin: 0; } .slot-k { margin-left: auto; color: var(--ink2); font-size: 14px; } .slot-head .slot-k + .btn { margin-left: 0; }
+.ents { list-style: none; margin: 0; padding: 0; } .ent { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); } .ent-main { flex: 1; text-align: left; background: none; border: 0; font: inherit; color: var(--ink); padding: 8px 0; min-height: 48px; cursor: pointer; display: flex; flex-direction: column; } .ent-sub { font-size: 13px; color: var(--ink2); } .ent-k { font-weight: 700; } .ent-k small { font-weight: 400; color: var(--ink2); }
+.body-row { display: flex; gap: 12px; flex-wrap: wrap; } .body-row .field:first-child { width: 130px; }
+/* sheets and dialogs */
+dialog { color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 0; max-width: calc(100vw - 16px); }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+.dlg { padding: 16px; width: min(420px, calc(100vw - 24px)); } .dlg h2 { margin-bottom: 8px; }
+.sheet { width: min(620px, 100vw); max-height: 94dvh; margin: auto; display: flex; flex-direction: column; } .sheet.wide { width: min(780px, 100vw); }
+.sheet[open] { display: flex; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); border-radius: 16px 16px 0 0; } .sheet-head h2 { font-size: 17px; overflow-wrap: anywhere; }
+.sheet-body { padding: 12px 14px 16px; overflow: auto; }
+@media (max-width: 600px) { .sheet, .sheet.wide { width: 100vw; max-width: 100vw; max-height: 100dvh; height: 100dvh; border-radius: 0; } .sheet-head { border-radius: 0; } }
+.tabs { display: flex; gap: 4px; margin-bottom: 10px; } .tab { flex: 1; font: inherit; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; min-height: 42px; cursor: pointer; } .tab.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.pk-list { list-style: none; margin: 0; padding: 0; } .pk-head { color: var(--ink2); font-size: 13px; padding: 4px 0; } .pk-row, .food-row { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 1px; background: none; border: 0; border-top: 1px solid var(--line); padding: 9px 2px; min-height: 52px; font: inherit; color: var(--ink); cursor: pointer; } .pk-name { font-weight: 600; } .pk-sub { font-size: 13px; color: var(--ink2); } .tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.preview { background: var(--surface2); border-radius: 10px; padding: 10px 12px; margin: 10px 0; min-height: 40px; }
+.prow { display: grid; grid-template-columns: 1fr 90px auto auto; gap: 8px; align-items: center; border-top: 1px solid var(--line); padding: 6px 0; } .plate-rows { list-style: none; margin: 0; padding: 0; }
+.ing-wrap { overflow-x: auto; } .ing { border-collapse: collapse; min-width: 640px; width: 100%; } .ing th { font-size: 12px; text-align: left; color: var(--ink2); padding: 2px 4px; } .ing td { padding: 3px 4px; vertical-align: top; } .ing input { min-height: 38px; padding: 5px 6px; } .ing .ing-num { width: 68px; }
+.grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; } .meal p { margin: 4px 0; }
+.food-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 12px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 12px; } .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; } .stat span, .stat small { font-size: 13px; color: var(--ink2); } .stat b { font-size: 22px; }
+.chart { width: 100%; height: auto; } .cb { fill: var(--accent); } .cb-none { fill: var(--line); } .cg { stroke: var(--warn); stroke-dasharray: 4 4; } .ct { font-size: 11px; fill: var(--ink2); } .wd { fill: var(--ink2); } .wl { fill: none; stroke: var(--accent); stroke-width: 3; }
+.wk { display: flex; gap: 6px; align-items: flex-end; height: 140px; } .wk-c { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; font-size: 12px; } .wk-b { width: 70%; background: var(--accent); border-radius: 4px 4px 0 0; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; } .tbl th, .tbl td { text-align: left; padding: 4px 6px; border-top: 1px solid var(--line); }
+.top { list-style: none; margin: 0; padding: 0; } .top li { display: flex; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line); } .top li span { flex: 1; } .top small { color: var(--ink2); }
+#toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px); background: #1f2926; color: #f2f5f3; padding: 10px 16px; border-radius: 12px; opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; z-index: 200; max-width: calc(100vw - 24px); } #toast.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; } #toast .linkbtn { color: #8fe0bf; }
+@media (min-width: 760px) { #toast { bottom: 24px; } }
+@media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+details { margin: 8px 0; } summary { cursor: pointer; font-weight: 600; min-height: 32px; }
+
+/* keep the shared owner chip clear of the bottom navigation on phones */
+@media (max-width: 759px) { .acx-own { bottom: calc(var(--nav-h) + 10px + env(safe-area-inset-bottom)) !important; } }
+
+</style>
+<script defer src="./app-chrome.js" data-app="katori" data-keys="katori-v1" data-zip="katori-local.zip"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar"><a class="brand" href="#/today"><span class="logo" aria-hidden="true"></span>Katori</a><nav id="nav" class="nav" aria-label="Main"></nav><span id="admin-pill" class="pill" hidden>Admin</span></header>
+<div id="save-error" class="banner" role="alert" hidden></div>
+<main id="main" class="main" tabindex="-1"></main>
+<script>
+(function () {
+'use strict';
+/* ---- core/base.js ---- */
+// Small shared helpers: escaping, ids, tolerant number reading, local-date keys and name matching.
+
+function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+function uid(prefix) { return (prefix || 'id') + '-' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3); }
+function norm(s) { return String(s == null ? '' : s).replace(/\r\n?/g, '\n').replace(/[ \t  ]+/g, ' ').trim(); }
+const r1 = (n) => Math.round((n + Number.EPSILON) * 10) / 10;
+const r0 = (n) => Math.round(n);
+const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+/** 1234.5 -> "1,235": always the same format, whatever the browser locale is. */
+const fmt0 = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const fmt1 = (n) => { const v = r1(n); return String(Number.isInteger(v) ? v : v.toFixed(1)); };
+
+/** Reads a number from messy text: "~1,000", "12,5", "350 kcal", "−2". Returns null when there is no usable number. */
+function num(s) {
+  if (typeof s === 'number') return isFinite(s) ? s : null;
+  let t = String(s == null ? '' : s).replace(/[  \s]/g, '').replace(/^[~≈]+/, '').replace(/−/g, '-');
+  if (!t || /\[/.test(t)) return null;
+  t = t.replace(/[a-zA-Z%]+$/, '');
+  if (/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(t)) t = t.replace(/,/g, ''); else t = t.replace(',', '.');
+  if (!/^-?(\d+\.?\d*|\.\d+)$/.test(t)) return null;
+  const v = parseFloat(t);
+  return isFinite(v) ? v : null;
+}
+
+// ---------- dates (always local time, as YYYY-MM-DD keys) ----------
+const p2 = (n) => String(n).padStart(2, '0');
+const dayKey = (d) => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+const parseKey = (k) => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0); };
+const addDays = (k, n) => { const d = parseKey(k); d.setDate(d.getDate() + n); return dayKey(d); };
+/** The day an eating moment belongs to. With a 4 am day start, 01:30 still counts for the evening before. */
+const dayKeyFor = (now, startHour) => dayKey(new Date(now.getTime() - (startHour || 0) * 3600e3));
+const minutesOf = (d) => d.getHours() * 60 + d.getMinutes();
+const timeLabel = (m) => p2(Math.floor(m / 60)) + ':' + p2(m % 60);
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const dowOf = (k) => parseKey(k).getDay();
+const dowName = (i) => DOW[i];
+const dateLabel = (k) => { const d = parseKey(k); return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()]; };
+const dateLong = (k) => { const d = parseKey(k); return DOW[d.getDay()] + ', ' + d.getDate() + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear(); };
+const daysBetween = (a, b) => Math.round((parseKey(b) - parseKey(a)) / 864e5);
+
+// ---------- names ----------
+const slug = (s) => norm(s).toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'x';
+const STOP = new Set(['a', 'an', 'the', 'of', 'and', 'with', 'in', 'to', 'fresh', 'whole', 'plain']);
+const words = (s) => norm(s).toLowerCase().replace(/[^a-z0-9ऀ-ॿ ]+/g, ' ').split(/\s+/).filter((w) => w && !STOP.has(w));
+/** 0..1: how well two names match. Handles word order, plurals and a missing "raw"/"cooked". */
+function similarity(a, b) {
+  const wa = words(a).map(stem), wb = words(b).map(stem);
+  if (!wa.length || !wb.length) return 0;
+  const sa = new Set(wa), sb = new Set(wb);
+  let hit = 0; sa.forEach((w) => { if (sb.has(w)) hit++; });
+  const j = hit / (sa.size + sb.size - hit);
+  const contain = hit / Math.min(sa.size, sb.size);
+  return Math.max(j, contain * 0.85);
+}
+const stem = (w) => w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w;
+
+/* ---- core/nutri.js ---- */
+// Nutrition maths. Values per 100 g are k (kcal), p (protein), c (carbs), f (fat), fi (fibre), all in grams except k.
+
+const zero = () => ({ k: 0, p: 0, c: 0, f: 0, fi: 0 });
+const add = (a, b) => ({ k: a.k + b.k, p: a.p + b.p, c: a.c + b.c, f: a.f + b.f, fi: a.fi + b.fi });
+const sum = (list) => list.reduce((t, x) => add(t, x), zero());
+const scale = (n, g) => { const r = g / 100; return { k: n.k * r, p: n.p * r, c: n.c * r, f: n.f * r, fi: (n.fi || 0) * r }; };
+const times = (t, x) => ({ k: t.k * x, p: t.p * x, c: t.c * x, f: t.f * x, fi: t.fi * x });
+const clean = (n) => ({ k: num(n && n.k) || 0, p: num(n && n.p) || 0, c: num(n && n.c) || 0, f: num(n && n.f) || 0, fi: num(n && n.fi) || 0 });
+
+/** Calories a macro breakdown implies (protein and carbs 4 per g, fat 9). Fibre is already inside carbs. */
+const impliedKcal = (n) => 4 * n.p + 4 * n.c + 9 * n.f;
+/** True when stated calories and macros roughly agree. Catches typos in a label or a pasted recipe. */
+function consistent(n, tolerance) {
+  const exp = impliedKcal(n), diff = Math.abs(n.k - exp);
+  return diff <= Math.max(15, (tolerance || 0.18) * Math.max(n.k, exp));
+}
+
+/** Nutrition of one recipe item: it keeps its own per-100 g values, so a recipe never changes when a food is edited later. */
+const itemNutrition = (it) => scale(clean(it.n), Math.max(0, num(it.g) || 0));
+const mealTotals = (meal) => sum((meal.items || []).map(itemNutrition));
+const itemsWeight = (meal) => (meal.items || []).reduce((t, it) => t + Math.max(0, num(it.g) || 0), 0);
+
+/** Cooked weight of the food only: the full pot minus the empty vessel (or the net weight if no vessel was weighed). */
+function netCooked(meal) {
+  const pot = num(meal.potG), vessel = num(meal.vesselG) || 0;
+  if (!pot || pot <= 0) return null;
+  const net = pot - vessel;
+  return net > 0 ? net : null;
+}
+const hasPot = (meal) => netCooked(meal) !== null;
+/** Per 100 g of the finished dish. Uses the cooked weight, so it already includes water gained or lost in cooking. */
+function per100Cooked(meal) { const w = netCooked(meal); return w ? scale(mealTotals(meal), 100 * 100 / w) : null; }
+const perServing = (meal) => { const s = Math.max(0.01, num(meal.servings) || 1); return times(mealTotals(meal), 1 / s); };
+
+/** What you ate when you log `amount` of a meal. mode "servings": a number of portions. mode "grams": grams from the pot. */
+function portionOfMeal(meal, mode, amount) {
+  const total = mealTotals(meal);
+  if (mode === 'grams') { const w = netCooked(meal); if (!w) return null; return times(total, amount / w); }
+  const s = Math.max(0.01, num(meal.servings) || 1);
+  return times(total, amount / s);
+}
+/** Grams in one portion, when the pot was weighed. */
+const gramsPerServing = (meal) => { const w = netCooked(meal); return w ? w / Math.max(0.01, num(meal.servings) || 1) : null; };
+
+/** Entry snapshot fields (rounded for storage; sums are taken from these stored values). */
+const snap = (n) => ({ k: Math.round(n.k * 10) / 10, p: Math.round(n.p * 100) / 100, c: Math.round(n.c * 100) / 100, f: Math.round(n.f * 100) / 100, fi: Math.round(n.fi * 100) / 100 });
+const dayTotals = (day) => sum(((day && day.entries) || []).map((e) => clean(e)));
+const waterTotal = (day) => ((day && day.water) || []).reduce((t, w) => t + (num(w.ml) || 0), 0);
+
+/* ---- core/units.js ---- */
+// Quantities and quick-log text such as "rice 180g, dal 230 g, 2 roti, 1.5 katori curd".
+
+const MASS = { g: 1, gm: 1, gms: 1, gram: 1, grams: 1, kg: 1000, ml: null, l: null, litre: null, liter: null };
+const isMassWord = (w) => Object.prototype.hasOwnProperty.call(MASS, w);
+
+/** Fractions like "1/2" or "1 1/2" are read as numbers. */
+function amountOf(s) {
+  s = norm(s);
+  const m = /^(\d+)\s+(\d+)\/(\d+)$/.exec(s); if (m) return +m[1] + +m[2] / +m[3];
+  const f = /^(\d+)\/(\d+)$/.exec(s); if (f) return +f[1] / +f[2];
+  return num(s);
+}
+
+/** Grams for `count` of a unit of a food ("roti", "katori"), or for ml when the food has a density. null if unknown. */
+function gramsFor(food, unit, count) {
+  if (!food) return null;
+  const u = String(unit || 'g').toLowerCase();
+  if (u === 'g') return count;
+  if (u === 'kg') return count * 1000;
+  if (u === 'ml') return food.density ? count * food.density : null;
+  if (u === 'l') return food.density ? count * 1000 * food.density : null;
+  const hit = (food.units || []).find((x) => x.name.toLowerCase() === u);
+  return hit ? hit.g * count : null;
+}
+
+/** One chunk of text -> { text, qty, unit, name } where qty may be null. */
+function splitChunk(chunk) {
+  let t = norm(chunk).replace(/^[-*•]\s*/, '');
+  if (!t) return null;
+  const qtyRe = '(\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|\\d+(?:[.,]\\d+)?)';
+  let m = new RegExp('^' + qtyRe + '\\s*([a-zA-Z]+)?\\s+(.+)$').exec(t); // "2 roti", "150 g rice"
+  if (m) {
+    const qty = amountOf(m[1]); const first = (m[2] || '').toLowerCase();
+    if (first && isMassWord(first)) return { text: t, qty, unit: first, name: m[3] };
+    // "2 roti": the word after the number is part of the name; the unit is whatever the food calls its unit
+    return { text: t, qty, unit: null, name: ((m[2] ? m[2] + ' ' : '') + m[3]).trim() };
+  }
+  m = new RegExp('^(.+?)\\s+' + qtyRe + '\\s*([a-zA-Z]+)?$').exec(t); // "rice 180g", "dal 230 g", "curd 1.5 katori"
+  if (m) { const unit = (m[3] || '').toLowerCase(); return { text: t, qty: amountOf(m[2]), unit: unit || null, name: m[1] }; }
+  m = new RegExp('^' + qtyRe + '\\s*([a-zA-Z]+)$').exec(t); // "2roti"
+  if (m) return { text: t, qty: amountOf(m[1]), unit: null, name: m[2] };
+  return { text: t, qty: null, unit: null, name: t };
+}
+
+const rankOf = (f) => (f.source === 'starter' ? (f.rank === undefined ? 1e6 : f.rank) : -1);
+/** Best food for a name. Honours "raw" and "cooked" words. foods: [{ id, name, state }]. */
+function matchFood(name, foods) {
+  const w = words(name); const wantsRaw = w.includes('raw'), wantsCooked = w.includes('cooked') || w.includes('boiled');
+  let best = null, bestScore = 0;
+  for (const f of foods) {
+    let s = similarity(name, f.name + ' ' + (f.state || ''));
+    s = Math.max(s, similarity(name, f.name) * 0.95);
+    if (wantsRaw && f.state === 'raw') s += 0.08;
+    if (wantsCooked && f.state === 'cooked') s += 0.08;
+    if (!wantsRaw && !wantsCooked && f.state === 'cooked') s += 0.01;
+    if (words(f.name)[0] && words(name)[0] && words(f.name)[0] === words(name)[0]) s += 0.04;
+    if (f.fav) s += 0.01;
+    // on a tie your own foods win, then the more common starter food (earlier in the list)
+    const better = best && Math.abs(s - bestScore) < 1e-9 && rankOf(f) < rankOf(best);
+    if (s > bestScore + 1e-9 || better) { best = f; bestScore = Math.max(s, bestScore); }
+  }
+  return bestScore >= 0.5 ? { food: best, score: bestScore } : null;
+}
+
+/** Parses "rice 180g, dal 230 g, 2 roti" into rows. Each row has the chosen food and grams, or says what is missing. */
+function parseQuickLog(text, foods) {
+  const chunks = String(text || '').split(/[,\n;+]|\band\b/i).map((x) => x).filter((x) => norm(x));
+  return chunks.map((c) => {
+    const s = splitChunk(c); if (!s) return null;
+    const mt = matchFood(s.name, foods);
+    const row = { text: s.text, name: s.name, qty: s.qty, unit: s.unit, food: mt ? mt.food : null, g: null, problem: '' };
+    if (!row.food) { row.problem = 'No matching food. Add it to My foods or pick one.'; return row; }
+    if (s.qty == null) { row.problem = 'No amount found.'; return row; }
+    let unit = s.unit;
+    if (!unit) { // "2 roti": use the food's own unit named after the food, else its first unit
+      const own = (row.food.units || []).find((u) => similarity(u.name, s.name) > 0.5 || words(row.food.name).some((w) => w === u.name.toLowerCase()));
+      unit = own ? own.name.toLowerCase() : (row.food.units && row.food.units[0] ? row.food.units[0].name.toLowerCase() : 'g');
+    }
+    const g = gramsFor(row.food, unit, s.qty);
+    if (g == null) { row.problem = 'Unit "' + unit + '" is not set for ' + row.food.name + '.'; return row; }
+    row.unit = unit; row.g = g; return row;
+  }).filter(Boolean);
+}
+
+/* ---- core/starter.js ---- */
+// Starter foods, per 100 g. These are rounded, typical values from general food tables.
+// They are approximate: brands, varieties and cooking change them. Every one can be edited and ticked as verified.
+// Format: name | state | kcal | protein | carbs | fat | fibre | units ("unit=grams;..."; "ml=1.03" gives a density for ml)
+
+const ROWS = `
+Basmati rice|raw|349|7.5|77|0.6|1.3|katori=170;cup=185
+Rice, white|raw|345|6.8|78|0.5|0.6|katori=170;cup=185
+Rice, white|cooked|130|2.7|28|0.3|0.4|katori=150;cup=160
+Rice, brown|raw|362|7.5|76|2.7|3.5|cup=190
+Rice, brown|cooked|112|2.3|23.5|0.9|1.8|katori=150;cup=195
+Wheat flour (atta)|raw|346|12|70|1.7|11|cup=120;tbsp=8
+Maida (refined flour)|raw|350|11|74|1|2.7|cup=120;tbsp=8
+Roti|cooked|300|9.5|56|3.7|4|roti=40;chapati=40
+Phulka|cooked|265|9|54|1.5|4|phulka=30
+Paratha|cooked|320|7|45|13|3|paratha=70
+Naan|cooked|290|9|50|5.5|2.2|naan=90
+Poha (flattened rice)|raw|350|6.6|77|1.2|1.0|cup=60
+Semolina (rava)|raw|360|12.5|73|1|2.5|cup=165
+Oats, rolled|raw|389|16.9|66|6.9|10.6|cup=80;tbsp=6
+Besan (gram flour)|raw|387|22|58|6.7|10.8|cup=90;tbsp=7
+Ragi flour|raw|336|7.3|72|1.3|11.5|cup=120
+Bread, white|slice|265|9|49|3.2|2.7|slice=28
+Bread, whole wheat|slice|247|13|41|3.4|7|slice=30
+Cornflakes|raw|357|7.5|84|0.4|3|cup=28
+Idli|cooked|140|4|28|0.4|1|idli=40
+Dosa|cooked|170|3.9|29|3.7|1|dosa=90
+Pasta|raw|371|13|75|1.5|3.2|cup=100
+Pasta|cooked|158|5.8|31|0.9|1.8|cup=140
+Poha|cooked|130|2.5|26|2|1|katori=130
+Upma|cooked|130|3|20|4|1.5|katori=150
+Toor dal|raw|335|22|58|1.7|15|katori=180;cup=190
+Moong dal (split)|raw|348|24|59|1.2|16|katori=180;cup=190
+Chana dal|raw|372|21|60|5.6|12|katori=180;cup=190
+Masoor dal|raw|343|25|59|0.7|11|katori=180;cup=190
+Urad dal|raw|347|24|59|1.4|18|katori=180;cup=190
+Moong, whole green|raw|334|24|57|1.2|16|cup=200
+Rajma (kidney beans)|raw|346|23|60|1.3|15|cup=185
+Chickpeas (kabuli chana)|raw|378|20.5|63|6|12|cup=200
+Black chana|raw|360|20|60|5|12|cup=200
+Dal, plain|cooked|105|6.5|16|1.5|3|katori=150
+Rajma|cooked|127|8.7|22.8|0.5|6.4|katori=150
+Chickpeas|cooked|164|8.9|27|2.6|7.6|katori=150
+Soya chunks|raw|345|52|33|0.5|13|cup=90
+Tofu, firm|raw|144|17|3|8.7|2|slice=85
+Sprouts, moong|raw|30|3|6|0.2|1.8|cup=104
+Milk, full fat|liquid|67|3.2|4.7|4.1|0|ml=1.03;glass=250;cup=240
+Milk, toned|liquid|58|3.1|4.7|3|0|ml=1.03;glass=250;cup=240
+Milk, double toned|liquid|45|3.3|4.9|1.5|0|ml=1.03;glass=250;cup=240
+Milk, skimmed|liquid|34|3.4|5|0.1|0|ml=1.03;glass=250;cup=240
+Milk, buffalo|liquid|110|4.3|5|6.5|0|ml=1.03;glass=250;cup=240
+Curd (dahi), full fat|raw|60|3.1|3|4|0|katori=150;cup=245;tbsp=15
+Curd (dahi), low fat|raw|45|3.5|4.5|1.5|0|katori=150;cup=245
+Greek yoghurt, plain|raw|97|9|4|5|0|cup=245;tbsp=15
+Buttermilk (chaas)|liquid|40|3.3|4.8|1|0|ml=1.03;glass=250
+Paneer|raw|265|18.3|1.2|20.8|0|cube=20;slice=25
+Cheese, cheddar|raw|403|25|1.3|33|0|slice=20
+Cheese, mozzarella|raw|280|28|3.1|17|0|slice=20
+Butter|raw|717|0.9|0.1|81|0|tsp=5;tbsp=14
+Ghee|raw|900|0|0|100|0|tsp=4.5;tbsp=14
+Egg, whole|raw|143|12.6|0.7|9.5|0|egg=50
+Egg, white|raw|52|11|0.7|0.2|0|white=33
+Whey protein (typical)|raw|400|80|8|6|0|scoop=30
+Chicken breast|raw|120|22.5|0|2.6|0|piece=170
+Chicken thigh, skinless|raw|121|19.7|0|4.1|0|piece=110
+Chicken, with skin|raw|215|18|0|15.5|0|piece=150
+Mutton (goat)|raw|143|27|0|3|0|piece=40
+Fish, rohu|raw|97|17|0|2|0|piece=100
+Fish, salmon|raw|208|20|0|13|0|piece=150
+Tuna, canned in water|raw|116|25.5|0|0.8|0|can=140
+Prawns|raw|85|20|0.2|0.5|0|piece=12
+Onion|raw|40|1.1|9.3|0.1|1.7|medium=110;small=70
+Tomato|raw|18|0.9|3.9|0.2|1.2|medium=120;small=80
+Potato|raw|77|2|17|0.1|2.2|medium=150;small=90
+Potato|cooked|87|1.9|20|0.1|1.8|medium=130
+Sweet potato|raw|86|1.6|20|0.1|3|medium=130
+Carrot|raw|41|0.9|9.6|0.2|2.8|medium=70
+Spinach|raw|23|2.9|3.6|0.4|2.2|cup=30;bunch=250
+Cauliflower|raw|25|1.9|5|0.3|2|cup=100
+Cabbage|raw|25|1.3|5.8|0.1|2.5|cup=90
+Brinjal (eggplant)|raw|25|1|5.9|0.2|3|medium=300
+Okra (bhindi)|raw|33|1.9|7.5|0.2|3.2|piece=10
+Capsicum|raw|20|0.9|4.6|0.2|1.7|medium=120
+Cucumber|raw|15|0.7|3.6|0.1|0.5|medium=200
+Green peas|raw|81|5.4|14|0.4|5.7|cup=145
+French beans|raw|31|1.8|7|0.2|2.7|cup=110
+Bottle gourd (lauki)|raw|14|0.6|3.4|0.1|0.5|cup=116
+Ridge gourd (turai)|raw|20|0.5|4.4|0.1|0.5|cup=100
+Bitter gourd (karela)|raw|17|1|3.7|0.2|2.8|cup=93
+Pumpkin|raw|26|1|6.5|0.1|0.5|cup=116
+Beetroot|raw|43|1.6|9.6|0.2|2.8|medium=80
+Radish|raw|16|0.7|3.4|0.1|1.6|medium=40
+Garlic|raw|149|6.4|33|0.5|2.1|clove=3
+Ginger|raw|80|1.8|18|0.8|2|tsp=2
+Green chilli|raw|40|2|9|0.2|1.5|piece=5
+Coriander leaves|raw|23|2.1|3.7|0.5|2.8|tbsp=4
+Mushroom|raw|22|3.1|3.3|0.3|1|cup=70
+Sweet corn kernels|raw|86|3.3|19|1.4|2|cup=145
+Broccoli|raw|34|2.8|6.6|0.4|2.6|cup=90
+Lettuce|raw|15|1.4|2.9|0.2|1.3|cup=36
+Banana|raw|89|1.1|23|0.3|2.6|medium=100
+Apple|raw|52|0.3|14|0.2|2.4|medium=150
+Mango|raw|60|0.8|15|0.4|1.6|medium=200
+Orange|raw|47|0.9|12|0.1|2.4|medium=130
+Papaya|raw|43|0.5|11|0.3|1.7|cup=145
+Watermelon|raw|30|0.6|7.6|0.2|0.4|cup=150
+Grapes|raw|69|0.7|18|0.2|0.9|cup=150
+Pomegranate|raw|83|1.7|19|1.2|4|cup=175
+Guava|raw|68|2.6|14|1|5.4|medium=100
+Pineapple|raw|50|0.5|13|0.1|1.4|cup=165
+Dates, dried (khajur)|raw|282|2.5|75|0.4|8|piece=8
+Raisins|raw|299|3.1|79|0.5|3.7|tbsp=9
+Coconut, fresh|raw|354|3.3|15|33|9|tbsp=8
+Coconut milk|liquid|197|2|2.8|21|0|ml=1;cup=240;tbsp=15
+Coconut water|liquid|19|0.7|3.7|0.2|1.1|ml=1;glass=250
+Avocado|raw|160|2|9|15|7|medium=150
+Almonds|raw|579|21|22|50|12.5|piece=1.2;tbsp=9
+Cashews|raw|553|18|30|44|3.3|piece=1.5;tbsp=9
+Peanuts|raw|567|26|16|49|8.5|tbsp=9;cup=146
+Walnuts|raw|654|15|14|65|6.7|piece=4
+Pistachios|raw|560|20|28|45|10|tbsp=8
+Chia seeds|raw|486|17|42|31|34|tbsp=12
+Flax seeds|raw|534|18|29|42|27|tbsp=10
+Sunflower seeds|raw|584|21|20|51|8.6|tbsp=9
+Sesame seeds|raw|573|18|23|50|12|tbsp=9
+Peanut butter|raw|588|25|20|50|6|tbsp=16
+Oil (cooking)|liquid|900|0|0|100|0|ml=0.92;tsp=4.5;tbsp=13.5
+Coconut oil|liquid|900|0|0|100|0|ml=0.92;tsp=4.5;tbsp=13.5
+Sugar|raw|387|0|100|0|0|tsp=4;tbsp=12
+Jaggery|raw|383|0.4|98|0.1|0|tsp=5;piece=20
+Honey|raw|304|0.3|82|0|0|tsp=7;tbsp=21
+Soy milk, unsweetened|liquid|33|2.9|1.7|1.6|0.4|ml=1.03;glass=250
+Almond milk, unsweetened|liquid|15|0.6|0.3|1.2|0.2|ml=1.01;glass=250
+Orange juice|liquid|45|0.7|10|0.2|0.2|ml=1.04;glass=250
+Cola|liquid|42|0|10.6|0|0|ml=1.04;can=330
+Tea, no sugar|liquid|1|0|0.2|0|0|ml=1;cup=150
+Coffee, black|liquid|1|0.1|0|0|0|ml=1;cup=150
+Hummus|raw|166|8|14|10|6|tbsp=15
+Biscuit (Marie)|raw|430|7.5|76|10.5|2|piece=7
+Chips (potato)|raw|536|7|53|35|4|packet=30
+Chocolate, dark|raw|546|5|61|31|7|square=10
+Ice cream|raw|207|3.5|24|11|0.7|scoop=70
+Tomato ketchup|raw|112|1.7|26|0.1|0.3|tbsp=17
+Mayonnaise|raw|680|1|0.6|75|0|tbsp=14
+Tamarind pulp|raw|239|2.8|62.5|0.6|5.1|tbsp=17
+Cream, fresh|raw|340|2|3|36|0|tbsp=15
+`;
+
+function starterFoods() {
+  return ROWS.trim().split('\n').map((line, rank) => {
+    const [name, state, k, p, c, f, fi, units] = line.split('|');
+    const food = { id: 's:' + slug(name + ' ' + state), name, state: state === 'liquid' || state === 'slice' ? '' : state, k: +k, p: +p, c: +c, f: +f, fi: +fi, units: [], source: 'starter', verified: false, rank };
+    (units || '').split(';').filter(Boolean).forEach((u) => {
+      const [un, v] = u.split('='); const n = +v;
+      if (un === 'ml') food.density = n; else food.units.push({ name: un, g: n });
+    });
+    return food;
+  });
+}
+const STARTER_COUNT = ROWS.trim().split('\n').length;
+
+/* ---- core/mealimport.js ---- */
+// Reads "MEAL v1" blocks pasted from a chat. Tolerant of chat formatting (bold marks, leading pipes, ~ signs, comma decimals).
+// Returns the meals it found, and warnings the preview should show. Never throws on odd input.
+
+
+const START = /={2,}\s*MEAL\s*v(\d+)\s*={2,}/i;
+const END = /={2,}\s*END\s*={2,}/i;
+
+function cleanLine(l) {
+  return String(l).replace(/ | /g, ' ').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/−|–|—/g, '-')
+    .replace(/\*\*|__|`/g, '').replace(/^\s*>+\s?/, '').replace(/\s+$/, '');
+}
+const TYPES = ['breakfast', 'lunch', 'snack', 'dinner'];
+
+/** Finds every block in the text. Each: { raw, version }. */
+function findBlocks(text) {
+  const lines = String(text || '').split(/\r?\n/).map(cleanLine);
+  const blocks = []; let cur = null;
+  for (const l of lines) {
+    if (START.test(l)) { if (cur) blocks.push(cur); cur = { version: +START.exec(l)[1], lines: [] }; continue; }
+    if (cur && END.test(l)) { blocks.push(cur); cur = null; continue; }
+    if (cur) cur.lines.push(l);
+  }
+  if (cur) blocks.push(Object.assign(cur, { unterminated: true }));
+  return blocks;
+}
+
+function cells(line) {
+  let t = line.trim(); if (t.startsWith('|')) t = t.slice(1); if (t.endsWith('|')) t = t.slice(0, -1);
+  return t.split('|').map((c) => norm(c));
+}
+
+function statedTotals(line) {
+  const out = {}; const m = (re) => { const x = re.exec(line); return x ? num(x[1]) : null; };
+  out.k = m(/kcal\s*[:=]?\s*([~\d.,]+)/i); out.p = m(/protein\s*[:=]?\s*([~\d.,]+)/i); out.c = m(/carbs?\s*[:=]?\s*([~\d.,]+)/i); out.f = m(/fat\s*[:=]?\s*([~\d.,]+)/i); out.fi = m(/fibre|fiber/i.test(line) ? /fib(?:re|er)\s*[:=]?\s*([~\d.,]+)/i : /$^/);
+  return out;
+}
+
+function parseBlock(b, index) {
+  const warnings = []; const meal = { name: '', type: 'any', servings: 1, potG: null, vesselG: null, tags: [], estimate: true, items: [], steps: [], notes: '', stated: null, statedServing: null, source: 'import' };
+  let section = '';
+  for (const l of b.lines) {
+    const t = l.trim(); if (!t) continue;
+    let m;
+    if ((m = /^name\s*:\s*(.+)$/i.exec(t))) { meal.name = norm(m[1]); section = ''; continue; }
+    if ((m = /^type\s*:\s*(.+)$/i.exec(t))) { const v = norm(m[1]).toLowerCase(); meal.type = TYPES.includes(v) ? v : 'any'; section = ''; continue; }
+    if ((m = /^servings\s*:\s*(.+)$/i.exec(t))) { const v = num(m[1]); if (v && v > 0) meal.servings = v; else warnings.push('Servings is missing or not a number. Using 1.'); section = ''; continue; }
+    if ((m = /^cooked_weight_g\s*:\s*(.+)$/i.exec(t))) { const v = num(m[1]); meal.potG = v && v > 0 ? v : null; section = ''; continue; }
+    if ((m = /^tags\s*:\s*(.*)$/i.exec(t))) { meal.tags = m[1].split(/[,;]/).map((x) => norm(x)).filter(Boolean); section = ''; continue; }
+    if ((m = /^estimate\s*:\s*(.+)$/i.exec(t))) { meal.estimate = !/^no/i.test(norm(m[1])); section = ''; continue; }
+    if (/^ingredients\b/i.test(t)) { section = 'ing'; continue; }
+    if (/^steps\s*:?\s*$/i.test(t)) { section = 'steps'; continue; }
+    if ((m = /^notes?\s*:\s*(.*)$/i.exec(t))) { meal.notes = norm(m[1]); section = 'notes'; continue; }
+    if (/^totals?\s*:/i.test(t)) { meal.stated = statedTotals(t); section = ''; continue; }
+    if (/^per\s+serving\s*:/i.test(t)) { meal.statedServing = statedTotals(t); section = ''; continue; }
+    if (section === 'ing' && t.includes('|')) {
+      const c = cells(t);
+      if (/^[-: ]+$/.test(c.join('')) || /^ingredient$/i.test(c[0])) continue;
+      const g = num(c[1]);
+      const n = { k: num(c[3]), p: num(c[4]), c: num(c[5]), f: num(c[6]), fi: c[7] === undefined ? 0 : num(c[7]) };
+      const name = c[0];
+      if (!name) continue;
+      const bad = [];
+      if (g == null || g <= 0) bad.push('weight');
+      ['k', 'p', 'c', 'f'].forEach((x) => { if (n[x] == null) bad.push(x === 'k' ? 'kcal' : x === 'p' ? 'protein' : x === 'c' ? 'carbs' : 'fat'); });
+      if (bad.length) warnings.push(name + ': missing or unreadable ' + bad.join(', ') + '. Fix it in the preview.');
+      const state = /cook|boil|fried|roast/i.test(c[2] || '') ? 'cooked' : 'raw';
+      const nn = { k: n.k || 0, p: n.p || 0, c: n.c || 0, f: n.f || 0, fi: n.fi || 0 };
+      if (!bad.length && !consistent(nn)) warnings.push(name + ': calories (' + Math.round(nn.k) + ') do not match its macros (about ' + Math.round(impliedKcal(nn)) + '). Check the values.');
+      meal.items.push({ name, g: g && g > 0 ? g : 0, state, n: nn });
+      continue;
+    }
+    if (section === 'steps' && (m = /^\d+[.)]\s*(.+)$/.exec(t))) { meal.steps.push(norm(m[1])); continue; }
+    if (section === 'notes') meal.notes = (meal.notes + ' ' + t).trim();
+  }
+  const label = 'Meal ' + (index + 1) + (meal.name ? ' (' + meal.name + ')' : '');
+  if (!meal.name) { meal.name = 'Imported meal ' + (index + 1); warnings.push('The block has no name. Please name it.'); }
+  if (!meal.items.length) warnings.push('No ingredient rows were found.');
+  if (b.unterminated) warnings.push('The block has no "=== END ===" line. It may be cut off.');
+  if (b.version !== 1) warnings.push('This block is version ' + b.version + '. This app reads version 1, so check the result.');
+  if (!meal.potG) warnings.push('No cooked weight yet. Weigh the finished dish and enter it later to log by grams.');
+  if (meal.items.length) {
+    const t = mealTotals(meal);
+    if (meal.stated && meal.stated.k != null && meal.stated.k > 0 && Math.abs(meal.stated.k - t.k) > 0.05 * t.k + 5) warnings.push('The stated total (' + Math.round(meal.stated.k) + ' kcal) differs from the ingredient table (' + Math.round(t.k) + ' kcal). The app uses the table.');
+  }
+  return { label, meal, warnings };
+}
+
+/** { meals: [{ meal, warnings, label }], problems: [text] } */
+function parseMealText(text) {
+  const blocks = findBlocks(text);
+  if (!blocks.length) return { meals: [], problems: ['No "=== MEAL v1 ===" block was found in the pasted text.'] };
+  return { meals: blocks.map(parseBlock), problems: [] };
+}
+
+/* ---- core/csv.js ---- */
+// CSV for foods: read (quoted fields, commas inside quotes, semicolons or tabs) and write.
+
+
+function parseCsv(text) {
+  const t = String(text || '').replace(/^﻿/, '');
+  const first = t.split(/\r?\n/)[0] || '';
+  const delim = (first.match(/\t/g) || []).length ? '\t' : (first.match(/;/g) || []).length > (first.match(/,/g) || []).length ? ';' : ',';
+  const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const ch = t[i];
+    if (q) { if (ch === '"') { if (t[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === delim) { row.push(cur); cur = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && t[i + 1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; }
+    else cur += ch;
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter((r) => r.some((c) => norm(c)));
+}
+const q = (s) => { s = String(s == null ? '' : s); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const CSV_HEADER = ['name', 'state', 'kcal', 'protein', 'carbs', 'fat', 'fibre', 'units', 'ml_density'];
+const unitsText = (f) => (f.units || []).map((u) => u.name + '=' + u.g).join(';');
+const foodsToCsv = (foods) => [CSV_HEADER.join(',')].concat(foods.map((f) => [f.name, f.state || '', f.k, f.p, f.c, f.f, f.fi || 0, unitsText(f), f.density || ''].map(q).join(','))).join('\n') + '\n';
+const csvTemplate = () => CSV_HEADER.join(',') + '\nRoti (plain),cooked,300,9.5,56,3.7,4,roti=40,\nMilk (my brand),,62,3.2,4.8,3.4,0,glass=250,1.03\n';
+const HEAD = { name: ['name', 'food', 'item'], state: ['state', 'form'], k: ['kcal', 'calories', 'energy', 'cal'], p: ['protein', 'proteins'], c: ['carbs', 'carbohydrate', 'carbohydrates'], f: ['fat', 'fats'], fi: ['fibre', 'fiber'], units: ['units', 'unit'], density: ['ml_density', 'density'] };
+
+/** Foods from CSV text. Returns { foods, problems }, with one problem per skipped row. Values are per 100 g. */
+function foodsFromCsv(text) {
+  const rows = parseCsv(text); const problems = [];
+  if (rows.length < 2) return { foods: [], problems: ['The file needs a header row and at least one food.'] };
+  const head = rows[0].map((h) => norm(h).toLowerCase());
+  const col = {}; Object.keys(HEAD).forEach((k) => { const i = head.findIndex((h) => HEAD[k].includes(h)); if (i >= 0) col[k] = i; });
+  const need = ['name', 'k', 'p', 'c', 'f'].filter((k) => col[k] === undefined);
+  if (need.length) return { foods: [], problems: ['Missing column(s): ' + need.map((k) => HEAD[k][0]).join(', ') + '. Use "Download the CSV template" for the layout.'] };
+  const foods = [];
+  rows.slice(1).forEach((r, i) => {
+    const name = norm(r[col.name]); const line = i + 2;
+    if (!name) { problems.push('Row ' + line + ': no name.'); return; }
+    const n = { k: num(r[col.k]), p: num(r[col.p]), c: num(r[col.c]), f: num(r[col.f]), fi: col.fi === undefined ? 0 : (num(r[col.fi]) || 0) };
+    if ([n.k, n.p, n.c, n.f].some((v) => v == null || v < 0)) { problems.push('Row ' + line + ' (' + name + '): calories, protein, carbs and fat must be numbers.'); return; }
+    const state = col.state === undefined ? '' : norm(r[col.state]).toLowerCase().replace(/[^a-z]/g, '');
+    const units = [];
+    if (col.units !== undefined) String(r[col.units] || '').split(/[;|]/).forEach((u) => { const [a, b] = u.split('='); const g = num(b); if (norm(a) && g && g > 0) units.push({ name: norm(a).toLowerCase(), g }); });
+    const food = { id: 'f:' + slug(name + ' ' + state), name, state: state === 'raw' || state === 'cooked' ? state : '', k: n.k, p: n.p, c: n.c, f: n.f, fi: n.fi, units, source: 'import', verified: false };
+    const d = col.density === undefined ? null : num(r[col.density]); if (d && d > 0) food.density = d;
+    if (!consistent(n)) problems.push('Row ' + line + ' (' + name + '): calories do not match the macros. Imported anyway, please check.');
+    foods.push(food);
+  });
+  return { foods, problems };
+}
+
+/* ---- core/stats.js ---- */
+// Numbers for the Progress screen: daily series, averages, weight trend, top foods, weekday pattern.
+
+
+/** Last `n` days ending at `end`, oldest first: [{ key, logged, k, p, c, f, fi, water, weight }]. */
+function series(log, end, n) {
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const key = addDays(end, -i); const d = log[key]; const t = dayTotals(d);
+    out.push({ key, logged: !!(d && d.entries && d.entries.length), k: t.k, p: t.p, c: t.c, f: t.f, fi: t.fi, water: waterTotal(d), weight: d && num(d.weight) ? num(d.weight) : null });
+  }
+  return out;
+}
+const avg = (a) => (a.length ? a.reduce((t, x) => t + x, 0) / a.length : 0);
+/** Averages over days that have food logged (an unlogged day is not a zero-calorie day). */
+function averages(days) {
+  const l = days.filter((d) => d.logged);
+  return { logged: l.length, of: days.length, k: avg(l.map((d) => d.k)), p: avg(l.map((d) => d.p)), c: avg(l.map((d) => d.c)), f: avg(l.map((d) => d.f)), fi: avg(l.map((d) => d.fi)), water: avg(days.filter((d) => d.water > 0).map((d) => d.water)) };
+}
+/** Weight trend: the mean of the weights in the previous 7 days (calendar window), for each day that has a weight. */
+function weightTrend(days, window) {
+  const w = window || 7;
+  return days.map((d, i) => {
+    if (d.weight == null) return null;
+    const near = days.slice(Math.max(0, i - w + 1), i + 1).filter((x) => x.weight != null);
+    return near.reduce((t, x) => t + x.weight, 0) / near.length;
+  });
+}
+/** Average calories per weekday (Mon..Sun order), over logged days only. */
+function weekdayPattern(days) {
+  const sums = Array.from({ length: 7 }, () => ({ s: 0, n: 0 }));
+  days.forEach((d) => { if (d.logged) { const i = (dowOf(d.key) + 6) % 7; sums[i].s += d.k; sums[i].n++; } });
+  return sums.map((x) => (x.n ? x.s / x.n : null));
+}
+/** Foods that supplied the most calories over the days. */
+function topFoods(log, keys, count) {
+  const m = new Map();
+  keys.forEach((k) => ((log[k] && log[k].entries) || []).forEach((e) => { const cur = m.get(e.name) || { name: e.name, k: 0, n: 0 }; cur.k += e.k || 0; cur.n++; m.set(e.name, cur); }));
+  return [...m.values()].sort((a, b) => b.k - a.k).slice(0, count || 5);
+}
+/** Days between the first and last logged day, for "show this once there is enough data" rules. */
+function loggedSpan(log) {
+  const keys = Object.keys(log).filter((k) => log[k].entries && log[k].entries.length).sort();
+  return keys.length ? daysBetween(keys[0], keys[keys.length - 1]) + 1 : 0;
+}
+
+/* ---- core/prompt.js ---- */
+// The instructions for a chat session that writes recipes in the MEAL v1 format this app can read.
+const SESSION_PROMPT = `You help me plan home-cooked meals and recipes. I weigh my food in grams and track calories in a personal meal tracker. Whenever you share a recipe or meal with me, follow these rules exactly.
+
+1. Answer normally first: a short explanation, the method, and any tips. Keep the style plain and specific. No emoji.
+
+2. After the recipe, always end with ONE block in the exact format below, inside a code block, so I can copy it with one click. Give one block per recipe. If I ask for several recipes, give several blocks. If your answer is not a recipe or meal, give no block.
+
+3. Rules for the block:
+   - Weights are in grams, and ingredients are RAW weights unless the state column says "cooked". Include every ingredient that adds calories: oil, ghee, sugar, nuts, sauces, milk.
+   - Each ingredient row gives nutrition per 100 g of that ingredient: kcal, protein, carbs, fat, fibre (grams). Use realistic values for the form stated (raw or cooked, dry or fresh).
+   - Use short, plain, consistent ingredient names such as "Basmati rice", "Toor dal", "Paneer", "Onion". Put one ingredient per row. Do not combine two ingredients in one row.
+   - Compute totals and per-serving values from the table. Check them: for each row and for the totals, calories should be close to 4 x protein + 4 x carbs + 9 x fat. Fix any mismatch before you reply.
+   - Set "servings" to the number of equal portions the recipe makes.
+   - Set cooked_weight_g to [MEASURE] unless I have told you the cooked weight. Never invent it.
+   - Set "estimate: yes" because the values come from general knowledge. Set "estimate: no" only if I gave you the values from a label or a lab source.
+   - If you are unsure of a value, give your best figure, keep estimate: yes, and say which row is shaky in the notes line.
+   - Use only plain text characters in the block. No bold, no italics, no emoji, no em dashes. Use a period for decimals.
+   - If I ask for a change, give the full block again, not a patch.
+
+4. The block format is:
+
+=== MEAL v1 ===
+name: <recipe name>
+type: <breakfast | lunch | snack | dinner | any>
+servings: <number>
+cooked_weight_g: <number or [MEASURE]>
+tags: <comma separated, optional>
+estimate: <yes | no>
+
+ingredients (raw grams, per-100g values)
+| ingredient | g | state | kcal | protein | carbs | fat | fibre |
+| <name> | <grams> | <raw | cooked> | <kcal per 100 g> | <g> | <g> | <g> |
+
+totals: kcal <n> | protein <n> g | carbs <n> g | fat <n> g | fibre <n> g
+per serving: kcal <n> | protein <n> g | carbs <n> g | fat <n> g | fibre <n> g
+
+steps:
+1. <step>
+2. <step>
+
+notes: <one or two short lines, optional>
+=== END ===
+
+5. My preferences, which you should follow unless I say otherwise: [FILL IN: diet type, foods I avoid or am allergic to, spice level, cooking equipment, cuisine I prefer, typical calorie and protein targets per meal].
+
+6. Never give medical advice or tell me what my calorie or weight goals should be. Use my targets only if I state them.`;
+
+/* ---- app/store.js ---- */
+// State, saving and everything that changes data. One localStorage key holds it all, so a backup is a single file
+// and the owner sync (when signed in as owner) copies one document. Example data is held in memory only and never saved.
+
+
+
+const KEY = 'katori-v1';
+const PREV = 'katori-prev';
+const VERSION = 1;
+let S = null;
+const UI = { tab: 'today', day: null, notice: '', saveError: '', foodQ: '', foodFilter: 'all', mealQ: '', range: 30, plate: [] };
+
+const blank = () => ({ v: VERSION, sample: false, seq: 0, lastBackup: 0, createdAt: Date.now(), goals: { k: 2000, p: 60, c: 250, f: 65, fi: 25, water: 2500 }, goalsSet: false, waterPresets: [250, 500, 750], dayStart: 4, hideWeight: false, theme: '', foods: {}, removed: {}, meals: {}, log: {} });
+
+function migrate(s) {
+  const out = Object.assign(blank(), s || {});
+  out.goals = Object.assign(blank().goals, out.goals || {});
+  out.foods = out.foods || {}; out.removed = out.removed || {}; out.meals = out.meals || {}; out.log = out.log || {};
+  out.waterPresets = Array.isArray(out.waterPresets) && out.waterPresets.length ? out.waterPresets : [250, 500, 750];
+  out.v = VERSION; return out;
+}
+function isAdmin() { try { return !!(window.appChrome && window.appChrome.isOwner()); } catch (e) { return false; } }
+const state = () => S;
+const ui = () => UI;
+
+// ---------- saving ----------
+let saveTimer = null;
+function persistNow() {
+  if (!S || S.sample) return;
+  try { localStorage.setItem(KEY, JSON.stringify(S)); UI.saveError = ''; requestPersist(); }
+  catch (e) { UI.saveError = 'Could not save on this device (storage is full or blocked). Download a backup now.'; const b = document.getElementById('save-error'); if (b) { b.textContent = UI.saveError; b.hidden = false; } }
+}
+function save() { if (!S || S.sample) return; foodsRev++; clearTimeout(saveTimer); saveTimer = setTimeout(persistNow, 250); }
+function flush() { clearTimeout(saveTimer); persistNow(); }
+let asked = false;
+function requestPersist() { if (asked) return; asked = true; try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* ignore */ } }
+function storageBytes() { try { return (localStorage.getItem(KEY) || '').length * 2; } catch (e) { return 0; } }
+function stashPrev() { try { if (S && !S.sample) localStorage.setItem(PREV, JSON.stringify(S)); } catch (e) { /* ignore */ } }
+function hasPrev() { try { return !!localStorage.getItem(PREV); } catch (e) { return false; } }
+function restorePrev() { try { const raw = localStorage.getItem(PREV); if (!raw) return false; const cur = JSON.stringify(S); S = migrate(JSON.parse(raw)); S.sample = false; localStorage.setItem(PREV, cur); foodsRev++; flush(); return true; } catch (e) { return false; } }
+
+function load(now) {
+  let raw = null;
+  try { raw = localStorage.getItem(KEY); } catch (e) { /* ignore */ }
+  if (raw) { try { S = migrate(JSON.parse(raw)); foodsRev++; return S; } catch (e) { /* fall through */ } }
+  S = blank(); S.sample = true; fillDemo(S, now || new Date()); foodsRev++;
+  return S;
+}
+function startOwn() { S = blank(); UI.plate = []; foodsRev++; flush(); return S; }
+function resetAll() { try { localStorage.removeItem(KEY); localStorage.removeItem(PREV); } catch (e) { /* ignore */ } UI.plate = []; S = null; load(new Date()); return S; }
+const todayKey = (now) => dayKeyFor(now || new Date(), S ? S.dayStart : 4);
+
+// ---------- foods: starter foods are read-only until edited; an edit is stored as an override with the same id ----------
+let foodsRev = 0, cache = { rev: -1, list: [], map: new Map() };
+const STARTER = starterFoods();
+function foodCache() {
+  if (cache.rev === foodsRev) return cache;
+  const map = new Map();
+  STARTER.forEach((f) => { if (!S.removed[f.id]) map.set(f.id, f); });
+  Object.values(S.foods).forEach((f) => map.set(f.id, f));
+  const list = [...map.values()].sort((a, b) => a.name.localeCompare(b.name) || String(a.state).localeCompare(String(b.state)));
+  cache = { rev: foodsRev, list, map };
+  return cache;
+}
+const foodList = () => foodCache().list;
+const getFood = (id) => foodCache().map.get(id) || null;
+const foodLabel = (f) => f.name + (f.state && f.name.toLowerCase().indexOf(f.state) < 0 ? ' (' + f.state + ')' : '');
+const isStarterId = (id) => String(id).indexOf('s:') === 0;
+function saveFood(food) {
+  ensureOwn();
+  const f = Object.assign({ units: [], source: 'mine', verified: false }, food);
+  if (!f.id) f.id = 'f:' + uid('x');
+  const n = clean(f); Object.assign(f, n, { name: norm(f.name) || 'Unnamed food' });
+  S.foods[f.id] = f; delete S.removed[f.id]; save(); return f.id;
+}
+function deleteFood(id) { if (isStarterId(id)) { S.removed[id] = true; delete S.foods[id]; } else delete S.foods[id]; save(); }
+function resetStarter(id) { delete S.foods[id]; delete S.removed[id]; save(); }
+const isOverride = (id) => isStarterId(id) && !!S.foods[id];
+function hiddenStarters() { return STARTER.filter((f) => S.removed[f.id]); }
+function findSimilarFood(name, state) {
+  let best = null, bs = 0;
+  foodList().forEach((f) => { const s = similarity(name, f.name) + (state && f.state === state ? 0.05 : 0); if (s > bs) { bs = s; best = f; } });
+  return bs >= 0.6 ? { food: best, score: bs } : null;
+}
+/** Adds foods from a CSV import. Same id replaces the food. Returns { added, updated }. */
+function addImportedFoods(list) {
+  let added = 0, updated = 0;
+  list.forEach((f) => {
+    const hit = foodList().find((x) => slug(x.name + ' ' + (x.state || '')) === slug(f.name + ' ' + (f.state || '')));
+    if (hit) { saveFood(Object.assign({}, hit, f, { id: hit.id, source: hit.source === 'starter' ? 'mine' : hit.source, verified: false })); updated++; }
+    else { saveFood(Object.assign({}, f, { id: null })); added++; }
+  });
+  return { added, updated };
+}
+
+// ---------- meals ----------
+const mealList = () => Object.values(S.meals).sort((a, b) => (b.fav ? 1 : 0) - (a.fav ? 1 : 0) || (b.lastUsed || 0) - (a.lastUsed || 0) || a.name.localeCompare(b.name));
+function saveMeal(meal) {
+  ensureOwn();
+  const m = Object.assign({ servings: 1, items: [], steps: [], tags: [], notes: '', type: 'any', uses: 0, createdAt: Date.now() }, meal);
+  if (!m.id) m.id = uid('m');
+  m.name = norm(m.name) || 'Meal';
+  S.meals[m.id] = m; save(); return m.id;
+}
+function deleteMeal(id) { delete S.meals[id]; save(); }
+
+// ---------- the diary ----------
+function dayRec(key, create) {
+  let d = S.log[key];
+  if (!d && create) d = S.log[key] = { entries: [], water: [], weight: null, note: '' };
+  return d || null;
+}
+const defaultSlot = (now, start) => { const m = minutesOf(now); const h = (m / 60 - (start || 0) + 24) % 24; return h < 10.5 ? 'breakfast' : h < 15.5 ? 'lunch' : h < 18.5 ? 'snack' : 'dinner'; };
+const SLOTS = [['breakfast', 'Breakfast'], ['lunch', 'Lunch'], ['snack', 'Snack'], ['dinner', 'Dinner']];
+
+function ensureOwn() { if (S && S.sample) startOwn(); }
+function addEntry(key, e) {
+  ensureOwn();
+  const d = dayRec(key, true);
+  const n = snap(clean(e));
+  const entry = Object.assign({ kind: 'quick', ref: null, name: 'Food', amt: 0, unit: '' }, e, n);
+  if (!entry.id) entry.id = uid('e'); if (entry.t == null) entry.t = minutesOf(new Date()); if (!entry.meal) entry.meal = defaultSlot(new Date(), S.dayStart);
+  d.entries.push(entry); save(); return entry.id;
+}
+function updateEntry(key, id, patch) {
+  const d = dayRec(key); if (!d) return;
+  const e = d.entries.find((x) => x.id === id); if (!e) return;
+  if (patch.amt !== undefined && e.amt > 0 && patch.amt > 0 && e.kind !== 'quick') { const r = patch.amt / e.amt; Object.assign(e, snap(times(clean(e), r))); }
+  Object.assign(e, patch); save();
+}
+function removeEntry(key, id) { const d = dayRec(key); if (!d) return; d.entries = d.entries.filter((x) => x.id !== id); cleanDay(key); save(); }
+function cleanDay(key) { const d = S.log[key]; if (d && !d.entries.length && !d.water.length && d.weight == null && !d.note) delete S.log[key]; }
+function copyDay(fromKey, toKey, slot) {
+  const src = dayRec(fromKey); if (!src) return 0; let n = 0;
+  src.entries.filter((e) => !slot || e.meal === slot).forEach((e) => { addEntry(toKey, Object.assign({}, e, { id: undefined, t: e.t })); n++; });
+  return n;
+}
+function addWater(key, ml) { ensureOwn(); const d = dayRec(key, true); d.water.push({ t: minutesOf(new Date()), ml }); save(); }
+function undoWater(key) { const d = dayRec(key); if (!d || !d.water.length) return 0; const w = d.water.pop(); cleanDay(key); save(); return w.ml; }
+function setWeight(key, kg) { ensureOwn(); const d = dayRec(key, kg != null); if (!d) return; d.weight = kg; cleanDay(key); save(); }
+function setNote(key, text) { ensureOwn(); const d = dayRec(key, !!norm(text)); if (!d) return; d.note = text; cleanDay(key); save(); }
+function setGoals(g) { ensureOwn(); S.goals = Object.assign(S.goals, g); S.goalsSet = true; save(); }
+function setSettings(p) { ensureOwn(); Object.assign(S, p); save(); }
+
+/** Foods you logged lately, newest first, then the most used. For the Recent tab. */
+function recentRefs(limit) {
+  const keys = Object.keys(S.log).sort().reverse().slice(0, 60); const seen = new Map();
+  keys.forEach((k) => S.log[k].entries.slice().reverse().forEach((e) => { if (e.kind === 'food' && e.ref && !seen.has(e.ref)) seen.set(e.ref, { ref: e.ref, last: e.amt, n: 0 }); if (e.kind === 'food' && e.ref && seen.has(e.ref)) seen.get(e.ref).n++; }));
+  return [...seen.values()].slice(0, limit || 30);
+}
+const lastAmount = (ref) => { const r = recentRefs(200).find((x) => x.ref === ref); return r ? r.last : 0; };
+
+// ---------- backup ----------
+function markBackup() { S.lastBackup = Date.now(); save(); }
+function exportJson() { return JSON.stringify(Object.assign({ app: 'katori' }, S), null, 1); }
+function importJson(text) {
+  const d = JSON.parse(text);
+  if (!d || d.app !== 'katori' || typeof d.log !== 'object') throw new Error('bad');
+  stashPrev(); delete d.app; S = migrate(d); S.sample = false; foodsRev++; flush(); return S;
+}
+function logCsv() {
+  const rows = [['date', 'time', 'meal', 'item', 'amount', 'unit', 'kcal', 'protein_g', 'carbs_g', 'fat_g', 'fibre_g']];
+  Object.keys(S.log).sort().forEach((k) => S.log[k].entries.forEach((e) => rows.push([k, String(Math.floor(e.t / 60)).padStart(2, '0') + ':' + String(e.t % 60).padStart(2, '0'), e.meal, e.name, e.amt || '', e.unit || '', e.k, e.p, e.c, e.f, e.fi])));
+  const q = (s) => { s = String(s); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const water = [['date', 'water_ml', 'weight_kg']]; Object.keys(S.log).sort().forEach((k) => { const d = S.log[k]; water.push([k, d.water.reduce((t, w) => t + w.ml, 0), d.weight == null ? '' : d.weight]); });
+  return { entries: rows.map((r) => r.map(q).join(',')).join('\n') + '\n', days: water.map((r) => r.join(',')).join('\n') + '\n' };
+}
+
+// ---------- example data (memory only) ----------
+function fillDemo(s, now) {
+  const today = dayKeyFor(now, s.dayStart);
+  const F = (name, state) => starterFoods().find((f) => f.name === name && (f.state === state));
+  const mk = (k, slot, t, f, g) => { const n = snap(scale(f, g)); const d = s.log[k] || (s.log[k] = { entries: [], water: [], weight: null, note: '' }); d.entries.push(Object.assign({ id: uid('e'), t, meal: slot, kind: 'food', ref: f.id, name: f.name + (f.state ? ' (' + f.state + ')' : ''), amt: g, unit: 'g' }, n)); };
+  const oats = F('Oats, rolled', 'raw'), milk = F('Milk, toned', ''), banana = F('Banana', 'raw'), rice = F('Rice, white', 'cooked'), dal = F('Dal, plain', 'cooked'), roti = F('Roti', 'cooked'), paneer = F('Paneer', 'raw'), curd = F('Curd (dahi), full fat', 'raw'), egg = F('Egg, whole', 'raw'), almonds = F('Almonds', 'raw'), chick = F('Chicken breast', 'raw'), oil = F('Oil (cooking)', '');
+  for (let i = 13; i >= 0; i--) {
+    const k = addDays(today, -i); const w = (i % 3) * 20;
+    mk(k, 'breakfast', 480, oats, 50); mk(k, 'breakfast', 482, milk, 200 + w); mk(k, 'breakfast', 485, banana, 100);
+    mk(k, 'lunch', 780, rice, 180); mk(k, 'lunch', 785, dal, 200); mk(k, 'lunch', 790, i % 2 ? paneer : chick, i % 2 ? 80 : 120);
+    mk(k, 'snack', 1000, almonds, 20 + (i % 4) * 5); if (i % 2) mk(k, 'snack', 1010, egg, 100);
+    mk(k, 'dinner', 1200, roti, 80 + w); mk(k, 'dinner', 1205, curd, 150); if (i % 3 === 0) mk(k, 'dinner', 1210, oil, 10);
+    const d = s.log[k]; d.water = [{ t: 500, ml: 500 }, { t: 800, ml: 500 }, { t: 1100, ml: 750 }].slice(0, 2 + (i % 2)); d.weight = i % 2 ? null : Math.round((74.2 - (13 - i) * 0.05 + (i % 4) * 0.1) * 10) / 10;
+  }
+  s.meals['m-demo'] = { id: 'm-demo', name: 'Moong dal khichdi (example)', type: 'lunch', servings: 4, potG: 1450, vesselG: 0, tags: ['one-pot'], estimate: true, uses: 0, createdAt: Date.now(), source: 'made', steps: [], notes: 'Example only.', items: [{ name: 'Rice, white (raw)', g: 150, state: 'raw', n: clean(starterFoods().find((f) => f.id === 's:rice-white-raw')) }, { name: 'Moong dal (split) (raw)', g: 100, state: 'raw', n: clean(starterFoods().find((f) => f.id === 's:moong-dal-split-raw')) }, { name: 'Ghee (raw)', g: 15, state: 'raw', n: clean(starterFoods().find((f) => f.id === 's:ghee-raw')) }] };
+  s.goalsSet = true;
+}
+
+/* ---- app/ui.js ---- */
+// Interface helpers: dialogs, the food picker, rings and bars, small formatters.
+
+
+const $ = (sel, root) => (root || document).querySelector(sel);
+const $$ = (sel, root) => Array.prototype.slice.call((root || document).querySelectorAll(sel));
+
+// ---------- dialogs (window.prompt and confirm are blocked in some embedded pages) ----------
+function askDialog(title, opts, done) {
+  const dlg = document.createElement('dialog'); dlg.className = 'dlg';
+  const input = opts.value !== undefined;
+  dlg.innerHTML = '<form method="dialog"><h2>' + esc(title) + '</h2>' + (opts.text ? '<p>' + esc(opts.text) + '</p>' : '') + (input ? '<label class="field"><span class="sr">' + esc(title) + '</span><input id="dlg-in" value="' + esc(opts.value) + '" autocomplete="off"' + (opts.type ? ' type="' + opts.type + '" inputmode="decimal"' : '') + '></label>' : '') +
+    '<div class="row end"><button class="btn" type="button" data-x>Cancel</button><button class="btn primary" value="ok">' + esc(opts.ok || 'OK') + '</button></div></form>';
+  document.body.appendChild(dlg);
+  const close = () => { try { dlg.close(); } catch (e) { /* ignore */ } dlg.remove(); };
+  dlg.querySelector('[data-x]').addEventListener('click', close);
+  dlg.addEventListener('cancel', () => { dlg.remove(); });
+  dlg.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); const v = input ? dlg.querySelector('#dlg-in').value : true; close(); done(v); });
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+  const f = dlg.querySelector('input'); if (f) { f.focus(); f.select(); }
+}
+
+/** A larger dialog ("sheet"). Returns { el, close }. `html` is the inside of the sheet. */
+function openSheet(title, html, opts) {
+  const dlg = document.createElement('dialog'); dlg.className = 'sheet' + (opts && opts.wide ? ' wide' : '');
+  dlg.setAttribute('aria-label', title);
+  dlg.innerHTML = '<div class="sheet-head"><h2>' + esc(title) + '</h2><button class="btn small" type="button" data-sheet-close aria-label="Close">Close</button></div><div class="sheet-body">' + html + '</div>';
+  document.body.appendChild(dlg);
+  const api = { el: dlg, body: dlg.querySelector('.sheet-body'), close: () => { try { dlg.close(); } catch (e) { /* ignore */ } dlg.remove(); if (opts && opts.onClose) opts.onClose(); } };
+  dlg.querySelector('[data-sheet-close]').addEventListener('click', api.close);
+  dlg.addEventListener('cancel', (e) => { e.preventDefault(); api.close(); });
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+  return api;
+}
+function toast(msg, undo) {
+  let t = $('#toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.innerHTML = esc(msg) + (undo ? ' <button class="linkbtn" data-action="toast-undo">Undo</button>' : ''); t.className = 'show'; UI.undo = undo || null;
+  clearTimeout(toast.h); toast.h = setTimeout(() => { t.className = ''; UI.undo = null; }, undo ? 6000 : 2600);
+}
+
+// ---------- small formatters ----------
+const kcalText = (n) => fmt0(n) + ' kcal';
+const macroLine = (n) => 'P ' + fmt1(n.p) + ' g · C ' + fmt1(n.c) + ' g · F ' + fmt1(n.f) + ' g';
+const numIn = (id, value, attrs) => '<input id="' + id + '" type="text" inputmode="decimal" autocomplete="off" value="' + esc(value === null || value === undefined ? '' : value) + '" ' + (attrs || '') + '>';
+
+/** Calorie ring. Over the goal it turns amber and says how many over, in neutral wording. */
+function ringHtml(eaten, goal) {
+  const r = 52, c = 2 * Math.PI * r; const pct = goal > 0 ? Math.min(1, eaten / goal) : 0; const over = goal > 0 && eaten > goal;
+  const left = goal - eaten;
+  return '<div class="ring-wrap"><svg class="ring" viewBox="0 0 120 120" role="img" aria-label="' + fmt0(eaten) + ' of ' + fmt0(goal) + ' calories eaten"><circle cx="60" cy="60" r="' + r + '" class="ring-bg"/><circle cx="60" cy="60" r="' + r + '" class="ring-fg' + (over ? ' over' : '') + '" stroke-dasharray="' + (c * pct).toFixed(1) + ' ' + c.toFixed(1) + '" transform="rotate(-90 60 60)"/></svg>' +
+    '<div class="ring-mid"><b>' + fmt0(Math.abs(left)) + '</b><span>' + (over ? 'kcal over' : 'kcal left') + '</span></div></div>';
+}
+function barHtml(label, value, goal, unit, kind) { // kind: floor (aim to reach), ceiling (aim to stay under), plain
+  const pct = goal > 0 ? Math.min(100, Math.round(value / goal * 100)) : 0; const over = goal > 0 && value > goal;
+  return '<div class="mbar"><div class="mbar-top"><span>' + esc(label) + '</span><span><b>' + fmt0(value) + '</b> / ' + fmt0(goal) + ' ' + unit + '</span></div><div class="track" role="progressbar" aria-label="' + esc(label) + '" aria-valuemin="0" aria-valuemax="' + Math.round(goal) + '" aria-valuenow="' + Math.round(value) + '"><span class="fill ' + (over && kind === 'ceiling' ? 'over' : '') + '" style="width:' + pct + '%"></span></div></div>';
+}
+
+// ---------- food picker: search box + results (Recent and favourites when empty) ----------
+/** Fills `host` with a search box and a list. Calls onPick(food) when a row is chosen. */
+function foodPicker(host, onPick, opts) {
+  const o = opts || {};
+  host.innerHTML = '<label class="field"><span class="sr">Search foods</span><input type="search" class="pk-q" placeholder="' + esc(o.placeholder || 'Search foods, for example rice or paneer') + '" autocomplete="off"></label><ul class="pk-list" role="list"></ul>';
+  const q = $('.pk-q', host), list = $('.pk-list', host);
+  const row = (f) => '<li><button type="button" class="pk-row" data-pick="' + esc(f.id) + '"><span class="pk-name">' + esc(foodLabel(f)) + '</span><span class="pk-sub">' + fmt0(f.k) + ' kcal · P ' + fmt1(f.p) + ' · per 100 g' + (f.source === 'starter' && !f.verified ? ' · approx' : '') + '</span></button></li>';
+  const paint = () => {
+    const text = norm(q.value); let items;
+    if (!text) {
+      const rec = recentRefs(12).map((r) => getFood(r.ref)).filter(Boolean);
+      const favs = foodList().filter((f) => f.fav && !rec.includes(f));
+      items = rec.concat(favs).slice(0, 14);
+      list.innerHTML = items.length ? '<li class="pk-head">Recent and favourites</li>' + items.map(row).join('') : '<li class="pk-head">Type to search ' + foodList().length + ' foods</li>';
+    } else {
+      const m = text.toLowerCase(); const scored = foodList().map((f) => { const n = (foodLabel(f)).toLowerCase(); const s = n.startsWith(m) ? 3 : n.includes(m) ? 2 : similarityTo(text, f) ; return { f, s }; }).filter((x) => x.s >= 0.5).sort((a, b) => b.s - a.s || a.f.name.length - b.f.name.length).slice(0, 40);
+      list.innerHTML = scored.length ? scored.map((x) => row(x.f)).join('') : '<li class="pk-head">No match. ' + (o.allowNew ? 'Use "Add a food" to create it.' : 'Add it on the Foods tab.') + '</li>';
+    }
+  };
+  const similarityTo = (text, f) => { const mt = matchFood(text, [f]); return mt ? mt.score : 0; };
+  q.addEventListener('input', paint);
+  list.addEventListener('click', (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; const f = getFood(b.dataset.pick); if (f) onPick(f); });
+  paint();
+  return { focus: () => q.focus(), paint };
+}
+
+/* ---- app/today.js ---- */
+// The Today screen: calorie ring, macros, meal sections, water, weight and a note.
+
+
+const slotName = (id) => (SLOTS.find((s) => s[0] === id) || [id, id])[1];
+
+function entryRow(e) {
+  const qty = e.qty || (e.amt ? fmt1(e.amt) + (e.unit === 'serv' ? (e.amt === 1 ? ' serving' : ' servings') : ' g') : '');
+  return '<li class="ent"><button type="button" class="ent-main" data-action="edit-entry" data-id="' + esc(e.id) + '" aria-label="Edit ' + esc(e.name) + '"><span class="ent-name">' + esc(e.name) + '</span><span class="ent-sub">' + esc(qty) + ' · ' + timeLabel(e.t) + '</span></button><span class="ent-k">' + fmt0(e.k) + '<small> kcal</small></span></li>';
+}
+
+function renderToday() {
+  const now = new Date(); const today = todayKey(now); const key = UI.day || today; const rec = dayRec(key); const tot = dayTotals(rec); const g = S.goals;
+  const yest = addDays(key, -1); const yrec = dayRec(yest);
+  const entries = rec ? rec.entries.slice().sort((a, b) => a.t - b.t) : [];
+  const days = Math.floor((Date.now() - (S.lastBackup || 0)) / 864e5);
+  const hasData = Object.keys(S.log).length > 0;
+  let h = '<div class="today">';
+  if (S.sample) h += '<div class="notice"><b>Example data.</b> Nothing here is saved. <button class="btn small primary" data-action="start-own">Start my own</button></div>';
+  else if (!S.goalsSet) h += '<div class="notice">These goals are placeholders. <button class="btn small" data-action="goto-settings">Set my own goals</button></div>';
+  if (!S.sample && hasData && days >= 7) h += '<div class="notice soft">' + (S.lastBackup ? 'Your last backup was ' + days + ' days ago.' : 'You have not downloaded a backup yet.') + ' <button class="btn small" data-action="backup">Download a backup</button></div>';
+  h += '<div class="daynav"><button class="btn" data-action="day-prev" aria-label="Previous day">←</button><label class="daypick"><span class="sr">Pick a date</span><input type="date" id="day-in" value="' + key + '" max="' + today + '"></label><div class="daytitle"><b>' + esc(key === today ? 'Today' : dateLabel(key)) + '</b><span>' + esc(dateLong(key)) + '</span></div><button class="btn" data-action="day-next" aria-label="Next day"' + (key >= today ? ' disabled' : '') + '>→</button>' + (key !== today ? '<button class="btn small" data-action="day-today">Today</button>' : '') + '</div>';
+  h += '<section class="card summary" aria-label="Day summary">' + ringHtml(tot.k, g.k) + '<div class="summary-side"><div class="sum-line"><span>Eaten</span><b>' + fmt0(tot.k) + '</b></div><div class="sum-line"><span>Goal</span><b>' + fmt0(g.k) + '</b></div>' + barHtml('Protein', tot.p, g.p, 'g', 'floor') + barHtml('Carbs', tot.c, g.c, 'g', 'plain') + barHtml('Fat', tot.f, g.f, 'g', 'ceiling') + barHtml('Fibre', tot.fi, g.fi, 'g', 'floor') + '</div></section>';
+  SLOTS.forEach(([id, label]) => {
+    const list = entries.filter((e) => e.meal === id); const sk = list.reduce((t, e) => t + e.k, 0);
+    const canCopy = !list.length && yrec && yrec.entries.some((e) => e.meal === id);
+    h += '<section class="card slot" aria-labelledby="slot-' + id + '"><header class="slot-head"><h2 id="slot-' + id + '">' + label + '</h2><span class="slot-k">' + (list.length ? fmt0(sk) + ' kcal' : '') + '</span><button class="btn small primary" data-action="add" data-slot="' + id + '" aria-label="Add food to ' + label + '">Add</button></header>' +
+      (list.length ? '<ul class="ents">' + list.map(entryRow).join('') + '</ul>' : '<p class="muted">Nothing logged.' + (canCopy ? ' <button class="linkbtn" data-action="copy-slot" data-slot="' + id + '">Copy ' + (yest === addDays(today, -1) && key === today ? 'yesterday' : 'the day before') + '\'s ' + label.toLowerCase() + '</button>' : '') + '</p>') + '</section>';
+  });
+  const wt = waterTotal(rec);
+  h += '<section class="card" aria-labelledby="water-h"><header class="slot-head"><h2 id="water-h">Water</h2><span class="slot-k">' + fmt0(wt) + ' / ' + fmt0(g.water) + ' ml</span></header>' + barHtml('Water', wt, g.water, 'ml', 'floor').replace('class="mbar-top"', 'class="mbar-top sr"') +
+    '<div class="chips">' + S.waterPresets.map((ml) => '<button class="btn" data-action="water" data-ml="' + ml + '">+ ' + ml + ' ml</button>').join('') + '<button class="btn" data-action="water-other">Other</button>' + (rec && rec.water.length ? '<button class="btn ghost" data-action="water-undo">Undo last</button>' : '') + '</div></section>';
+  h += '<section class="card" aria-labelledby="body-h"><h2 id="body-h">' + (S.hideWeight ? 'Note' : 'Weight and note') + '</h2><div class="body-row">' + (S.hideWeight ? '' : '<label class="field"><span>Weight (kg)</span>' + numIn('weight-in', rec && rec.weight != null ? rec.weight : '', 'aria-label="Weight in kilograms"') + '</label>') + '<label class="field grow"><span>Note for the day</span><textarea id="note-in" rows="2" placeholder="For example: ate out, travelling">' + esc(rec ? rec.note : '') + '</textarea></label></div></section>';
+  return h + '</div>';
+}
+
+/* ---- app/add.js ---- */
+// Adding to the diary: the Add sheet (foods, meals, plate, quick calories), logging a meal, and editing an entry.
+
+
+
+const curKey = () => UI.day || todayKey();
+
+function unitOptions(food) {
+  const opts = [['g', 'g']]; if (food.density) opts.push(['ml', 'ml']);
+  (food.units || []).forEach((u) => opts.push([u.name, u.name + ' (' + fmt1(u.g) + ' g)']));
+  return opts;
+}
+const nutriLine = (n) => '<b>' + fmt0(n.k) + ' kcal</b> · ' + macroLine(n);
+const slotSelect = (id, val) => '<label class="field"><span>Meal</span><select id="' + id + '">' + SLOTS.map(([v, l]) => '<option value="' + v + '"' + (v === val ? ' selected' : '') + '>' + l + '</option>').join('') + '</select></label>';
+
+function openAdd(slot) {
+  const sh = openSheet('Add to ' + slotName(slot).toLowerCase(), '<div class="tabs" role="tablist">' + [['foods', 'Foods'], ['meals', 'My meals'], ['plate', 'Plate'], ['quick', 'Quick']].map(([id, l], i) => '<button role="tab" class="tab' + (i ? '' : ' on') + '" data-tab="' + id + '" aria-selected="' + (i === 0) + '">' + l + '</button>').join('') + '</div>' +
+    '<div class="panel" data-panel="foods"></div><div class="panel" data-panel="meals" hidden></div><div class="panel" data-panel="plate" hidden></div><div class="panel" data-panel="quick" hidden></div>', { wide: true, onClose: () => render() });
+  const P = (id) => $('[data-panel="' + id + '"]', sh.el);
+  const state = { slot };
+  const added = (name) => { toast('Added ' + name); render(); };
+
+  // --- foods ---
+  const foodsHost = P('foods');
+  const showPicker = () => { foodsHost.innerHTML = '<div class="pk-host"></div><p class="muted"><button class="linkbtn" data-newfood>Add a food that is not listed</button></p>'; const pk = foodPicker($('.pk-host', foodsHost), showQty, { allowNew: true }); pk.focus(); $('[data-newfood]', foodsHost).addEventListener('click', () => openFoodEditor(null, (id) => { const f = getFood(id); if (f) showQty(f); })); };
+  const showQty = (food) => {
+    const last = lastAmount(food.id) || 100; const opts = unitOptions(food);
+    foodsHost.innerHTML = '<button class="btn small" data-back>← Back</button><h3>' + esc(foodLabel(food)) + '</h3><p class="muted">' + fmt0(food.k) + ' kcal · P ' + fmt1(food.p) + ' · C ' + fmt1(food.c) + ' · F ' + fmt1(food.f) + ' per 100 g' + (food.source === 'starter' && !food.verified ? ' · approximate starter value' : '') + '</p>' +
+      '<div class="qrow"><label class="field"><span>Amount</span>' + numIn('q-amt', last) + '</label><label class="field"><span>Unit</span><select id="q-unit">' + opts.map(([v, l]) => '<option value="' + esc(v) + '">' + esc(l) + '</option>').join('') + '</select></label></div>' + slotSelect('q-slot', state.slot) +
+      '<p id="q-prev" class="preview" aria-live="polite"></p><div class="row end"><button class="btn primary" data-add>Add</button></div>';
+    const amt = $('#q-amt', foodsHost), unit = $('#q-unit', foodsHost), prev = $('#q-prev', foodsHost);
+    const calc = () => { const a = num(amt.value); const g = a && a > 0 ? gramsFor(food, unit.value, a) : null; if (g == null) { prev.textContent = 'Enter an amount.'; return null; } prev.innerHTML = nutriLine(scale(food, g)) + (unit.value !== 'g' ? ' <span class="muted">(' + fmt1(g) + ' g)</span>' : ''); return { g, a }; };
+    amt.addEventListener('input', calc); unit.addEventListener('change', calc); calc(); amt.select();
+    $('[data-back]', foodsHost).addEventListener('click', showPicker);
+    $('[data-add]', foodsHost).addEventListener('click', () => {
+      const r = calc(); if (!r) return; state.slot = $('#q-slot', foodsHost).value;
+      addEntry(curKey(), Object.assign({ kind: 'food', ref: food.id, name: foodLabel(food), amt: Math.round(r.g * 10) / 10, unit: 'g', meal: state.slot, qty: unit.value === 'g' ? '' : fmt1(r.a) + ' ' + unit.value + ' · ' + fmt1(r.g) + ' g' }, scale(food, r.g)));
+      added(foodLabel(food)); showPicker();
+    });
+  };
+  showPicker();
+
+  // --- my meals ---
+  const paintMeals = () => {
+    const ms = mealList();
+    P('meals').innerHTML = ms.length ? '<ul class="pk-list">' + ms.map((m) => { const ps = perServing(m); return '<li><button class="pk-row" data-meal="' + esc(m.id) + '"><span class="pk-name">' + esc(m.name) + (m.fav ? ' ★' : '') + '</span><span class="pk-sub">' + fmt0(ps.k) + ' kcal per serving · P ' + fmt1(ps.p) + ' · ' + fmt1(m.servings) + ' servings' + (netCooked(m) ? ' · pot weighed' : '') + '</span></button></li>'; }).join('') + '</ul>' : '<p class="muted">No saved meals yet. Build one on the Plate tab, or on the Meals screen.</p>';
+  };
+  paintMeals();
+  P('meals').addEventListener('click', (e) => { const b = e.target.closest('[data-meal]'); if (b) openLogMeal(S.meals[b.dataset.meal], state.slot, () => { added(S.meals[b.dataset.meal].name); }); });
+
+  // --- plate ---
+  const plate = UI.plate;
+  const paintPlate = () => {
+    const host = $('.plate-rows', P('plate')); if (!host) return;
+    host.innerHTML = plate.length ? plate.map((r, i) => '<li class="prow"><span class="prow-n">' + esc(foodLabel(r.food)) + (r.problem ? '<small class="warn"> ' + esc(r.problem) + '</small>' : '') + '</span><label class="sr" for="pg' + i + '">Grams of ' + esc(foodLabel(r.food)) + '</label>' + numIn('pg' + i, r.g, 'data-i="' + i + '"') + '<span>g</span><button class="btn small" data-rm="' + i + '" aria-label="Remove ' + esc(foodLabel(r.food)) + '">Remove</button></li>').join('') : '<li class="muted">Nothing on the plate yet.</li>';
+    const tot = sum(plate.map((r) => scale(r.food, num(r.g) || 0)));
+    $('.plate-tot', P('plate')).innerHTML = plate.length ? nutriLine(tot) : '';
+    $$('[data-plate-act]', P('plate')).forEach((b) => { b.disabled = !plate.length; });
+  };
+  P('plate').innerHTML = '<label class="field"><span>Type what you ate</span><textarea class="pl-text" rows="2" placeholder="rice 180g, dal 230g, 2 roti"></textarea></label><div class="row"><button class="btn" data-read>Read it</button><span class="muted pl-msg" aria-live="polite"></span></div><div class="pk-host"></div><h3>On the plate</h3><ul class="plate-rows"></ul><p class="plate-tot preview" aria-live="polite"></p>' + slotSelect('pl-slot', slot) + '<div class="row end"><button class="btn" data-plate-act data-clear>Clear</button><button class="btn" data-plate-act data-savemeal>Save as a meal</button><button class="btn primary" data-plate-act data-addplate>Add to my day</button></div>';
+  foodPicker($('.pk-host', P('plate')), (f) => { plate.push({ food: f, g: 100 }); paintPlate(); const l = $$('.plate-rows input', P('plate')).pop(); if (l) { l.focus(); l.select(); } }, { placeholder: 'Add a food to the plate' });
+  paintPlate();
+  $('[data-read]', P('plate')).addEventListener('click', () => {
+    const rows = parseQuickLog($('.pl-text', P('plate')).value, foodList()); let n = 0, bad = 0;
+    rows.forEach((r) => { if (r.food && r.g != null) { plate.push({ food: r.food, g: Math.round(r.g * 10) / 10 }); n++; } else bad++; });
+    $('.pl-msg', P('plate')).textContent = n + ' added' + (bad ? ', ' + bad + ' not understood: ' + rows.filter((r) => !r.food || r.g == null).map((r) => '"' + r.text + '" (' + r.problem + ')').join(' ') : '.');
+    if (n) $('.pl-text', P('plate')).value = ''; paintPlate();
+  });
+  P('plate').addEventListener('input', (e) => { const i = e.target.dataset && e.target.dataset.i; if (i !== undefined && plate[i]) { plate[i].g = e.target.value; paintPlate2(); } });
+  const paintPlate2 = () => { const tot = sum(plate.map((r) => scale(r.food, num(r.g) || 0))); $('.plate-tot', P('plate')).innerHTML = plate.length ? nutriLine(tot) : ''; };
+  P('plate').addEventListener('click', (e) => {
+    const rm = e.target.closest('[data-rm]'); if (rm) { plate.splice(+rm.dataset.rm, 1); paintPlate(); return; }
+    if (e.target.closest('[data-clear]')) { plate.length = 0; paintPlate(); return; }
+    if (e.target.closest('[data-addplate]')) {
+      const sl = $('#pl-slot', P('plate')).value; let n = 0;
+      plate.forEach((r) => { const g = num(r.g); if (g && g > 0) { addEntry(curKey(), Object.assign({ kind: 'food', ref: r.food.id, name: foodLabel(r.food), amt: g, unit: 'g', meal: sl }, scale(r.food, g))); n++; } });
+      plate.length = 0; paintPlate(); added(n + ' item' + (n === 1 ? '' : 's')); return;
+    }
+    if (e.target.closest('[data-savemeal]')) {
+      const items = plate.filter((r) => num(r.g) > 0).map((r) => ({ name: foodLabel(r.food), g: num(r.g), state: r.food.state || 'raw', n: { k: r.food.k, p: r.food.p, c: r.food.c, f: r.food.f, fi: r.food.fi || 0 } }));
+      openMealEditor({ name: '', type: 'any', servings: 1, items, steps: [], tags: [], source: 'made' }, () => { toast('Meal saved'); paintMeals(); });
+    }
+  });
+
+  // --- quick ---
+  P('quick').innerHTML = '<label class="field"><span>What was it?</span><input id="qk-name" autocomplete="off" placeholder="For example: restaurant thali"></label><div class="qrow"><label class="field"><span>Calories</span>' + numIn('qk-k', '') + '</label><label class="field"><span>Protein g</span>' + numIn('qk-p', '') + '</label><label class="field"><span>Carbs g</span>' + numIn('qk-c', '') + '</label><label class="field"><span>Fat g</span>' + numIn('qk-f', '') + '</label></div>' + slotSelect('qk-slot', slot) + '<p class="muted">Only calories are needed. Leave the rest empty if you do not know them.</p><div class="row end"><button class="btn primary" data-qk>Add</button></div>';
+  $('[data-qk]', P('quick')).addEventListener('click', () => {
+    const k = num($('#qk-k', P('quick')).value); if (!k || k < 0) { toast('Enter the calories.'); return; }
+    addEntry(curKey(), { kind: 'quick', name: norm($('#qk-name', P('quick')).value) || 'Quick calories', k, p: num($('#qk-p', P('quick')).value) || 0, c: num($('#qk-c', P('quick')).value) || 0, f: num($('#qk-f', P('quick')).value) || 0, fi: 0, meal: $('#qk-slot', P('quick')).value, qty: 'quick add' });
+    $$('input', P('quick')).forEach((i) => { i.value = ''; }); added('quick calories');
+  });
+
+  // --- tabs ---
+  $$('.tab', sh.el).forEach((t) => t.addEventListener('click', () => { $$('.tab', sh.el).forEach((x) => { x.classList.toggle('on', x === t); x.setAttribute('aria-selected', x === t); }); $$('.panel', sh.el).forEach((p) => { p.hidden = p.dataset.panel !== t.dataset.tab; }); if (t.dataset.tab === 'meals') paintMeals(); if (t.dataset.tab === 'foods') showPicker(); }));
+  return sh;
+}
+
+/** Log a saved meal: by servings, or by grams from the weighed pot. */
+function openLogMeal(meal, slot, done) {
+  if (!meal) return;
+  const pot = netCooked(meal); const gps = gramsPerServing(meal);
+  const sh = openSheet('Log ' + meal.name, '<p class="muted">' + fmt1(meal.servings) + ' servings · ' + fmt0(mealTotals(meal).k) + ' kcal in total' + (pot ? ' · ' + fmt0(pot) + ' g cooked (about ' + fmt0(gps) + ' g per serving)' : '') + '</p>' +
+    '<div class="seg" role="group" aria-label="How to log it"><button class="seg-btn" data-mode="serv" aria-pressed="true">By servings</button><button class="seg-btn" data-mode="grams" aria-pressed="false"' + (pot ? '' : ' disabled title="Weigh the cooked dish first: edit the meal and enter the pot weight"') + '>By grams from the pot</button></div>' + (pot ? '' : '<p class="muted">To log by grams, weigh the finished dish and enter the pot weight in the meal.</p>') +
+    '<label class="field"><span id="lm-label">Servings eaten</span>' + numIn('lm-amt', 1) + '</label>' + slotSelect('lm-slot', slot) + '<p id="lm-prev" class="preview" aria-live="polite"></p><div class="row end"><button class="btn primary" data-go>Add to my day</button></div>');
+  let mode = 'serv'; const amt = $('#lm-amt', sh.el), prev = $('#lm-prev', sh.el);
+  const calc = () => { const a = num(amt.value); if (!a || a <= 0) { prev.textContent = 'Enter an amount.'; return null; } const n = portionOfMeal(meal, mode === 'grams' ? 'grams' : 'servings', a); if (!n) { prev.textContent = 'This meal has no cooked weight yet.'; return null; } prev.innerHTML = nutriLine(n) + (mode === 'serv' && gps ? ' <span class="muted">(about ' + fmt0(gps * a) + ' g)</span>' : mode === 'grams' ? ' <span class="muted">(' + fmt1(a / gps) + (r1(a / gps) === 1 ? ' serving' : ' servings') + ')</span>' : ''); return { a, n }; };
+  $$('.seg-btn', sh.el).forEach((b) => b.addEventListener('click', () => { if (b.disabled) return; mode = b.dataset.mode; $$('.seg-btn', sh.el).forEach((x) => x.setAttribute('aria-pressed', x === b)); $('#lm-label', sh.el).textContent = mode === 'grams' ? 'Grams eaten' : 'Servings eaten'; amt.value = mode === 'grams' ? Math.round(gps) : 1; calc(); }));
+  amt.addEventListener('input', calc); calc();
+  $('[data-go]', sh.el).addEventListener('click', () => {
+    const r = calc(); if (!r) return;
+    addEntry(curKey(), Object.assign({ kind: 'meal', ref: meal.id, name: meal.name, amt: r.a, unit: mode === 'grams' ? 'g' : 'serv', meal: $('#lm-slot', sh.el).value }, r.n));
+    meal.uses = (meal.uses || 0) + 1; meal.lastUsed = Date.now(); save(); sh.close(); if (done) done();
+  });
+  amt.select();
+}
+
+/** Edit or delete a logged entry. */
+function openEntry(id) {
+  const key = curKey(); const rec = dayRec(key); const e = rec && rec.entries.find((x) => x.id === id); if (!e) return;
+  const unitLabel = e.unit === 'serv' ? 'Servings' : 'Grams';
+  const fields = e.kind === 'quick'
+    ? '<label class="field"><span>Name</span><input id="en-name" value="' + esc(e.name) + '" autocomplete="off"></label><div class="qrow"><label class="field"><span>Calories</span>' + numIn('en-k', e.k) + '</label><label class="field"><span>Protein g</span>' + numIn('en-p', e.p) + '</label><label class="field"><span>Carbs g</span>' + numIn('en-c', e.c) + '</label><label class="field"><span>Fat g</span>' + numIn('en-f', e.f) + '</label></div>'
+    : '<label class="field"><span>' + unitLabel + '</span>' + numIn('en-amt', e.amt) + '</label>';
+  const sh = openSheet(e.name, fields + '<div class="qrow">' + slotSelect('en-slot', e.meal) + '<label class="field"><span>Time</span><input id="en-time" type="time" value="' + timeLabel(e.t) + '"></label></div><p id="en-prev" class="preview" aria-live="polite">' + nutriLine(e) + '</p><div class="row end"><button class="btn danger" data-del>Delete</button>' + (key !== todayKey() ? '<button class="btn" data-copy>Copy to today</button>' : '') + '<button class="btn primary" data-save>Save</button></div>');
+  const amt = $('#en-amt', sh.el);
+  if (amt) amt.addEventListener('input', () => { const a = num(amt.value); if (a > 0 && e.amt > 0) { const r = a / e.amt; $('#en-prev', sh.el).innerHTML = nutriLine({ k: e.k * r, p: e.p * r, c: e.c * r, f: e.f * r, fi: e.fi * r }); } });
+  $('[data-save]', sh.el).addEventListener('click', () => {
+    const [hh, mm] = ($('#en-time', sh.el).value || '00:00').split(':').map(Number); const patch = { meal: $('#en-slot', sh.el).value, t: (hh || 0) * 60 + (mm || 0) };
+    if (e.kind === 'quick') Object.assign(patch, { name: norm($('#en-name', sh.el).value) || e.name, k: num($('#en-k', sh.el).value) || 0, p: num($('#en-p', sh.el).value) || 0, c: num($('#en-c', sh.el).value) || 0, f: num($('#en-f', sh.el).value) || 0 });
+    else { const a = num(amt.value); if (a && a > 0) { patch.amt = a; if (e.qty) patch.qty = ''; } }
+    updateEntry(key, id, patch); sh.close(); render();
+  });
+  $('[data-del]', sh.el).addEventListener('click', () => { const copy = Object.assign({}, e); removeEntry(key, id); sh.close(); render(); toast('Deleted ' + e.name, () => { addEntry(key, Object.assign({}, copy, { id: undefined })); render(); }); });
+  const cp = $('[data-copy]', sh.el); if (cp) cp.addEventListener('click', () => { addEntry(todayKey(), Object.assign({}, e, { id: undefined, t: undefined, meal: $('#en-slot', sh.el).value })); sh.close(); toast('Copied to today'); render(); });
+}
+
+/* ---- app/meals.js ---- */
+// My meals: saved recipes and meals you can log again, the meal editor, and (owner only) importing a recipe pasted from a chat.
+
+
+
+
+function mealCard(m) {
+  const ps = perServing(m); const pot = netCooked(m); const c = per100Cooked(m);
+  return '<li class="card meal"><header class="slot-head"><h3>' + esc(m.name) + (m.fav ? ' <span title="Favourite">★</span>' : '') + '</h3><span class="chip">' + esc(m.type && m.type !== 'any' ? m.type : 'any meal') + '</span>' + (m.estimate && m.source === 'import' ? '<span class="chip warn">estimate</span>' : '') + '</header>' +
+    '<p><b>' + fmt0(ps.k) + ' kcal</b> per serving · P ' + fmt1(ps.p) + ' · C ' + fmt1(ps.c) + ' · F ' + fmt1(ps.f) + '</p>' +
+    '<p class="muted">' + fmt1(m.servings) + ' servings · ' + (m.items || []).length + ' ingredients · ' + (pot ? 'pot weighed: ' + fmt0(pot) + ' g (' + fmt0(gramsPerServing(m)) + ' g per serving, ' + fmt0(c.k) + ' kcal per 100 g)' : 'pot not weighed yet') + (m.uses ? ' · logged ' + m.uses + ' time' + (m.uses === 1 ? '' : 's') : '') + '</p>' +
+    '<div class="chips"><button class="btn primary small" data-action="meal-log" data-id="' + esc(m.id) + '">Log</button><button class="btn small" data-action="meal-edit" data-id="' + esc(m.id) + '">Edit</button><button class="btn small" data-action="meal-dup" data-id="' + esc(m.id) + '">Duplicate</button><button class="btn small" data-action="meal-fav" data-id="' + esc(m.id) + '" aria-pressed="' + !!m.fav + '">' + (m.fav ? 'Unfavourite' : 'Favourite') + '</button><button class="btn small danger" data-action="meal-del" data-id="' + esc(m.id) + '">Delete</button></div></li>';
+}
+function renderMeals() {
+  const q = norm(UI.mealQ).toLowerCase(); const list = mealList().filter((m) => !q || (m.name + ' ' + (m.tags || []).join(' ')).toLowerCase().includes(q));
+  return '<div class="meals"><div class="toolbar"><h1>My meals</h1><button class="btn primary" data-action="meal-new">New meal</button>' + (isAdmin() ? '<button class="btn" data-action="meal-import">Import from chat</button><span class="pill">Admin</span>' : '') + '</div>' +
+    '<label class="field"><span class="sr">Search meals</span><input type="search" id="meal-q" placeholder="Search my meals" value="' + esc(UI.mealQ) + '" autocomplete="off"></label>' +
+    (S.sample ? '<div class="notice">Example data: meals you save are not stored until you <button class="btn small primary" data-action="start-own">start your own</button>.</div>' : '') +
+    (list.length ? '<ul class="grid">' + list.map(mealCard).join('') + '</ul>' : '<div class="empty"><strong>' + (q ? 'No meals match.' : 'No saved meals yet.') + '</strong><p>Build a meal from ingredients with their weights. Weigh the cooked pot once and you can log any portion of it later.</p></div>') + '</div>';
+}
+
+/** The meal editor. `meal` may be a saved meal, a new one, or a parsed import. onSave(id) runs after saving. */
+function openMealEditor(meal, onSave, extra) {
+  const x = extra || {}; const isNew = !meal.id;
+  const items = (meal.items || []).map((it) => Object.assign({}, it, { n: Object.assign({}, it.n) }));
+  const sh = openSheet(isNew ? (x.fromImport ? 'Review the imported meal' : 'New meal') : 'Edit ' + meal.name, '<div class="meal-form"></div>', { wide: true });
+  const root = $('.meal-form', sh.el);
+  const nf = (id, v, extraAttr) => numIn(id, v === 0 ? 0 : v, extraAttr);
+  const paint = () => {
+    root.innerHTML = (x.warnings && x.warnings.length ? '<div class="notice warnbox"><b>Check these</b><ul>' + x.warnings.map((w) => '<li>' + esc(w) + '</li>').join('') + '</ul></div>' : '') +
+      '<div class="qrow"><label class="field grow"><span>Name</span><input id="me-name" value="' + esc(meal.name) + '" autocomplete="off"></label><label class="field"><span>Type</span><select id="me-type">' + ['any', 'breakfast', 'lunch', 'snack', 'dinner'].map((t) => '<option' + (meal.type === t ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></label><label class="field"><span>Servings</span>' + nf('me-serv', meal.servings) + '</label></div>' +
+      '<div class="qrow"><label class="field"><span>Pot with food (g)</span>' + nf('me-pot', meal.potG || '') + '</label><label class="field"><span>Empty pot (g), optional</span>' + nf('me-ves', meal.vesselG || '') + '</label><p class="muted grow">Weigh the finished dish to log any portion by grams. The weights above are raw ingredients; cooking changes the total, which is why the finished weight matters.</p></div>' +
+      '<h3>Ingredients (nutrition per 100 g)</h3><div class="ing-wrap" tabindex="0" role="region" aria-label="Ingredient table, scrolls sideways"><table class="ing"><thead><tr><th scope="col">Ingredient</th><th scope="col">g</th><th scope="col">kcal</th><th scope="col">P</th><th scope="col">C</th><th scope="col">F</th><th scope="col">Fibre</th><th scope="col"><span class="sr">Remove</span></th></tr></thead><tbody>' +
+      items.map((it, i) => { const sim = x.fromImport && !it.food ? findSimilarFood(it.name, it.state) : null; return '<tr><td><input class="ing-name" data-i="' + i + '" data-f="name" value="' + esc(it.name) + '" aria-label="Ingredient ' + (i + 1) + ' name" autocomplete="off">' + (sim ? '<button class="linkbtn" data-use="' + i + '" data-food="' + esc(sim.food.id) + '">Use my "' + esc(foodLabel(sim.food)) + '"</button>' : '') + '</td>' +
+        ['g', 'k', 'p', 'c', 'f', 'fi'].map((f) => '<td><input class="ing-num" data-i="' + i + '" data-f="' + f + '" type="text" inputmode="decimal" value="' + esc(f === 'g' ? it.g : it.n[f]) + '" aria-label="' + esc(it.name + ' ' + ({ g: 'grams', k: 'kcal per 100 g', p: 'protein', c: 'carbs', f: 'fat', fi: 'fibre' })[f]) + '"></td>').join('') + '<td><button class="btn small" data-rm="' + i + '" aria-label="Remove ' + esc(it.name) + '">Remove</button></td></tr>'; }).join('') + '</tbody></table></div>' +
+      '<div class="pk-host"></div><div class="row"><button class="btn small" data-blank>Add a blank row</button></div><p id="me-tot" class="preview" aria-live="polite"></p>' +
+      '<label class="field"><span>Steps (one per line)</span><textarea id="me-steps" rows="3">' + esc((meal.steps || []).join('\n')) + '</textarea></label><label class="field"><span>Notes</span><input id="me-notes" value="' + esc(meal.notes || '') + '" autocomplete="off"></label><label class="field"><span>Tags (comma separated)</span><input id="me-tags" value="' + esc((meal.tags || []).join(', ')) + '" autocomplete="off"></label>' +
+      '<label class="check"><input type="checkbox" id="me-est"' + (meal.estimate ? ' checked' : '') + '> Values are estimates</label>' + (isNew ? '<label class="check"><input type="checkbox" id="me-foods"' + (x.fromImport ? ' checked' : '') + '> Also add new ingredients to My foods (marked "check me")</label>' : '') +
+      '<div class="row end"><button class="btn" data-cancel>Cancel</button><button class="btn primary" data-save>Save meal</button></div>';
+    foodPicker($('.pk-host', root), (f) => { items.push({ name: foodLabel(f), g: 100, state: f.state || 'raw', food: f.id, n: { k: f.k, p: f.p, c: f.c, f: f.f, fi: f.fi || 0 } }); sync(); paint(); const last = $$('.ing-num[data-f="g"]', root).pop(); if (last) { last.focus(); last.select(); } }, { placeholder: 'Add an ingredient from my foods' });
+    totals();
+  };
+  const sync = () => { meal.name = $('#me-name', root) ? $('#me-name', root).value : meal.name; if ($('#me-type', root)) { meal.type = $('#me-type', root).value; meal.servings = num($('#me-serv', root).value) || 1; meal.potG = num($('#me-pot', root).value) || null; meal.vesselG = num($('#me-ves', root).value) || 0; meal.steps = $('#me-steps', root).value.split('\n').map(norm).filter(Boolean); meal.notes = $('#me-notes', root).value; meal.tags = $('#me-tags', root).value.split(',').map(norm).filter(Boolean); meal.estimate = $('#me-est', root).checked; } };
+  const totals = () => { const m = { items: items.map((it) => ({ g: num(it.g) || 0, n: it.n })), servings: num($('#me-serv', root).value) || 1, potG: num($('#me-pot', root).value) || null, vesselG: num($('#me-ves', root).value) || 0 }; const t = mealTotals(m); const ps = perServing(m); const c = per100Cooked(m); $('#me-tot', root).innerHTML = '<b>' + fmt0(t.k) + ' kcal</b> in total · <b>' + fmt0(ps.k) + ' kcal</b> per serving · ' + macroLine(ps) + (c ? ' · ' + fmt0(c.k) + ' kcal per 100 g cooked' : ''); };
+  root.addEventListener('input', (e) => { const el = e.target; if (el.dataset && el.dataset.i !== undefined) { const it = items[el.dataset.i]; if (el.dataset.f === 'name') it.name = el.value; else if (el.dataset.f === 'g') it.g = el.value; else it.n[el.dataset.f] = el.value; } if (el.id && el.id.indexOf('me-') === 0 || (el.dataset && el.dataset.i !== undefined)) totals(); });
+  root.addEventListener('click', (e) => {
+    const rm = e.target.closest('[data-rm]'); if (rm) { sync(); items.splice(+rm.dataset.rm, 1); paint(); return; }
+    const use = e.target.closest('[data-use]'); if (use) { const f = getFood(use.dataset.food); const it = items[+use.dataset.use]; if (f && it) { it.n = { k: f.k, p: f.p, c: f.c, f: f.f, fi: f.fi || 0 }; it.food = f.id; sync(); paint(); } return; }
+    if (e.target.closest('[data-blank]')) { sync(); items.push({ name: '', g: '', state: 'raw', n: { k: '', p: '', c: '', f: '', fi: '' } }); paint(); const l = $$('.ing-name', root).pop(); if (l) l.focus(); return; }
+    if (e.target.closest('[data-cancel]')) { sh.close(); return; }
+    if (e.target.closest('[data-save]')) {
+      sync();
+      const rows = items.map((it) => ({ name: norm(it.name), g: num(it.g) || 0, state: it.state, food: it.food, n: { k: num(it.n.k) || 0, p: num(it.n.p) || 0, c: num(it.n.c) || 0, f: num(it.n.f) || 0, fi: num(it.n.fi) || 0 } })).filter((it) => it.name && it.g > 0);
+      if (!norm(meal.name)) { toast('Give the meal a name.'); $('#me-name', root).focus(); return; }
+      if (!rows.length) { toast('Add at least one ingredient with a weight.'); return; }
+      if (S.sample) startOwn();
+      if ($('#me-foods', root) && $('#me-foods', root).checked) rows.forEach((it) => { if (!it.food && !findSimilarFood(it.name, it.state)) { it.food = saveFood({ id: null, name: it.name, state: it.state, k: it.n.k, p: it.n.p, c: it.n.c, f: it.n.f, fi: it.n.fi, units: [], source: 'import', verified: false }); } });
+      const id = saveMeal(Object.assign({}, meal, { items: rows, source: meal.source || 'made' }));
+      sh.close(); if (onSave) onSave(id);
+    }
+  });
+  paint();
+}
+
+function openImport() {
+  const sh = openSheet('Import meals from chat', '<p class="muted">Paste the whole reply from your chat session. The app finds each "=== MEAL v1 ===" block, reads it, and shows what it understood before anything is saved.</p><label class="field"><span>Pasted text</span><textarea id="imp-text" rows="9" placeholder="=== MEAL v1 ===&#10;name: ...&#10;..."></textarea></label><div class="row"><button class="btn primary" data-read>Read it</button><button class="btn" data-copyprompt>Copy the prompt for my session</button><span class="muted" id="imp-msg" aria-live="polite"></span></div><div id="imp-out"></div>', { wide: true });
+  const out = $('#imp-out', sh.el); let parsed = [];
+  $('[data-copyprompt]', sh.el).addEventListener('click', () => { copyText(SESSION_PROMPT).then((ok) => { $('#imp-msg', sh.el).textContent = ok ? 'Prompt copied. Paste it into your session.' : 'Copy failed. Select the text in the box below instead.'; if (!ok) out.innerHTML = '<label class="field"><span>The prompt</span><textarea rows="12" readonly>' + esc(SESSION_PROMPT) + '</textarea></label>'; }); });
+  $('[data-read]', sh.el).addEventListener('click', () => {
+    const r = parseMealText($('#imp-text', sh.el).value); parsed = r.meals;
+    if (!r.meals.length) { out.innerHTML = '<div class="notice warnbox">' + r.problems.map(esc).join(' ') + '</div>'; return; }
+    out.innerHTML = r.meals.map((p, i) => { const t = mealTotals(p.meal), ps = perServing(p.meal); return '<section class="card"><h3>' + esc(p.meal.name) + '</h3><p><b>' + fmt0(ps.k) + ' kcal</b> per serving · ' + macroLine(ps) + ' · ' + fmt1(p.meal.servings) + ' servings · ' + fmt0(t.k) + ' kcal in total</p><p class="muted">' + p.meal.items.map((it) => esc(it.name) + ' ' + fmt0(it.g) + ' g').join(', ') + '</p>' + (p.warnings.length ? '<div class="notice warnbox"><ul>' + p.warnings.map((w) => '<li>' + esc(w) + '</li>').join('') + '</ul></div>' : '<p class="muted">No problems found.</p>') + '<div class="chips"><button class="btn primary small" data-review="' + i + '">Review and save</button><button class="btn small" data-quick="' + i + '">Save as it is</button></div></section>'; }).join('');
+  });
+  out.addEventListener('click', (e) => {
+    const rv = e.target.closest('[data-review]'), qs = e.target.closest('[data-quick]'); const i = rv ? +rv.dataset.review : qs ? +qs.dataset.quick : -1; if (i < 0) return;
+    const p = parsed[i];
+    if (rv) openMealEditor(Object.assign({}, p.meal), (id) => { toast('Saved ' + S.meals[id].name); sh.close(); render(); }, { fromImport: true, warnings: p.warnings });
+    else { if (S.sample) startOwn(); p.meal.items.forEach((it) => { if (!findSimilarFood(it.name, it.state)) saveFood({ id: null, name: it.name, state: it.state, k: it.n.k, p: it.n.p, c: it.n.c, f: it.n.f, fi: it.n.fi, units: [], source: 'import', verified: false }); }); const id = saveMeal(Object.assign({}, p.meal)); toast('Saved ' + S.meals[id].name); qs.disabled = true; qs.textContent = 'Saved'; render(); }
+  });
+}
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).then(() => true, () => legacyCopy(text));
+  return Promise.resolve(legacyCopy(text));
+}
+function legacyCopy(text) { try { const t = document.createElement('textarea'); t.value = text; t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select(); const ok = document.execCommand('copy'); t.remove(); return ok; } catch (e) { return false; } }
+
+/* ---- app/foods.js ---- */
+// Foods: your list (starter foods plus your own), the food editor with a pack-label converter, and CSV import and export.
+
+
+
+function foodRow(f) {
+  const tags = (f.source === 'starter' && !f.verified ? '<span class="chip warn">approx</span>' : '') + (f.verified ? '<span class="chip ok">verified</span>' : '') + (f.source === 'import' && !f.verified ? '<span class="chip warn">check me</span>' : '') + (f.fav ? '<span class="chip">★</span>' : '') + (isOverride(f.id) ? '<span class="chip">edited</span>' : '') + (f.source !== 'starter' && f.source !== 'import' ? '<span class="chip">mine</span>' : '');
+  return '<li><button class="food-row" data-action="food-edit" data-id="' + esc(f.id) + '"><span class="pk-name">' + esc(foodLabel(f)) + '</span><span class="pk-sub">' + fmt0(f.k) + ' kcal · P ' + fmt1(f.p) + ' · C ' + fmt1(f.c) + ' · F ' + fmt1(f.f) + ' · Fibre ' + fmt1(f.fi || 0) + '</span><span class="tags">' + tags + '</span></button></li>';
+}
+function renderFoods() {
+  const q = norm(UI.foodQ).toLowerCase(); const flt = UI.foodFilter;
+  let list = foodList().filter((f) => (flt === 'all') || (flt === 'mine' && f.source !== 'starter') || (flt === 'starter' && f.source === 'starter') || (flt === 'check' && !f.verified));
+  if (q) list = list.filter((f) => foodLabel(f).toLowerCase().includes(q));
+  const shown = list.slice(0, 150);
+  return '<div class="foods"><div class="toolbar"><h1>Foods</h1><button class="btn primary" data-action="food-new">Add a food</button><button class="btn" data-action="csv-open">Import or export CSV</button></div>' +
+    '<p class="muted">Values are per 100 g. The starter foods are approximate: tick "verified" once you have checked a food against a pack label or a source you trust.</p>' +
+    '<div class="toolbar"><div class="seg" role="group" aria-label="Show">' + [['all', 'All'], ['mine', 'Mine'], ['starter', 'Starter'], ['check', 'Not verified']].map(([v, l]) => '<button class="seg-btn" data-action="food-filter" data-v="' + v + '" aria-pressed="' + (flt === v) + '">' + l + '</button>').join('') + '</div><label class="field grow"><span class="sr">Search foods</span><input type="search" id="food-q" placeholder="Search foods" value="' + esc(UI.foodQ) + '" autocomplete="off"></label></div>' +
+    '<ul class="food-list">' + (shown.length ? shown.map(foodRow).join('') : '<li class="muted">No foods match.</li>') + '</ul>' + (list.length > shown.length ? '<p class="muted">Showing the first ' + shown.length + ' of ' + list.length + '. Search to narrow it down.</p>' : '') + '</div>';
+}
+
+function parseUnits(text) { return String(text || '').split(/[;,]/).map((u) => { const [a, b] = u.split('='); const g = num(b); return norm(a) && g && g > 0 ? { name: norm(a).toLowerCase(), g } : null; }).filter(Boolean); }
+
+function openFoodEditor(food, onSaved) {
+  const isNew = !food; const f = food ? Object.assign({}, food) : { id: null, name: '', state: '', k: '', p: '', c: '', f: '', fi: '', units: [], source: 'mine', verified: false };
+  const sh = openSheet(isNew ? 'Add a food' : 'Edit ' + foodLabel(f), '<label class="field"><span>Name</span><input id="fe-name" value="' + esc(f.name) + '" autocomplete="off"></label><div class="qrow"><label class="field"><span>State</span><select id="fe-state">' + [['', 'not applicable'], ['raw', 'raw'], ['cooked', 'cooked']].map(([v, l]) => '<option value="' + v + '"' + ((f.state || '') === v ? ' selected' : '') + '>' + l + '</option>').join('') + '</select></label></div>' +
+    '<h3>Per 100 g</h3><div class="qrow"><label class="field"><span>Calories</span>' + numIn('fe-k', f.k) + '</label><label class="field"><span>Protein g</span>' + numIn('fe-p', f.p) + '</label><label class="field"><span>Carbs g</span>' + numIn('fe-c', f.c) + '</label><label class="field"><span>Fat g</span>' + numIn('fe-f', f.f) + '</label><label class="field"><span>Fibre g</span>' + numIn('fe-fi', f.fi) + '</label></div><p id="fe-warn" class="warn" aria-live="polite"></p>' +
+    '<details><summary>Fill from a pack label</summary><p class="muted">Type the values printed per serving and the serving weight. The app converts them to per 100 g.</p><div class="qrow"><label class="field"><span>Serving weight g</span>' + numIn('lb-g', '') + '</label><label class="field"><span>Calories</span>' + numIn('lb-k', '') + '</label><label class="field"><span>Protein</span>' + numIn('lb-p', '') + '</label><label class="field"><span>Carbs</span>' + numIn('lb-c', '') + '</label><label class="field"><span>Fat</span>' + numIn('lb-f', '') + '</label><label class="field"><span>Fibre</span>' + numIn('lb-fi', '') + '</label></div><button class="btn small" data-convert>Convert to per 100 g</button></details>' +
+    '<label class="field"><span>Household units (name=grams, separated by semicolons)</span><input id="fe-units" value="' + esc(unitsText(f)) + '" placeholder="roti=40; katori=150" autocomplete="off"></label><label class="field"><span>For liquids: grams per ml (water is 1, milk about 1.03). Leave empty for solids.</span>' + numIn('fe-dens', f.density || '') + '</label>' +
+    '<label class="check"><input type="checkbox" id="fe-fav"' + (f.fav ? ' checked' : '') + '> Favourite</label><label class="check"><input type="checkbox" id="fe-ver"' + (f.verified ? ' checked' : '') + '> Verified (I checked these numbers)</label>' +
+    '<div class="row end">' + (!isNew ? '<button class="btn danger" data-del>' + (isStarterId(f.id) ? 'Hide' : 'Delete') + '</button>' : '') + (!isNew && isOverride(f.id) ? '<button class="btn" data-reset>Reset to starter value</button>' : '') + '<button class="btn primary" data-save>Save</button></div>', { wide: true });
+  const g = (id) => num($('#' + id, sh.el).value);
+  const warn = () => { const n = { k: g('fe-k'), p: g('fe-p'), c: g('fe-c'), f: g('fe-f') }; const el = $('#fe-warn', sh.el); if ([n.k, n.p, n.c, n.f].some((v) => v == null)) { el.textContent = ''; return; } el.textContent = consistent(n) ? '' : 'These calories do not match the macros (about ' + fmt0(impliedKcal(n)) + ' kcal). Check for a typo.'; };
+  $$('input', sh.el).forEach((i) => i.addEventListener('input', warn)); warn();
+  $('[data-convert]', sh.el).addEventListener('click', () => { const w = g('lb-g'); if (!w || w <= 0) { toast('Enter the serving weight.'); return; } const m = 100 / w; [['k', 'lb-k'], ['p', 'lb-p'], ['c', 'lb-c'], ['f', 'lb-f'], ['fi', 'lb-fi']].forEach(([a, b]) => { const v = g(b); $('#fe-' + a, sh.el).value = v == null ? (a === 'fi' ? 0 : '') : r1(v * m); }); warn(); });
+  $('[data-save]', sh.el).addEventListener('click', () => {
+    const name = norm($('#fe-name', sh.el).value); const n = { k: g('fe-k'), p: g('fe-p'), c: g('fe-c'), f: g('fe-f'), fi: g('fe-fi') || 0 };
+    if (!name) { toast('Give the food a name.'); return; } if ([n.k, n.p, n.c, n.f].some((v) => v == null || v < 0)) { toast('Calories, protein, carbs and fat must be numbers.'); return; }
+    if (S.sample) startOwn();
+    const dens = g('fe-dens');
+    const id = saveFood(Object.assign({}, f, n, { name, state: $('#fe-state', sh.el).value, units: parseUnits($('#fe-units', sh.el).value), density: dens && dens > 0 ? dens : undefined, fav: $('#fe-fav', sh.el).checked, verified: $('#fe-ver', sh.el).checked, source: f.source === 'starter' ? 'starter' : (f.source || 'mine') }));
+    sh.close(); if (onSaved) onSaved(id); else render();
+  });
+  const del = $('[data-del]', sh.el); if (del) del.addEventListener('click', () => askDialog((isStarterId(f.id) ? 'Hide ' : 'Delete ') + foodLabel(f) + '?', { text: 'Meals and diary entries that already use it are not changed.' + (isStarterId(f.id) ? ' You can bring hidden starter foods back in Settings.' : ''), ok: isStarterId(f.id) ? 'Hide' : 'Delete' }, () => { deleteFood(f.id); sh.close(); render(); }));
+  const rs = $('[data-reset]', sh.el); if (rs) rs.addEventListener('click', () => { resetStarter(f.id); sh.close(); render(); });
+  $('#fe-name', sh.el).focus();
+}
+
+function openCsv() {
+  const sh = openSheet('Import or export foods (CSV)', '<p class="muted">Keep your food list in a spreadsheet if you like. Columns: name, state, kcal, protein, carbs, fat, fibre, units, ml_density. Values are per 100 g.</p><div class="row"><button class="btn" data-template>Download the CSV template</button><button class="btn" data-export>Export my foods</button><button class="btn" data-export-all>Export all foods</button></div><h3>Import</h3><label class="field"><span>Choose a CSV file, or paste the text</span><input type="file" id="csv-file" accept=".csv,.txt,text/csv"></label><label class="field"><span class="sr">CSV text</span><textarea id="csv-text" rows="6" placeholder="name,state,kcal,protein,carbs,fat,fibre,units"></textarea></label><div class="row"><button class="btn primary" data-read>Check it</button></div><div id="csv-out"></div>', { wide: true });
+  const out = $('#csv-out', sh.el); let foods = [];
+  const dl = (name, text) => { const b = new Blob([text], { type: 'text/csv' }); const l = document.createElement('a'); l.href = URL.createObjectURL(b); l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); };
+  $('[data-template]', sh.el).addEventListener('click', () => dl('katori-foods-template.csv', csvTemplate()));
+  $('[data-export]', sh.el).addEventListener('click', () => dl('katori-my-foods.csv', foodsToCsv(foodList().filter((f) => f.source !== 'starter' || isOverride(f.id)))));
+  $('[data-export-all]', sh.el).addEventListener('click', () => dl('katori-all-foods.csv', foodsToCsv(foodList())));
+  $('#csv-file', sh.el).addEventListener('change', (e) => { const f = e.target.files[0]; if (f) f.text().then((t) => { $('#csv-text', sh.el).value = t; }); });
+  $('[data-read]', sh.el).addEventListener('click', () => {
+    const r = foodsFromCsv($('#csv-text', sh.el).value); foods = r.foods;
+    const dup = foods.filter((f) => foodList().some((x) => slug(x.name + ' ' + (x.state || '')) === slug(f.name + ' ' + (f.state || '')))).length;
+    out.innerHTML = '<p><b>' + foods.length + '</b> food' + (foods.length === 1 ? '' : 's') + ' ready: ' + (foods.length - dup) + ' new, ' + dup + ' will replace a food you already have.</p>' + (r.problems.length ? '<div class="notice warnbox"><ul>' + r.problems.slice(0, 12).map((p) => '<li>' + esc(p) + '</li>').join('') + '</ul>' + (r.problems.length > 12 ? '<p>and ' + (r.problems.length - 12) + ' more</p>' : '') + '</div>' : '') + (foods.length ? '<div class="row end"><button class="btn primary" data-apply>Import ' + foods.length + ' food' + (foods.length === 1 ? '' : 's') + '</button></div>' : '');
+  });
+  out.addEventListener('click', (e) => { if (!e.target.closest('[data-apply]')) return; if (S.sample) startOwn(); stashPrev(); const r = addImportedFoods(foods); sh.close(); toast('Imported: ' + r.added + ' new, ' + r.updated + ' updated'); render(); });
+}
+
+/* ---- app/progress.js ---- */
+// Progress: calories against the goal, averages, weight trend, water, weekday pattern and the foods that add the most.
+
+
+function barChart(days, goal) {
+  const W = 640, H = 190, pl = 34, pb = 22, pt = 8; const max = Math.max(goal * 1.25, ...days.map((d) => d.k), 1);
+  const bw = (W - pl) / days.length; const y = (v) => pt + (H - pt - pb) * (1 - v / max);
+  const bars = days.map((d, i) => d.logged ? '<rect x="' + (pl + i * bw + bw * 0.12).toFixed(1) + '" y="' + y(d.k).toFixed(1) + '" width="' + (bw * 0.76).toFixed(1) + '" height="' + (H - pb - y(d.k)).toFixed(1) + '" rx="2" class="cb"><title>' + esc(dateLabel(d.key) + ': ' + fmt0(d.k) + ' kcal') + '</title></rect>' : '<rect x="' + (pl + i * bw + bw * 0.12).toFixed(1) + '" y="' + (H - pb - 3) + '" width="' + (bw * 0.76).toFixed(1) + '" height="3" class="cb-none"><title>' + esc(dateLabel(d.key) + ': not logged') + '</title></rect>').join('');
+  const lab = days.map((d, i) => (days.length <= 14 || i % Math.ceil(days.length / 8) === 0) ? '<text x="' + (pl + i * bw + bw / 2).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle" class="ct">' + d.key.slice(8) + '</text>' : '').join('');
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="chart" role="img" aria-label="Calories per day for the last ' + days.length + ' days, with the goal of ' + fmt0(goal) + '. Days not logged are shown as a thin line."><line x1="' + pl + '" x2="' + W + '" y1="' + y(goal).toFixed(1) + '" y2="' + y(goal).toFixed(1) + '" class="cg"/><text x="2" y="' + (y(goal) + 4).toFixed(1) + '" class="ct">' + fmt0(goal) + '</text>' + bars + lab + '</svg>';
+}
+function weightChart(days, trend) {
+  const pts = days.map((d, i) => ({ i, w: d.weight, t: trend[i] })).filter((p) => p.w != null); if (pts.length < 2) return '<p class="muted">Enter your weight on a few days to see a trend. The line smooths daily ups and downs.</p>';
+  const W = 640, H = 170, pl = 40, pb = 20, pt = 8; const all = pts.flatMap((p) => [p.w, p.t]); const lo = Math.min(...all) - 0.3, hi = Math.max(...all) + 0.3; const x = (i) => pl + (W - pl - 6) * (days.length === 1 ? 0 : i / (days.length - 1)); const y = (v) => pt + (H - pt - pb) * (1 - (v - lo) / (hi - lo || 1));
+  const dots = pts.map((p) => '<circle cx="' + x(p.i).toFixed(1) + '" cy="' + y(p.w).toFixed(1) + '" r="3" class="wd"><title>' + esc(dateLabel(days[p.i].key) + ': ' + fmt1(p.w) + ' kg') + '</title></circle>').join('');
+  const line = pts.map((p, n) => (n ? 'L' : 'M') + x(p.i).toFixed(1) + ' ' + y(p.t).toFixed(1)).join(' ');
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="chart" role="img" aria-label="Weight from ' + fmt1(pts[0].w) + ' to ' + fmt1(pts[pts.length - 1].w) + ' kilograms. The line is the 7-day average."><text x="2" y="' + (pt + 8) + '" class="ct">' + fmt1(hi) + '</text><text x="2" y="' + (H - pb) + '" class="ct">' + fmt1(lo) + '</text>' + dots + '<path d="' + line + '" class="wl"/></svg>';
+}
+function renderProgress() {
+  const end = todayKey(); const n = UI.range; const days = series(S.log, end, n); const a = averages(days); const g = S.goals; const trend = weightTrend(days, 7);
+  const wk = weekdayPattern(days); const maxw = Math.max(...wk.map((v) => v || 0), 1); const top = topFoods(S.log, days.filter((d) => d.logged).map((d) => d.key), 6);
+  const ws = days.filter((d) => d.weight != null); const change = ws.length >= 2 ? ws[ws.length - 1].weight - ws[0].weight : null;
+  const stat = (label, v, sub) => '<div class="stat"><span>' + esc(label) + '</span><b>' + v + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
+  return '<div class="progress"><div class="toolbar"><h1>Progress</h1><div class="seg" role="group" aria-label="Range">' + [7, 30, 90].map((r) => '<button class="seg-btn" data-action="range" data-v="' + r + '" aria-pressed="' + (UI.range === r) + '">' + r + ' days</button>').join('') + '</div></div>' +
+    (S.sample ? '<div class="notice">Example data.</div>' : '') +
+    '<div class="stats">' + stat('Days logged', a.logged + ' of ' + a.of) + stat('Average calories', a.logged ? fmt0(a.k) : '–', 'goal ' + fmt0(g.k)) + stat('Average protein', a.logged ? fmt0(a.p) + ' g' : '–', 'goal ' + fmt0(g.p) + ' g') + stat('Average water', a.water ? fmt0(a.water) + ' ml' : '–', 'goal ' + fmt0(g.water) + ' ml') + '</div>' +
+    '<section class="card"><h2>Calories per day</h2>' + barChart(days, g.k) + '<p class="muted">Days you did not log are not counted as zero. Averages use logged days only.</p><details><summary>Show the numbers</summary><table class="tbl"><thead><tr><th scope="col">Day</th><th scope="col">kcal</th><th scope="col">Protein g</th><th scope="col">Water ml</th></tr></thead><tbody>' + days.slice().reverse().map((d) => '<tr><td>' + esc(dateLabel(d.key)) + '</td><td>' + (d.logged ? fmt0(d.k) : 'not logged') + '</td><td>' + (d.logged ? fmt0(d.p) : '') + '</td><td>' + (d.water ? fmt0(d.water) : '') + '</td></tr>').join('') + '</tbody></table></details></section>' +
+    (S.hideWeight ? '' : '<section class="card"><h2>Weight</h2>' + weightChart(days, trend) + (change !== null ? '<p>' + fmt1(Math.abs(change)) + ' kg ' + (change < 0 ? 'down' : change > 0 ? 'up' : 'unchanged') + ' between the first and last weight in this range.</p>' : '') + '</section>') +
+    '<section class="card"><h2>By weekday</h2><div class="wk">' + wk.map((v, i) => '<div class="wk-c"><div class="wk-b" style="height:' + (v ? Math.max(6, Math.round(v / maxw * 90)) : 0) + 'px" title="' + (v ? fmt0(v) + ' kcal' : 'no data') + '"></div><span>' + dowName((i + 1) % 7) + '</span><small>' + (v ? fmt0(v) : '–') + '</small></div>').join('') + '</div><p class="muted">Average calories on logged days.</p></section>' +
+    '<section class="card"><h2>Foods that add the most calories</h2>' + (top.length ? '<ol class="top">' + top.map((t) => '<li><span>' + esc(t.name) + '</span><b>' + fmt0(t.k) + ' kcal</b><small>' + t.n + ' time' + (t.n === 1 ? '' : 's') + '</small></li>').join('') + '</ol>' : '<p class="muted">Log a few days to see this.</p>') + '</section></div>';
+}
+
+/* ---- app/settings.js ---- */
+// Settings: goals, water presets, day start, privacy options, backup and restore, clearing data.
+
+function renderSettings() {
+  const g = S.goals; const bytes = storageBytes(); const days = S.lastBackup ? Math.floor((Date.now() - S.lastBackup) / 864e5) : null;
+  const hidden = hiddenStarters().length;
+  return '<div class="settings"><h1>Settings</h1>' + (S.sample ? '<div class="notice">Example data. <button class="btn small primary" data-action="start-own">Start my own</button></div>' : '') +
+    '<section class="card"><h2>My goals</h2><p class="muted">Your own numbers. The app never suggests targets.</p><div class="qrow">' +
+    [['k', 'Calories'], ['p', 'Protein g'], ['c', 'Carbs g'], ['f', 'Fat g'], ['fi', 'Fibre g'], ['water', 'Water ml']].map(([k, l]) => '<label class="field"><span>' + l + '</span>' + numIn('goal-' + k, g[k]) + '</label>').join('') + '</div><button class="btn primary" data-action="save-goals">Save goals</button></section>' +
+    '<section class="card"><h2>Water buttons</h2><label class="field"><span>Sizes in ml, separated by commas</span><input id="water-presets" value="' + esc(S.waterPresets.join(', ')) + '" autocomplete="off"></label><button class="btn" data-action="save-water">Save</button></section>' +
+    '<section class="card"><h2>Day and display</h2><label class="field"><span>A new day starts at</span><select id="day-start">' + [0, 1, 2, 3, 4, 5, 6].map((h) => '<option value="' + h + '"' + (S.dayStart === h ? ' selected' : '') + '>' + (h === 0 ? 'midnight' : h + ':00') + '</option>').join('') + '</select></label><p class="muted">With 4:00, food eaten at 1 am still counts for the evening before.</p>' +
+    '<label class="check"><input type="checkbox" id="hide-weight"' + (S.hideWeight ? ' checked' : '') + '> Hide weight (no weight box or chart)</label><label class="field"><span>Theme</span><select id="theme-sel">' + [['', 'Follow my device'], ['light', 'Light'], ['dark', 'Dark']].map(([v, l]) => '<option value="' + v + '"' + (S.theme === v ? ' selected' : '') + '>' + l + '</option>').join('') + '</select></label></section>' +
+    '<section class="card"><h2>Backup</h2><p>' + (S.sample ? 'Nothing to back up yet.' : days === null ? 'You have not downloaded a backup yet.' : 'Last backup: ' + (days === 0 ? 'today' : days + ' day' + (days === 1 ? '' : 's') + ' ago') + '.') + '</p><p class="muted">Your data lives only in this browser on this device. Download a backup now and then, and before clearing your browser data.</p><div class="row"><button class="btn primary" data-action="backup">Download a backup</button><label class="btn file">Restore from a backup<input type="file" id="backup-in" accept=".json,application/json" hidden></label><button class="btn" data-action="export-log">Download my diary as CSV</button>' + (hasPrev() ? '<button class="btn" data-action="undo-restore">Undo the last restore or import</button>' : '') + '</div></section>' +
+    '<section class="card"><h2>Storage</h2><p>Saved data: ' + fmt1(bytes / 1024) + ' KB. ' + (bytes > 1.6e6 ? '<span class="warn">This is getting large. Download a backup, and think about clearing very old days.</span>' : 'Plenty of room.') + '</p>' + (hidden ? '<p>' + hidden + ' starter food' + (hidden === 1 ? ' is' : 's are') + ' hidden. <button class="btn small" data-action="unhide-starters">Bring them back</button></p>' : '') + (isAdmin() ? '<p class="muted">Signed in as owner: a copy of this data is also kept in your private sync while you are signed in.</p>' : '') + '</section>' +
+    '<section class="card"><h2>Clear my data</h2><p class="muted">Removes your diary, foods, meals and settings from this browser. Download a backup first.</p><button class="btn danger" data-action="erase">Clear my data</button></section>' +
+    '<p class="muted">Katori is an offline tracker. Its starter food values are approximate and it gives no medical advice.</p></div>';
+}
+
+/* ---- app/main.js ---- */
+// Router, events and boot.
+const TABS = [['today', 'Today'], ['meals', 'Meals'], ['foods', 'Foods'], ['progress', 'Progress'], ['settings', 'Settings']];
+let lastAdmin = false;
+
+function routeFromHash() { const h = (location.hash || '#/today').replace(/^#\/?/, '').split('?')[0]; return TABS.some((t) => t[0] === h) ? h : 'today'; }
+function applyTheme() { const t = S.theme; if (t) document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme'); }
+
+function renderNav() {
+  $('#nav').innerHTML = TABS.map(([id, l]) => '<a href="#/' + id + '" class="nav-a' + (UI.tab === id ? ' on' : '') + '"' + (UI.tab === id ? ' aria-current="page"' : '') + '>' + l + '</a>').join('');
+  $('#admin-pill').hidden = !isAdmin();
+}
+function render() {
+  const route = routeFromHash(); const prev = UI.tab; UI.tab = route; applyTheme(); renderNav();
+  const main = $('#main'); const y = window.scrollY;
+  main.innerHTML = route === 'today' ? renderToday() : route === 'meals' ? renderMeals() : route === 'foods' ? renderFoods() : route === 'progress' ? renderProgress() : renderSettings();
+  main.className = 'main route-' + route; document.title = 'Katori';
+  window.scrollTo(0, prev === route ? y : 0);
+}
+const go = (hash) => { if (location.hash === hash) render(); else location.hash = hash; };
+function download(name, text, type) { const b = new Blob([text], { type: type || 'application/json' }); const l = document.createElement('a'); l.href = URL.createObjectURL(b); l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(l.href), 1000); }
+const curDay = () => UI.day || todayKey();
+
+function onClick(e) {
+  const t = e.target.closest('[data-action]'); if (!t) return;
+  const a = t.dataset.action; const id = t.dataset.id;
+  switch (a) {
+    case 'start-own': startOwn(); toast('Your own diary is ready.'); render(); break;
+    case 'goto-settings': go('#/settings'); break;
+    case 'backup': download('katori-backup.json', exportJson()); markBackup(); toast('Backup downloaded'); render(); break;
+    case 'day-prev': UI.day = addDays(curDay(), -1); render(); break;
+    case 'day-next': { const n = addDays(curDay(), 1); UI.day = n >= todayKey() ? null : n; render(); break; }
+    case 'day-today': UI.day = null; render(); break;
+    case 'add': openAdd(t.dataset.slot); break;
+    case 'copy-slot': { const n = copyDay(addDays(curDay(), -1), curDay(), t.dataset.slot); toast('Copied ' + n + ' item' + (n === 1 ? '' : 's')); render(); break; }
+    case 'edit-entry': openEntry(id); break;
+    case 'water': addWater(curDay(), +t.dataset.ml); render(); break;
+    case 'water-other': askDialog('How many ml?', { value: '', ok: 'Add', type: 'text' }, (v) => { const n = num(v); if (n && n > 0 && n < 5000) { addWater(curDay(), n); render(); } }); break;
+    case 'water-undo': { const ml = undoWater(curDay()); render(); if (ml) toast('Removed ' + ml + ' ml', () => { addWater(curDay(), ml); render(); }); break; }
+    case 'toast-undo': if (UI.undo) { const f = UI.undo; UI.undo = null; f(); $('#toast').className = ''; } break;
+    case 'meal-new': openMealEditor({ name: '', type: 'any', servings: 1, items: [], steps: [], tags: [], source: 'made' }, () => { toast('Meal saved'); render(); }); break;
+    case 'meal-log': openLogMeal(S.meals[id], defaultSlot(new Date(), S.dayStart), () => { toast('Logged ' + S.meals[id].name); render(); }); break;
+    case 'meal-edit': openMealEditor(S.meals[id], () => { toast('Meal saved'); render(); }); break;
+    case 'meal-dup': { const m = S.meals[id]; if (m) { saveMeal(Object.assign({}, JSON.parse(JSON.stringify(m)), { id: null, name: m.name + ' (copy)', uses: 0, lastUsed: 0, fav: false })); render(); } break; }
+    case 'meal-fav': { const m = S.meals[id]; if (m) { m.fav = !m.fav; save(); render(); } break; }
+    case 'meal-del': { const m = S.meals[id]; if (m) askDialog('Delete ' + m.name + '?', { text: 'Diary entries that already used it are not changed.', ok: 'Delete' }, () => { deleteMeal(id); render(); }); break; }
+    case 'meal-import': if (isAdmin()) openImport(); break;
+    case 'food-new': openFoodEditor(null); break;
+    case 'food-edit': openFoodEditor(getFood(id)); break;
+    case 'food-filter': UI.foodFilter = t.dataset.v; render(); break;
+    case 'csv-open': openCsv(); break;
+    case 'range': UI.range = +t.dataset.v; render(); break;
+    case 'save-goals': { const g = {}; ['k', 'p', 'c', 'f', 'fi', 'water'].forEach((k) => { const v = num($('#goal-' + k).value); if (v !== null && v >= 0) g[k] = v; }); setGoals(g); toast('Goals saved'); render(); break; }
+    case 'save-water': { const list = $('#water-presets').value.split(/[,;\s]+/).map(num).filter((n) => n && n > 0 && n <= 3000); if (list.length) { setSettings({ waterPresets: list.slice(0, 6) }); toast('Water buttons saved'); } else toast('Enter at least one size in ml.'); render(); break; }
+    case 'export-log': { const c = logCsv(); download('katori-diary.csv', c.entries, 'text/csv'); download('katori-days.csv', c.days, 'text/csv'); break; }
+    case 'undo-restore': if (restorePrev()) { toast('Restored the earlier data'); render(); } break;
+    case 'unhide-starters': hiddenStarters().forEach((f) => resetStarter(f.id)); render(); break;
+    case 'erase': askDialog('Clear all my data?', { text: 'This removes your diary, foods, meals and settings from this browser and shows the example data again. Download a backup first if you may want them back.', ok: 'Clear my data' }, () => { resetAll(); UI.day = null; go('#/today'); render(); toast('Data cleared'); }); break;
+    default: break;
+  }
+}
+function onChange(e) {
+  const el = e.target;
+  if (el.id === 'day-in') { const v = el.value; if (v) { UI.day = v >= todayKey() ? null : v; render(); } return; }
+  if (el.id === 'weight-in') { const v = num(el.value); setWeight(curDay(), v && v > 20 && v < 400 ? v : null); return; }
+  if (el.id === 'day-start') { setSettings({ dayStart: +el.value }); render(); return; }
+  if (el.id === 'hide-weight') { setSettings({ hideWeight: el.checked }); render(); return; }
+  if (el.id === 'theme-sel') { setSettings({ theme: el.value }); render(); return; }
+  if (el.id === 'backup-in' && el.files && el.files[0]) { el.files[0].text().then((t) => { try { importJson(t); toast('Backup restored'); UI.day = null; go('#/today'); render(); } catch (x) { toast('That file is not a Katori backup.'); } }); el.value = ''; }
+}
+function onInput(e) {
+  const el = e.target;
+  if (el.id === 'note-in') { setNote(curDay(), el.value); return; }
+  if (el.id === 'meal-q') { UI.mealQ = el.value; const pos = el.selectionStart; render(); const n = $('#meal-q'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } return; }
+  if (el.id === 'food-q') { UI.foodQ = el.value; const pos = el.selectionStart; render(); const n = $('#food-q'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) { /* ignore */ } } }
+}
+
+function boot() {
+  load(new Date()); lastAdmin = isAdmin();
+  document.addEventListener('click', onClick); document.addEventListener('change', onChange); document.addEventListener('input', onInput);
+  window.addEventListener('hashchange', render); window.addEventListener('pagehide', flush);
+  window.addEventListener('appchrome:owner', () => { const now = isAdmin(); if (now !== lastAdmin) { lastAdmin = now; render(); } });
+  window.addEventListener('storage', (e) => { if (e.key === 'katori-v1' && !S.sample) { load(new Date()); render(); } });
+  render();
+  try { if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('./sw.js').catch(() => {}); } catch (e) { /* ignore */ }
+}
+boot();
+
+})();
+</script>
+</body>
+</html>
