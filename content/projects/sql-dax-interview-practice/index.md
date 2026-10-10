@@ -38,7 +38,7 @@ All content is plain JSON: questions with a model answer, common mistakes and tr
 
 ## Report
 
-Pick a topic, read its lesson, then practise: name the pattern, attempt the answer in a SQL, DAX, M or Python editor, get an offline review, compare with the model answer and rate yourself. Missed questions come back through spaced repetition, and the error log shows which kinds of mistake repeat. Covers SQL, DAX, Power Query M, pandas, PySpark, Delta Lake, Microsoft Fabric and data modelling.
+Pick a topic, read its lesson, then practise: name the pattern, attempt the answer in a SQL, DAX, M or Python editor, get an offline review, compare with the model answer and rate yourself. Missed questions come back through spaced repetition, and the error log shows which kinds of mistake repeat. Covers SQL, DAX, Power Query M, pandas, PySpark, Delta Lake, Microsoft Fabric and data modelling. A Functions tab lists functions and keywords for SQL, T-SQL, MySQL, DAX, Power Query M, PySpark and pandas, each with a definition, syntax and a worked example. After you reveal an answer, a side panel lists the functions that answer uses.
 
 ## Under the hood
 
