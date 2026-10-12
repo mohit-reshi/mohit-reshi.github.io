@@ -331,6 +331,9 @@ body.fnp-open .fnp-tab{display:none}
 .fn-hit:hover{background:color-mix(in srgb,var(--accent) 30%,transparent)}
 .fn-hit:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .fnp-item.flash{box-shadow:0 0 0 2px var(--accent)}
+
+.fnp-langs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.fnp-lang{padding:3px 10px;font-size:12.5px;border-radius:999px}
 </style></head>
   <body>
     <div id="root"></div>
@@ -394,7 +397,7 @@ in
       "patterns": [{ "pattern": "Rank within all", "triggers": "\\"rank by\\"", "structure": "RANKX(ALL(dim[col]), [measure])" }] }
   ]
 }`;function Rw({route:e}){let{content:t,reloadContent:n}=k(),r=decodeURIComponent(e.split(`/`).slice(2).join(`/`)),i=t.phases.flatMap(e=>e.topics).find(e=>e.key===r),[a,o]=(0,_.useState)(i?.part||t.phases[0].name),s=t.phases.find(e=>e.name===a)?.topics||[],[c,l]=(0,_.useState)(i?.name||``),[u,d]=(0,_.useState)(``),[f,p]=(0,_.useState)({language:`SQL`,title:``,source:``,tables:``,question:``,model_answer:``,mistakeTitle:``,mistakeDetail:``,trickTitle:``,trickDetail:``,hint:``,pattern:``,p1:``,p1t:``,p1s:``}),[m,h]=(0,_.useState)(``),[g,v]=(0,_.useState)(``),y=(e,t)=>p({...f,[e]:t}),b=async e=>{let t=await fetch(`/api/questions`,{method:`POST`,headers:{"content-type":`application/json`},body:JSON.stringify(e)}),r=await t.json();return t.ok?(await n(),v(`✓ Added ${r.added.join(`, `)}. A backup of the previous bank is in data/content/backups.`),!0):(v(`✗ `+r.error),!1)};return(0,O.jsxs)(`section`,{children:[(0,O.jsx)(`h1`,{children:`Add content`}),(0,O.jsxs)(`p`,{className:`muted`,children:[`New questions use the same schema as `,(0,O.jsx)(`code`,{children:`data/content/question_bank.json`}),`. They appear straight away — no code changes. Draw questions from the PDFs in the handoff folder first.`]}),g&&(0,O.jsx)(`p`,{className:g.startsWith(`✓`)?`ok`:`error`,children:g}),(0,O.jsxs)(`div`,{className:`card`,children:[(0,O.jsx)(`h3`,{children:`One question`}),(0,O.jsxs)(`div`,{className:`form`,children:[(0,O.jsxs)(`label`,{children:[`Phase`,(0,O.jsx)(`select`,{value:a,onChange:e=>{o(e.target.value),l(``)},children:t.phases.map(e=>(0,O.jsx)(`option`,{children:e.name},e.name))})]}),(0,O.jsxs)(`label`,{children:[`Topic`,(0,O.jsxs)(`select`,{value:c,onChange:e=>l(e.target.value),children:[(0,O.jsx)(`option`,{value:``,children:`— existing topic —`}),s.map(e=>(0,O.jsx)(`option`,{children:e.name},e.key))]})]}),(0,O.jsxs)(`label`,{children:[`…or new topic`,(0,O.jsx)(`input`,{value:u,onChange:e=>d(e.target.value),placeholder:`Topic 5 — RANKX`})]}),(0,O.jsxs)(`label`,{children:[`Language`,(0,O.jsxs)(`select`,{value:f.language,onChange:e=>y(`language`,e.target.value),children:[(0,O.jsx)(`option`,{children:`SQL`}),(0,O.jsx)(`option`,{children:`DAX`}),(0,O.jsx)(`option`,{children:`Concept`}),(0,O.jsx)(`option`,{children:`M`}),(0,O.jsx)(`option`,{children:`Python`}),(0,O.jsx)(`option`,{children:`PySpark`})]})]}),(0,O.jsxs)(`label`,{children:[`Title`,(0,O.jsx)(`input`,{value:f.title,onChange:e=>y(`title`,e.target.value)})]}),(0,O.jsxs)(`label`,{children:[`Source (company)`,(0,O.jsx)(`input`,{value:f.source,onChange:e=>y(`source`,e.target.value)})]}),(0,O.jsxs)(`label`,{className:`wide`,children:[`Dataset block (database, tables, columns)`,(0,O.jsx)(`input`,{value:f.tables,onChange:e=>y(`tables`,e.target.value)})]}),(0,O.jsxs)(`label`,{className:`wide`,children:[`Question`,(0,O.jsx)(`textarea`,{rows:3,value:f.question,onChange:e=>y(`question`,e.target.value)})]}),(0,O.jsxs)(`label`,{className:`wide`,children:[`Model answer`,(0,O.jsx)(`textarea`,{rows:5,className:`mono`,value:f.model_answer,onChange:e=>y(`model_answer`,e.target.value)})]}),(0,O.jsxs)(`label`,{children:[`Common mistake — title`,(0,O.jsx)(`input`,{value:f.mistakeTitle,onChange:e=>y(`mistakeTitle`,e.target.value)})]}),(0,O.jsxs)(`label`,{children:[`Common mistake — detail`,(0,O.jsx)(`input`,{value:f.mistakeDetail,onChange:e=>y(`mistakeDetail`,e.target.value)})]}),(0,O.jsxs)(`label`,{children:[`Trick — title`,(0,O.jsx)(`input`,{value:f.trickTitle,onChange:e=>y(`trickTitle`,e.target.value)})]}),(0,O.jsxs)(`label`,{children:[`Trick — detail`,(0,O.jsx)(`input`,{value:f.trickDetail,onChange:e=>y(`trickDetail`,e.target.value)})]}),(0,O.jsxs)(`label`,{className:`wide`,children:[`Hints (one per line, optional — otherwise generated)`,(0,O.jsx)(`textarea`,{rows:2,value:f.hint,onChange:e=>y(`hint`,e.target.value)})]}),(0,O.jsxs)(`label`,{children:[`Pattern name (optional)`,(0,O.jsx)(`input`,{value:f.pattern,onChange:e=>y(`pattern`,e.target.value)})]}),(0,O.jsxs)(`label`,{children:[`Add a pattern row — name`,(0,O.jsx)(`input`,{value:f.p1,onChange:e=>y(`p1`,e.target.value)})]}),(0,O.jsxs)(`label`,{children:[`…trigger phrases`,(0,O.jsx)(`input`,{value:f.p1t,onChange:e=>y(`p1t`,e.target.value)})]}),(0,O.jsxs)(`label`,{children:[`…core structure`,(0,O.jsx)(`input`,{value:f.p1s,onChange:e=>y(`p1s`,e.target.value)})]})]}),(0,O.jsx)(`button`,{onClick:async()=>{let e=u.trim()?u.trim():c,t={part:a,topic:e,language:f.language,title:f.title,source:f.source,tables:f.tables,question:f.question,model_answer:f.model_answer,common_mistakes:f.mistakeTitle?[{title:f.mistakeTitle,detail:f.mistakeDetail}]:[],tricks:f.trickTitle?[{title:f.trickTitle,detail:f.trickDetail}]:[],hints:f.hint?f.hint.split(`
-`).filter(Boolean):[],...f.pattern?{pattern:f.pattern}:{}},n=f.p1?[{part:a,topic:e,patterns:[{pattern:f.p1,triggers:f.p1t,structure:f.p1s}]}]:[];await b({questions:[t],patterns:n})&&p({...f,title:``,question:``,model_answer:``,mistakeTitle:``,mistakeDetail:``,trickTitle:``,trickDetail:``,hint:``})},children:`Add question`})]}),(0,O.jsxs)(`div`,{className:`card`,children:[(0,O.jsx)(`h3`,{children:`Import JSON`}),(0,O.jsxs)(`p`,{className:`muted small`,children:[`Paste `,(0,O.jsx)(`code`,{children:`{ "questions": [...], "patterns": [...], "interviews": [...] }`}),`. Required per question: part, topic, language (SQL|DAX), title, question, model_answer.`]}),(0,O.jsx)(`textarea`,{rows:10,className:`mono`,value:m,onChange:e=>h(e.target.value),placeholder:`Paste JSON…`}),(0,O.jsxs)(`div`,{className:`row`,children:[(0,O.jsx)(`button`,{onClick:async()=>{try{await b(JSON.parse(m))}catch(e){v(`✗ `+e.message)}},disabled:!m.trim(),children:`Import`}),(0,O.jsx)(`button`,{className:`ghost`,onClick:()=>h(Lw),children:`Insert a RANKX template`})]})]})]})}function zw(){let e=e=>e===`star`?`./export-star.docx`:`./export-guide.docx`;return(0,O.jsxs)(`section`,{children:[(0,O.jsx)(`h1`,{children:`Export`}),(0,O.jsx)(`p`,{className:`muted`,children:`Download the question bank and every lesson as Word documents.`}),(0,O.jsxs)(`div`,{className:`grid3`,children:[(0,O.jsxs)(`div`,{className:`card`,children:[(0,O.jsx)(`h3`,{children:`⭐ Star Document`}),(0,O.jsx)(`p`,{className:`muted`,children:`Clean Q&A per topic with model answers, common mistakes, tricks and the numbered master tricks list, plus the lessons.`}),(0,O.jsx)(`a`,{className:`btn`,href:e(`star`),download:`SQL_DAX_Master_QA_Document.docx`,children:`Download Star Document`})]}),(0,O.jsxs)(`div`,{className:`card`,children:[(0,O.jsx)(`h3`,{children:`Revision Guide`}),(0,O.jsx)(`p`,{className:`muted`,children:`Everything: common mistakes, corrections, patterns and interview scripts, in solve order, plus the lessons.`}),(0,O.jsx)(`a`,{className:`btn`,href:e(`guide`),download:`SQL_DAX_Revision_Guide.docx`,children:`Download Revision Guide`})]})]})]})}function Bw(){let{content:e,state:t,update:n,startSession:r}=k(),i=Object.entries(t.bookmarks||{}).filter(([t])=>e.byId[t]).sort((e,t)=>String(t[1]).localeCompare(String(e[1]))).map(([t])=>e.byId[t]),a=i.map(e=>e.id);return(0,O.jsxs)(`section`,{children:[(0,O.jsx)(`h1`,{children:`Saved for later`}),(0,O.jsx)(`p`,{className:`muted`,children:`Questions you marked with "Save for later". Select one to practise it; Next and Previous move through this list.`}),i.length===0&&(0,O.jsx)(`div`,{className:`card`,children:(0,O.jsx)(`p`,{className:`muted`,children:`Nothing saved yet. Open any question and choose "Save for later".`})}),i.length>0&&(0,O.jsx)(`p`,{children:(0,O.jsxs)(`button`,{onClick:()=>r(a,`Saved for later`),children:[`Practise all `,i.length]})}),(0,O.jsx)(`table`,{children:(0,O.jsx)(`tbody`,{children:i.map((e,t)=>(0,O.jsxs)(`tr`,{children:[(0,O.jsx)(`td`,{children:(0,O.jsx)(VC,{tone:zC(e.language),children:e.language})}),(0,O.jsx)(`td`,{children:(0,O.jsx)(`button`,{className:`link rowlink`,onClick:()=>r(a,`Saved for later`,t),children:e.title})}),(0,O.jsx)(`td`,{className:`muted small`,children:UC(e.topic)}),(0,O.jsx)(`td`,{children:(0,O.jsx)(`button`,{className:`ghost`,onClick:()=>n(t=>(delete t.bookmarks[e.id],t)),"aria-label":`Remove from saved: `+e.title,children:`Remove`})})]},e.id))})})]})}var Vw=[[`/`,`Dashboard`],[`/topics`,`Topics`],[`/practice`,`Practice`],[`/bookmarks`,`Saved`],[`/bank`,`Question bank`],[`/errors`,`Error log`],[`/interview`,`Interview scripts`],[`/tricks`,`Tricks`],[`/functions`,`Functions`],[`/add`,`Add content`],[`/export`,`Export`]].filter(([e])=>e!==`/add`);/*sdp:fnroute*/function SdpFnRoute({route:e}){return(0,O.jsx)(`section`,{children:(0,O.jsx)(`div`,{id:`fn-root`,"data-route":e})})}function Hw(){let[e,t]=(0,_.useState)(location.hash.slice(1)||`/`);(0,_.useEffect)(()=>{let e=()=>{t(location.hash.slice(1)||`/`),window.scrollTo(0,0)};return window.addEventListener(`hashchange`,e),()=>window.removeEventListener(`hashchange`,e)},[]);let n=`/`+e.split(`/`)[1],r=n===`/topics`?(0,O.jsx)(ww,{route:e}):n===`/practice`?(0,O.jsx)(vw,{}):n===`/interview`?(0,O.jsx)(kw,{}):n===`/tricks`?(0,O.jsx)(Mw,{}):n===`/bank`?(0,O.jsx)(Fw,{}):n===`/bookmarks`?(0,O.jsx)(Bw,{}):n===`/errors`?(0,O.jsx)(Iw,{}):n===`/add`?(0,O.jsx)(Rw,{route:e}):n===`/export`?(0,O.jsx)(zw,{}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):(0,O.jsx)(KC,{});return(0,O.jsxs)(O.Fragment,{children:[(0,O.jsxs)(`header`,{className:`top`,children:[(0,O.jsxs)(`a`,{className:`brand`,href:`#/`,children:[`SQL & DAX `,(0,O.jsx)(`span`,{children:`practice`})]}),(0,O.jsx)(`nav`,{"aria-label":`Main`,children:Vw.map(([e,t])=>(0,O.jsx)(`a`,{href:`#`+e,className:n===e?`on`:``,"aria-current":n===e?`page`:void 0,children:t},e))}),(0,O.jsx)(`span`,{className:`muted small`,title:`Answers are reviewed offline with built-in rules`,children:`Offline review`})]}),(0,O.jsx)(`main`,{children:r}),(0,O.jsx)(`footer`,{className:`muted small`,style:{textAlign:`center`,padding:`0 16px 32px`},children:`Your progress is saved in this browser only. If the preview does not keep it, open the app in its own tab.`})]})}(0,v.createRoot)(document.getElementById(`root`)).render((0,O.jsx)(Oe,{children:(0,O.jsx)(Hw,{})}));</script>
+`).filter(Boolean):[],...f.pattern?{pattern:f.pattern}:{}},n=f.p1?[{part:a,topic:e,patterns:[{pattern:f.p1,triggers:f.p1t,structure:f.p1s}]}]:[];await b({questions:[t],patterns:n})&&p({...f,title:``,question:``,model_answer:``,mistakeTitle:``,mistakeDetail:``,trickTitle:``,trickDetail:``,hint:``})},children:`Add question`})]}),(0,O.jsxs)(`div`,{className:`card`,children:[(0,O.jsx)(`h3`,{children:`Import JSON`}),(0,O.jsxs)(`p`,{className:`muted small`,children:[`Paste `,(0,O.jsx)(`code`,{children:`{ "questions": [...], "patterns": [...], "interviews": [...] }`}),`. Required per question: part, topic, language (SQL|DAX), title, question, model_answer.`]}),(0,O.jsx)(`textarea`,{rows:10,className:`mono`,value:m,onChange:e=>h(e.target.value),placeholder:`Paste JSON…`}),(0,O.jsxs)(`div`,{className:`row`,children:[(0,O.jsx)(`button`,{onClick:async()=>{try{await b(JSON.parse(m))}catch(e){v(`✗ `+e.message)}},disabled:!m.trim(),children:`Import`}),(0,O.jsx)(`button`,{className:`ghost`,onClick:()=>h(Lw),children:`Insert a RANKX template`})]})]})]})}function zw(){let e=e=>e===`star`?`./export-star.docx`:`./export-guide.docx`;return(0,O.jsxs)(`section`,{children:[(0,O.jsx)(`h1`,{children:`Export`}),(0,O.jsx)(`p`,{className:`muted`,children:`Download the question bank and every lesson as Word documents.`}),(0,O.jsxs)(`div`,{className:`grid3`,children:[(0,O.jsxs)(`div`,{className:`card`,children:[(0,O.jsx)(`h3`,{children:`⭐ Star Document`}),(0,O.jsx)(`p`,{className:`muted`,children:`Clean Q&A per topic with model answers, common mistakes, tricks and the numbered master tricks list, plus the lessons.`}),(0,O.jsx)(`a`,{className:`btn`,href:e(`star`),download:`SQL_DAX_Master_QA_Document.docx`,children:`Download Star Document`})]}),(0,O.jsxs)(`div`,{className:`card`,children:[(0,O.jsx)(`h3`,{children:`Revision Guide`}),(0,O.jsx)(`p`,{className:`muted`,children:`Everything: common mistakes, corrections, patterns and interview scripts, in solve order, plus the lessons.`}),(0,O.jsx)(`a`,{className:`btn`,href:e(`guide`),download:`SQL_DAX_Revision_Guide.docx`,children:`Download Revision Guide`})]})]})]})}function Bw(){let{content:e,state:t,update:n,startSession:r}=k(),i=Object.entries(t.bookmarks||{}).filter(([t])=>e.byId[t]).sort((e,t)=>String(t[1]).localeCompare(String(e[1]))).map(([t])=>e.byId[t]),a=i.map(e=>e.id);return(0,O.jsxs)(`section`,{children:[(0,O.jsx)(`h1`,{children:`Saved for later`}),(0,O.jsx)(`p`,{className:`muted`,children:`Questions you marked with "Save for later". Select one to practise it; Next and Previous move through this list.`}),i.length===0&&(0,O.jsx)(`div`,{className:`card`,children:(0,O.jsx)(`p`,{className:`muted`,children:`Nothing saved yet. Open any question and choose "Save for later".`})}),i.length>0&&(0,O.jsx)(`p`,{children:(0,O.jsxs)(`button`,{onClick:()=>r(a,`Saved for later`),children:[`Practise all `,i.length]})}),(0,O.jsx)(`table`,{children:(0,O.jsx)(`tbody`,{children:i.map((e,t)=>(0,O.jsxs)(`tr`,{children:[(0,O.jsx)(`td`,{children:(0,O.jsx)(VC,{tone:zC(e.language),children:e.language})}),(0,O.jsx)(`td`,{children:(0,O.jsx)(`button`,{className:`link rowlink`,onClick:()=>r(a,`Saved for later`,t),children:e.title})}),(0,O.jsx)(`td`,{className:`muted small`,children:UC(e.topic)}),(0,O.jsx)(`td`,{children:(0,O.jsx)(`button`,{className:`ghost`,onClick:()=>n(t=>(delete t.bookmarks[e.id],t)),"aria-label":`Remove from saved: `+e.title,children:`Remove`})})]},e.id))})})]})}var Vw=[[`/`,`Dashboard`],[`/topics`,`Topics`],[`/practice`,`Practice`],[`/bookmarks`,`Saved`],[`/bank`,`Question bank`],[`/errors`,`Error log`],[`/interview`,`Interview scripts`],[`/tricks`,`Tricks`],[`/functions`,`Functions`],[`/add`,`Add content`],[`/export`,`Export`]].filter(([e])=>e!==`/add`);/*sdp:fnroute*/function SdpFnRoute({route:e}){return(0,O.jsx)(`section`,{children:(0,O.jsx)(`div`,{id:`fn-root`,"data-route":e})})}function Hw(){let[e,t]=(0,_.useState)(location.hash.slice(1)||`/`);(0,_.useEffect)(()=>{let e=()=>{t(location.hash.slice(1)||`/`),window.scrollTo(0,0)};return window.addEventListener(`hashchange`,e),()=>window.removeEventListener(`hashchange`,e)},[]);let n=`/`+e.split(`/`)[1],r=n===`/topics`?(0,O.jsx)(ww,{route:e}):n===`/practice`?(0,O.jsx)(vw,{}):n===`/interview`?(0,O.jsx)(kw,{}):n===`/tricks`?(0,O.jsx)(Mw,{}):n===`/bank`?(0,O.jsx)(Fw,{}):n===`/bookmarks`?(0,O.jsx)(Bw,{}):n===`/errors`?(0,O.jsx)(Iw,{}):n===`/add`?(0,O.jsx)(Rw,{route:e}):n===`/export`?(0,O.jsx)(zw,{}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):n===`/functions`?(0,O.jsx)(SdpFnRoute,{route:e}):(0,O.jsx)(KC,{});return(0,O.jsxs)(O.Fragment,{children:[(0,O.jsxs)(`header`,{className:`top`,children:[(0,O.jsxs)(`a`,{className:`brand`,href:`#/`,children:[`SQL & DAX `,(0,O.jsx)(`span`,{children:`practice`})]}),(0,O.jsx)(`nav`,{"aria-label":`Main`,children:Vw.map(([e,t])=>(0,O.jsx)(`a`,{href:`#`+e,className:n===e?`on`:``,"aria-current":n===e?`page`:void 0,children:t},e))}),(0,O.jsx)(`span`,{className:`muted small`,title:`Answers are reviewed offline with built-in rules`,children:`Offline review`})]}),(0,O.jsx)(`main`,{children:r}),(0,O.jsx)(`footer`,{className:`muted small`,style:{textAlign:`center`,padding:`0 16px 32px`},children:`Your progress is saved in this browser only. If the preview does not keep it, open the app in its own tab.`})]})}(0,v.createRoot)(document.getElementById(`root`)).render((0,O.jsx)(Oe,{children:(0,O.jsx)(Hw,{})}));</script>
 <script>
 /*lm:begin learning-map layer*/
 (function () {
@@ -1068,9 +1071,11 @@ in
     panel.hidden = true; tab.hidden = true; panelKey = '';
     document.body.classList.remove('fnp-open', 'fnp-on');
   }
+  var PANEL = null;
   function renderPanel(key, title, intro, groups, total) {
     ensurePanel();
     var rebuild = key !== panelKey;
+    PANEL = { key: key, title: title, intro: intro, groups: groups, total: total };
     if (!rebuild && panel.childNodes.length) { panel.hidden = false; tab.hidden = false; return; }
     panelKey = key;
     panel.hidden = false; tab.hidden = false;
@@ -1079,19 +1084,68 @@ in
     if (rebuild) {
       if (wide.matches) setOpenQuiet(ST.ui.panel !== 'closed'); else setOpenQuiet(false);
     }
+    paintPanel();
+  }
+  /* the language the reader wants to see: the entry itself, or its same-name sibling in a chosen language */
+  var SQLFAM = { 'SQL': 1, 'T-SQL': 1, 'MySQL': 1 };
+  function famSiblings(it) { return SQLFAM[it.l] ? siblings(it).filter(function (o) { return SQLFAM[o.l]; }) : []; }
+  /* standard SQL entries also work in T-SQL and MySQL, so they stay visible unless a dialect version exists */
+  function langView(it, sel) {
+    if (!sel.length) return it;
+    if (sel.indexOf(it.l) >= 0) return it;
+    var sib = famSiblings(it).filter(function (o) { return sel.indexOf(o.l) >= 0; })[0];
+    if (sib) return sib;
+    if (it.l === 'SQL' && (sel.indexOf('T-SQL') >= 0 || sel.indexOf('MySQL') >= 0)) return it;
+    return null;
+  }
+  function paintPanel() {
+    if (!PANEL) return;
+    var title = PANEL.title, intro = PANEL.intro, groups = PANEL.groups;
+    var present = {}, counts = {};
+    groups.forEach(function (g) { g.items.forEach(function (it) { var ls = [it.l]; if (SQLFAM[it.l]) ls = ['SQL', 'T-SQL', 'MySQL']; ls.forEach(function (l) { var v = langView(it, [l]); if (v) { present[l] = 1; counts[l] = (counts[l] || 0) + 1; } }); }); });
+    var langs = LANGS.filter(function (l) { return present[l]; });
+    var sel = (ST.ui.langs || []).filter(function (l) { return present[l]; });
+    var fallback = (ST.ui.langs || []).length > 0 && !sel.length;
     panel.textContent = '';
     var head = el('div', { class: 'fnp-head' }, [
       el('h2', { text: title }),
       el('button', { type: 'button', class: 'ghost fnp-x', 'aria-label': 'Close the functions panel', text: 'Close', onclick: function () { setOpen(false); tab.focus(); } })
     ]);
     panel.appendChild(head);
-    panel.appendChild(el('p', { class: 'muted small fnp-intro', text: intro }));
-    var first = true;
+    if (langs.length > 1) {
+      var bar = el('div', { class: 'fnp-langs', role: 'group', 'aria-label': 'Show functions for these languages' });
+      var all = el('button', { type: 'button', class: 'fnp-lang' + (sel.length ? ' ghost' : ''), 'aria-pressed': sel.length ? 'false' : 'true', text: 'All' });
+      all.addEventListener('click', function () { ST.ui.langs = []; save(); paintPanel(); });
+      bar.appendChild(all);
+      langs.forEach(function (l) {
+        var on = sel.indexOf(l) >= 0;
+        var b = el('button', { type: 'button', class: 'fnp-lang' + (on ? '' : ' ghost'), 'data-lang': l, 'aria-pressed': on ? 'true' : 'false', text: lname(l) + (counts[l] ? ' ' + counts[l] : '') });
+        b.addEventListener('click', function () {
+          var cur = (ST.ui.langs || []).filter(function (x) { return present[x]; });
+          var i = cur.indexOf(l);
+          if (i >= 0) cur.splice(i, 1); else cur.push(l);
+          ST.ui.langs = cur; save(); paintPanel();
+          var nb = panel.querySelector('.fnp-lang[data-lang="' + l + '"]'); if (nb) nb.focus();
+        });
+        bar.appendChild(b);
+      });
+      panel.appendChild(bar);
+    }
+    var std = !fallback && sel.indexOf('SQL') < 0 && (sel.indexOf('T-SQL') >= 0 || sel.indexOf('MySQL') >= 0);
+    panel.appendChild(el('p', { class: 'muted small fnp-intro', text: fallback ? 'None of your chosen languages appear here, so everything is shown.' : intro + (std ? ' Standard SQL entries are included because they work there too.' : '') }));
+    var shownTotal = 0, seen = {};
     groups.forEach(function (g) {
-      if (!g.items.length) return;
-      var holder = g.collapsed ? el('details', { class: 'fnp-group' }, [el('summary', { text: g.title + ' (' + g.items.length + ')' })]) : el('section', { class: 'fnp-group' }, [el('h3', { text: g.title + ' (' + g.items.length + ')' })]);
+      var items = [];
+      g.items.forEach(function (it0) {
+        var it = fallback ? it0 : langView(it0, sel);
+        if (!it || seen[g.title + it.id]) return;
+        seen[g.title + it.id] = 1; items.push(it);
+      });
+      if (!items.length) return;
+      shownTotal += items.length;
+      var holder = g.collapsed ? el('details', { class: 'fnp-group' }, [el('summary', { text: g.title + ' (' + items.length + ')' })]) : el('section', { class: 'fnp-group' }, [el('h3', { text: g.title + ' (' + items.length + ')' })]);
       var list = el('ul', { class: 'fnp-list' });
-      g.items.forEach(function (it) {
+      items.forEach(function (it) {
         var d = el('details', { class: 'fnp-item', 'data-id': it.id });
         d.appendChild(el('summary', null, [
           el('span', { class: 'fnp-name', text: it.n }), badge(it),
@@ -1110,8 +1164,8 @@ in
       });
       holder.appendChild(list);
       panel.appendChild(holder);
-      first = false;
     });
+    if (!shownTotal) panel.appendChild(el('p', { class: 'muted small', text: 'No functions for the chosen languages here. Press All to see everything.' }));
     panel.appendChild(el('p', { class: 'small muted fnp-foot' }, [el('a', { href: '#/functions', target: '_blank', rel: 'noopener', text: 'Browse every function' })]));
     placePanel();
   }
@@ -1210,6 +1264,7 @@ in
   function openFn(id) {
     ensurePanel(); setOpen(true);
     var d = panel.querySelector('.fnp-item[data-id="' + id + '"]');
+    if (!d && (ST.ui.langs || []).length) { ST.ui.langs = []; save(); paintPanel(); d = panel.querySelector('.fnp-item[data-id="' + id + '"]'); }
     if (!d) return;
     var g = d.closest('details.fnp-group'); if (g) g.open = true;
     d.open = true;
