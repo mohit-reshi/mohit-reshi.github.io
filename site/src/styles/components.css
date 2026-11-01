@@ -361,3 +361,7 @@ html.has-cursor:has(dialog[open]) :is(input, textarea) { cursor: text; }
 
 /* Code comments in the highlighter theme are too faint on the dark code background (contrast); lift them. */
 pre.shiki span[style*="#6A737D" i] { color: #8b949e !important; }
+
+/* tall screens (a narrow navigation rail, for example) are shown short, not at full height; the larger view has the detail */
+.shot--tall button { width: fit-content; max-width: 100%; }
+.shot--tall img { width: auto; max-width: 100%; max-height: 26rem; }
