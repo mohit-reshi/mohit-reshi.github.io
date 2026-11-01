@@ -1,0 +1,19 @@
+---
+import { resumeUrl } from '../lib/resume';
+import { siteConfig } from '../config';
+const resume = resumeUrl();
+---
+<dialog class="connect" id="connect-dialog" aria-labelledby="connect-title">
+  <div class="connect__inner">
+    <div class="slideover__head">
+      <div><p class="eyebrow">Open to roles</p><h2 id="connect-title">Would you like to connect?</h2></div>
+      <button class="btn btn--ghost btn--icon" type="button" data-connect-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <p class="muted">I am open to Power BI and Microsoft Fabric roles. Pick whichever is easiest for you.</p>
+    <ul class="connect__list">
+      {siteConfig.links.email && <li><a class="btn btn--primary" href={`mailto:${siteConfig.links.email}`}>Email me</a><span class="muted">{siteConfig.links.email}</span></li>}
+      {siteConfig.links.linkedin && <li><a class="btn" href={siteConfig.links.linkedin} rel="me noopener" target="_blank">Connect on LinkedIn<span aria-hidden="true"> ↗</span></a><span class="muted">Opens in a new tab</span></li>}
+      {resume && <li><a class="btn" href={resume} download>Download résumé</a><span class="muted">PDF</span></li>}
+    </ul>
+  </div>
+</dialog>

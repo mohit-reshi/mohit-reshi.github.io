@@ -1,7 +1,7 @@
 import type { Cleanup, Init } from './util';
 import { initTheme } from './theme';
 import { initClock } from './clock';
-import { initInfo } from './dialogs';
+import { initInfo, initConnect } from './dialogs';
 import { initPalette } from './palette';
 import { initGrid, initPreviews } from './grid';
 import { initCursor } from './cursor';
@@ -19,7 +19,7 @@ import { initIndexStage } from './stage-index';
 import { initModelStage } from './stage-model';
 
 // Every feature is initialised on each (view-transition) page load and cleaned up before the next swap.
-const inits: Init[] = [initLayout, initSlideIn, initCasePanel, initIndexStage, initModelStage, initTheme, initClock, initInfo, initPalette, initIntro, initGrid, initPreviews, initCursor, initMotion, initHero, initLightbox, initBeforeAfter, initAppEmbed, initLiveLab];
+const inits: Init[] = [initLayout, initSlideIn, initCasePanel, initIndexStage, initModelStage, initTheme, initClock, initInfo, initConnect, initPalette, initIntro, initGrid, initPreviews, initCursor, initMotion, initHero, initLightbox, initBeforeAfter, initAppEmbed, initLiveLab];
 let cleanups: Cleanup[] = [];
 
 async function boot() {

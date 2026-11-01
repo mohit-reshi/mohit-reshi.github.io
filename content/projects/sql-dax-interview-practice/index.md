@@ -23,6 +23,7 @@ live_lab: { enabled: false, report_key: null }
 featured_measures: []
 model_doc: null
 appKind: static
+appGroup: technical
 stack: [React, TypeScript, Vite, CodeMirror]
 ai_built: false
 needs_api_key: false

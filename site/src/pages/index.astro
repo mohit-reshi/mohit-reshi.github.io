@@ -1,6 +1,5 @@
 ---
 import Base from '../layouts/Base.astro';
-import Marquee from '../components/Marquee.astro';
 import Explorer from '../components/Explorer.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import { siteConfig } from '../config';
@@ -39,7 +38,6 @@ const stats = [
       {stats.length > 0 && <ul class="hero__stats" aria-label="At a glance">{stats.map((s) => <li><b>{s.n}</b><span>{s.l}</span></li>)}</ul>}
     </div>
   </section>
-  <Marquee />
   <section class="section" aria-labelledby="featured-h">
     <div class="container">
       <div class="section__head">

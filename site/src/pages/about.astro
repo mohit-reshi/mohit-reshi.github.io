@@ -3,6 +3,7 @@ import { resumeUrl } from '../lib/resume';
 import Base from '../layouts/Base.astro';
 import { siteConfig } from '../config';
 import { personJsonLd } from '../lib/jsonld';
+import ConnectDialog from '../components/ConnectDialog.astro';
 ---
 <Base title="About" description={siteConfig.description} current="about" jsonLd={personJsonLd(Astro.site?.href ?? '')}>
   <div class="container">
@@ -29,4 +30,5 @@ import { personJsonLd } from '../lib/jsonld';
       {resumeUrl() && <p><a class="btn btn--primary" href={resumeUrl()} download>Download résumé</a></p>}
     </div>
   </div>
+  <ConnectDialog />
 </Base>

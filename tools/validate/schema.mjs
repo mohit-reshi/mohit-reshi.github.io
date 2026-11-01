@@ -47,6 +47,7 @@ export function projectSchema(z, tagKeys) {
     model_doc: z.string().regex(/^\/(content\/generated|site\/sample-data)\/[\w.-]+\.json$/, 'model_doc must be /content/generated/<slug>.model.json').nullable().default(null),
     // apps (kind: app)
     appKind: z.enum(APP_KINDS).optional(),
+    appGroup: z.enum(['technical', 'everyday']).default('everyday'),
     url: url.optional(),
     repo: url.optional(),
     stack: z.array(z.string()).default([]),

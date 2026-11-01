@@ -5,6 +5,11 @@ import { getProjects } from '../../lib/projects';
 import { emptyApps } from '../../lib/microcopy';
 
 const apps = (await getProjects()).filter((p) => p.data.kind === 'app');
+const groups = [
+  { key: 'technical', id: 'technical', title: 'Technical apps', text: 'Tools for data and analytics work: practice, reference and interview preparation.' },
+  { key: 'everyday', id: 'everyday', title: 'Everyday apps', text: 'Small tools for daily life. Not about data work.' },
+].map((g) => ({ ...g, items: apps.filter((p) => p.data.appGroup === g.key) })).filter((g) => g.items.length);
+let n = 0;
 ---
 <Base title="Apps" description="Small apps I built: what they do, how they work, and where to try them." current="apps">
   <div class="container">
@@ -13,8 +18,13 @@ const apps = (await getProjects()).filter((p) => p.data.kind === 'app');
       <h1>Small apps you can try in the browser.</h1>
       <p>Each one says what it does and how it works. They run in your browser and nothing here stores keys.</p>
     </header>
-    {apps.length
-      ? <div class="grid">{apps.map((p, i) => <div class="reveal"><ProjectCard project={p} eager={i < 3} /></div>)}</div>
+    {groups.length
+      ? groups.map((g) => (
+        <section class="app-group" aria-labelledby={`apps-${g.id}`}>
+          <h2 id={`apps-${g.id}`} class="app-group__title">{g.title}</h2>
+          <p class="muted">{g.text}</p>
+          <div class="grid">{g.items.map((p) => <div class="reveal"><ProjectCard project={p} eager={n++ < 3} /></div>)}</div>
+        </section>))
       : <div class="empty"><strong>{emptyApps.title}</strong><p>{emptyApps.text}</p></div>}
   </div>
 </Base>

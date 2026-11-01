@@ -12,7 +12,7 @@ export interface ProjectData {
   media: { cover: string; video?: string; poster?: string; before_after?: { before: string; after: string; caption: string } };
   links: { repo?: string; pbip?: string; live?: string; external?: string };
   live_lab: { enabled: boolean; report_key: string | null }; featured_measures: string[]; model_doc: string | null;
-  appKind?: 'static' | 'external' | 'repo-only'; url?: string; repo?: string; stack: string[]; ai_built: boolean; needs_api_key: boolean; howBuilt: string;
+  appKind?: 'static' | 'external' | 'repo-only'; appGroup: 'technical' | 'everyday'; url?: string; repo?: string; stack: string[]; ai_built: boolean; needs_api_key: boolean; howBuilt: string;
 }
 export interface Project { slug: string; data: ProjectData; body: string; href: string }
 

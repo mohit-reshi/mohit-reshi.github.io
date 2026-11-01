@@ -21,6 +21,7 @@ live_lab: { enabled: false, report_key: null }
 featured_measures: []
 model_doc: null
 appKind: external
+appGroup: technical
 url: https://example.invalid/sample-app
 stack: [Python, Streamlit, pandas]
 ai_built: true

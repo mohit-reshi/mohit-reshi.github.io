@@ -24,7 +24,7 @@ const nav = [
     </nav>
     <div class="site-header__tools">
       <span class="clock mono" data-clock data-tz={siteConfig.timeZone} data-label={siteConfig.location} aria-label={`Local time in ${siteConfig.location}`}>{siteConfig.location} · --:-- IST</span>
-      {siteConfig.status.show && <span class="status" data-status data-tone={siteConfig.status.tone}>{siteConfig.status.text}</span>}
+      {siteConfig.status.show && <a class="status" data-status data-connect-open data-tone={siteConfig.status.tone} href={withBase('about/?connect=1')} aria-haspopup="dialog" title="Connect with me">{siteConfig.status.text}</a>}
       <button class="btn btn--ghost" type="button" data-open-palette aria-label="Search the site (Control K)" aria-keyshortcuts="Control+K Meta+K">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <span class="kbd-hint"><kbd>Ctrl</kbd> <kbd>K</kbd></span>

@@ -31,8 +31,6 @@ export const siteConfig = {
    * After the Fabric trial ends the module falls back to recorded media by itself, so turning it off is optional.
    */
   liveLab: { enabled: LIVE_LAB_ENABLED && process.env.LIVE_LAB !== 'off', brokerUrl: (process.env.LIVE_BROKER_URL || 'https://portfolio-live-lab-broker.mohitreshi.workers.dev') as string },
-  /** Words for the marquee band. */
-  marquee: ['DAX', 'DirectLake', 'RLS', 'Effective identity', 'PySpark', 'Medallion', 'Paginated reports', 'Incremental refresh', 'Embedded analytics', 'Fabric', 'TMDL', 'PBIR'],
   /** Shown after the first deploy only if you add a photo to site/public/. */
   photo: '' as string,
 };

@@ -319,7 +319,6 @@ test.describe('motion and 3D', () => {
     await p.waitForTimeout(1500);
     await expect(p.locator('[data-hero3d] canvas')).toHaveCount(0);
     await expect(p.locator('.hero__fallback')).toBeVisible();
-    expect(await p.locator('.marquee__track').evaluate((e) => getComputedStyle(e).animationName)).toBe('none');
     await expect(p.locator('.reveal').first()).toHaveCSS('opacity', '1');
     await ctx.close();
   });

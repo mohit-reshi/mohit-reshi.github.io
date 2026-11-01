@@ -21,6 +21,7 @@ live_lab: { enabled: false, report_key: null }
 featured_measures: []
 model_doc: null
 appKind: static
+appGroup: technical
 stack: [HTML, SVG, JavaScript]
 ai_built: true
 needs_api_key: false

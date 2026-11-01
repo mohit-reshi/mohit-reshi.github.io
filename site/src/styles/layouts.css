@@ -4,7 +4,6 @@ html[data-layout='index'] [data-layout-view='classic'], html[data-layout='model'
 html[data-layout='index'] [data-layout-view='index'] { display: block; }
 html[data-layout='model'] [data-layout-view='model'] { display: block; }
 /* the classic hero's canvas must not render behind another layout */
-html[data-layout='index'] .marquee, html[data-layout='model'] .marquee { display: none; }
 
 /* ---- switcher strip: the first row of the sticky header, so it is reachable in every layout at any scroll position ---- */
 :root { --bar-h: 2.25rem; --row-h: 4rem; --header-h: calc(var(--row-h) + var(--bar-h)); }
