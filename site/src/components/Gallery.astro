@@ -33,7 +33,7 @@ const walk = items.some((it) => (it.story?.length ?? 0) > 0 || it.hidden_nav);
           {(it.story ?? []).map((para) => <p>{para}</p>)}
           {it.hidden_nav && <p class="walk__note"><strong>Hidden navigation.</strong> {it.hidden_nav.note}</p>}
           {((it as unknown as { extras?: Extra[] }).extras ?? []).map((e) => extraOf(e) && (
-            <figure class="shot">
+            <figure class="shot" style={`max-width:min(100%,${extraOf(e).w}px)`}>
               <button type="button" data-lightbox-index="0" data-full={extraOf(e).src} data-title={extraOf(e).title} data-caption={extraOf(e).caption} data-cursor="view" aria-label={`Open ${extraOf(e).title} larger`}>
                 <img src={extraOf(e).src} width={extraOf(e).w} height={extraOf(e).h} alt={extraOf(e).alt || extraOf(e).title} loading="lazy" decoding="async" />
               </button>
