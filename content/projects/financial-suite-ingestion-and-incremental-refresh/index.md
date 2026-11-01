@@ -223,8 +223,32 @@ The gold views sit over the warehouse tables.
 
 `PL_Daily_Financial_Suite` has five working activities in a straight chain. Each depends on the one before with the condition `Succeeded`. The two stored-procedure activities run one after the other, so gold sales finish before gold invoices start. Every activity has a 12 hour timeout and no retries. The pipeline has no parameters, and the item stores no schedule. [OWNER: confirm the schedule, which lives outside the item.]
 
+Here is the pipeline canvas. The five working steps run in a row. After the last one, a success line goes to one log step, and a failure line goes to a second log step and then to a Fail step.
+
+![Daily pipeline canvas](screen:5)
+
+The two stored-procedure steps run in the warehouse, sales first and invoices second.
+
+![Gold sales procedure step](screen:6)
+
+![Gold invoices procedure step](screen:7)
+
 The end of the pipeline is worth reading closely. One Script activity logs success when the model refresh succeeds. A second logs failure when the model refresh `Failed` or `Skipped`. A step that fails earlier in the chain makes every later activity skip, so a single handler on the last activity catches a failure anywhere. The handler writes a row to `Ctl_PipelineRunLog` with the run id, then a `Fail` activity ends the run with an error code.
 Without that last activity, handling the error would mark the pipeline as succeeded in Monitor. With it, the log has the row and the run still shows as failed.
+
+The last working step runs the model refresh notebook. A success line and a failure line leave it.
+
+![Model refresh step](screen:8)
+
+The success path writes a Succeeded row to the run log.
+
+![Success log step](screen:9)
+
+The failure path writes a Failed row, and the Fail step then ends the run with error code 500.
+
+![Failure log step](screen:10)
+
+![Fail step](screen:11)
 
 The financial workspace holds three pipelines, the notebooks, a warehouse and the report items.
 

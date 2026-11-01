@@ -26,5 +26,54 @@
     "title": "Warehouse views",
     "caption": "The gold views over the warehouse tables.",
     "alt": "Warehouse explorer, gold schema, Views: a list of views for the dimensions, facts and templates."
+  },
+  {
+    "file": "screen-05-financial-suite-ingestion-and-incremental-refresh.webp",
+    "group": "screens",
+    "title": "Daily pipeline canvas",
+    "caption": "The daily pipeline: five working steps, then a success log, or a skip-and-fail log followed by a Fail step.",
+    "alt": "Pipeline canvas: five working steps in a row (a notebook named Bronze, a notebook named silver, two stored procedures for sales and invoices, and a notebook named SemanticModel). From the last notebook, one line leads to a Log_success script and a failure path leads to a Log_Skip-fail script, which leads to a Fail activity. Green arrows join the steps. The profile picture and trial banner are covered."
+  },
+  {
+    "file": "screen-06-financial-suite-ingestion-and-incremental-refresh.webp",
+    "group": "screens",
+    "title": "Gold sales procedure step",
+    "caption": "Step 3 runs the incremental sales procedure in the warehouse.",
+    "alt": "Pipeline canvas with the gold sales stored procedure step selected and its Settings tab open. A warehouse connection and database are set, the procedure is [gold].[sp_IncrementalFactSales], and the parameters list is empty."
+  },
+  {
+    "file": "screen-07-financial-suite-ingestion-and-incremental-refresh.webp",
+    "group": "screens",
+    "title": "Gold invoices procedure step",
+    "caption": "Step 4 runs the incremental invoices procedure after sales.",
+    "alt": "Pipeline canvas with the gold invoices stored procedure step selected and its Settings tab open. A warehouse connection and database are set, the procedure is [gold].[sp_IncrementalFactInvoices], and the parameters list is empty."
+  },
+  {
+    "file": "screen-08-financial-suite-ingestion-and-incremental-refresh.webp",
+    "group": "screens",
+    "title": "Model refresh step",
+    "caption": "Step 5 runs the model refresh notebook.",
+    "alt": "Pipeline canvas with the SemanticModel notebook step selected and its Settings tab open. The connection is empty, the workspace field is blurred, and the notebook is NB_Model_Refresh. A success line and a failure line leave the step."
+  },
+  {
+    "file": "screen-09-financial-suite-ingestion-and-incremental-refresh.webp",
+    "group": "screens",
+    "title": "Success log step",
+    "caption": "The success path writes a Succeeded row to the run log.",
+    "alt": "Pipeline canvas with the Log_success script step selected and its Settings tab open. The script inserts a row into the gold pipeline run log table with the status Succeeded, an empty message and a timestamp. The run id is a dynamic value."
+  },
+  {
+    "file": "screen-10-financial-suite-ingestion-and-incremental-refresh.webp",
+    "group": "screens",
+    "title": "Failure log step",
+    "caption": "The failure path writes a Failed row to the run log.",
+    "alt": "Pipeline canvas with the Log_Skip-fail script step selected and its Settings tab open. The script is a query that inserts a row into the gold pipeline run log table with the status Failed, a message that a step failed or was skipped, and a timestamp. The run id is a dynamic value."
+  },
+  {
+    "file": "screen-11-financial-suite-ingestion-and-incremental-refresh.webp",
+    "group": "screens",
+    "title": "Fail step",
+    "caption": "The Fail step ends a failed run with error code 500, so the run still shows as failed.",
+    "alt": "Pipeline canvas with the Fail activity selected and its Settings tab open. The fail message field is cut off at the left and error code 500 is set."
   }
 ]
