@@ -2,17 +2,18 @@
   {
     "file": "01-manufacturing-sales-analytics.webp",
     "title": "Executive Summary",
-    "caption": "Headline revenue and profit tiles above a monthly revenue trend against last year, with the top products ranked below.",
+    "caption": "Headline revenue and profit tiles above a monthly revenue trend against last year, with the top products ranked beside a colour-coded summary panel.",
     "story": [
       "This is the page an executive sees first. I kept it to one question: how is revenue doing this year compared with last year?",
       "The tiles at the top give the headline numbers. Below them, the area chart puts this year's monthly revenue next to last year's dashed line, so a gap between the two is visible without reading a single number.",
-      "The ranked bars underneath show which products carry the revenue. The Year and Month dropdowns at the top right filter every visual on the page."
+      "The ranked bars underneath show which products carry the revenue. The Year and Month dropdowns at the top right filter every visual on the page.",
+      "The panel at the bottom right turns the numbers into plain sentences: a revenue alert, the top channel and a customer signal. Its colours come from thresholds in a single measure."
     ],
     "hidden_nav": {
-      "x": 0,
-      "y": 0.7,
-      "w": 3.5,
-      "h": 5.8,
+      "x": 0.54,
+      "y": 1.09,
+      "w": 3.32,
+      "h": 5.71,
       "label": "Click here for navigation",
       "note": "This report has a hidden navigation rail. The menu button at the top left opens it, and from there you jump to any other page. Every page except the drill-through page has the same button. Click it first when you open the report."
     },

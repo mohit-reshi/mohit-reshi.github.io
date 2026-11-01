@@ -12,7 +12,7 @@ export const highlightCode = (code: string, lang = 'dax') => {
 export interface Shot { src: string; title: string; caption: string; alt?: string; w: number; h: number }
 let shotList: Shot[] = [];
 const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-export const shotFigure = (s: Shot) => `<figure class="shot" style="max-width:min(100%,${s.w}px)"><button type="button" data-lightbox-index="0" data-full="${esc(s.src)}" data-title="${esc(s.title)}" data-caption="${esc(s.caption)}" data-cursor="view" aria-label="Open ${esc(s.title)} larger"><img src="${esc(s.src)}" width="${s.w}" height="${s.h}" alt="${esc(s.alt || s.title)}" loading="lazy" decoding="async"></button><figcaption><strong>${esc(s.title)}</strong><span>${esc(s.caption)}</span></figcaption></figure>`;
+export const shotFigure = (s: Shot) => `<figure class="shot"><button style="max-width:min(100%,${s.w}px)" type="button" data-lightbox-index="0" data-full="${esc(s.src)}" data-title="${esc(s.title)}" data-caption="${esc(s.caption)}" data-cursor="view" aria-label="Open ${esc(s.title)} larger"><img src="${esc(s.src)}" width="${s.w}" height="${s.h}" alt="${esc(s.alt || s.title)}" loading="lazy" decoding="async"></button><figcaption><strong>${esc(s.title)}</strong><span>${esc(s.caption)}</span></figcaption></figure>`;
 
 const marked = new Marked({
   gfm: true,
