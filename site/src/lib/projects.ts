@@ -52,7 +52,7 @@ export function prevNext(p: Project, all: Project[]) {
 
 // ---------------------------------------------------------------- media
 export interface HiddenNav { x: number; y: number; w: number; h: number; label: string; note: string }
-type Manifest = Record<string, { files: Record<string, { size: number; w?: number; h?: number }>; pages: Array<{ file: string; thumb: string | null; title: string; caption: string; alt?: string; group?: string; story?: string[]; hidden_nav?: HiddenNav | null; w: number; h: number; tw: number }> }>;
+type Manifest = Record<string, { files: Record<string, { size: number; w?: number; h?: number }>; pages: Array<{ file: string; thumb: string | null; title: string; caption: string; alt?: string; group?: string; extras?: Array<{ screen: number; note: string }>; story?: string[]; hidden_nav?: HiddenNav | null; w: number; h: number; tw: number }> }>;
 const manifest = mediaManifest as Manifest;
 export const mediaUrl = (slug: string, rel: string) => withBase(`projects/${slug}/${rel}`);
 
@@ -66,7 +66,7 @@ export function getMedia(p: Project) {
     cover: pick(p.data.media.cover),
     poster: pick(p.data.media.poster),
     video: has(p.data.media.video) ? mediaUrl(p.slug, p.data.media.video!) : null,
-    pages: m.pages.map((g) => ({ src: mediaUrl(p.slug, g.file), thumb: g.thumb ? mediaUrl(p.slug, g.thumb) : null, title: g.title, caption: g.caption, alt: g.alt ?? '', group: g.group ?? '', story: g.story ?? [], hidden_nav: g.hidden_nav ?? null, w: g.w, h: g.h, tw: g.tw })),
+    pages: m.pages.map((g) => ({ src: mediaUrl(p.slug, g.file), thumb: g.thumb ? mediaUrl(p.slug, g.thumb) : null, title: g.title, caption: g.caption, alt: g.alt ?? '', group: g.group ?? '', extras: g.extras ?? [], story: g.story ?? [], hidden_nav: g.hidden_nav ?? null, w: g.w, h: g.h, tw: g.tw })),
     beforeAfter: ba ? { before: pick(ba.before), after: pick(ba.after), caption: ba.caption } : null,
   };
 }

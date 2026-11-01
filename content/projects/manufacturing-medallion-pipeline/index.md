@@ -57,6 +57,10 @@ NB_Validate_Gold                gate 3: counts, silver-to-gold totals, business 
 The product dimension is built as 3 categories by 5 subcategories by 10 items. The date dimension carries a fiscal year that starts in July.
 With this data every combination in `gold_sales_summary` occurs once, so it has as many rows as the fact table, and the gold validator expects 50,000.
 
+In the Lakehouse the 18 tables sit side by side, seven bronze, seven silver and four gold. The SQL endpoint shows them grouped by layer.
+
+![SQL endpoint tables](screen:23)
+
 ## Report
 
 The semantic model reads the four gold tables in DirectLake, so the model holds no copy of the data. The mapping to the [Manufacturing Sales Analytics](/work/manufacturing-sales-analytics/) pages is direct. The sales summary feeds revenue, product and channel pages. The customer summary feeds the customer page. Rep performance feeds the rep page and its drillthrough. Budget vs actuals feeds the budget variance measures.
@@ -123,6 +127,18 @@ silver_sales = bronze_sales.select(
 silver_sales.write.mode("overwrite").saveAsTable("silver_fact_sales")
 ```
 
+Here is the silver notebook as it ran. The first cells cast each column to its type and trim text, the next add the derived columns, and the last build the sales fact and print its totals.
+
+![Silver notebook, cells 1 to 3](screen:5)
+
+![Silver notebook, cells 4 to 6](screen:6)
+
+![Silver notebook, cells 7 and 8](screen:7)
+
+The silver layer ends with a row count for each of its seven tables.
+
+![Silver row counts](screen:8)
+
 ### Gold: join, aggregate, rank
 
 `NB_Aggregate_Gold` reads all seven silver tables once, then builds four tables. The joins are `left` joins from the fact table, so a missing dimension key cannot silently remove a sale. An inner join would drop those rows with no error.
@@ -161,12 +177,25 @@ gold_rep = gold_rep.withColumn(
     "TargetVariance", round(col("GrossRevenue") - col("MonthlyTarget"), 2)
 )
 
+
 # rank reps inside each year-month
 window_month = Window.partitionBy("Year", "Month").orderBy(col("GrossRevenue").desc())
 gold_rep = gold_rep.withColumn("MonthlyRank", dense_rank().over(window_month)) \
     .withColumn("PercentileRank", round(percent_rank().over(window_month), 4))
 gold_rep.write.mode("overwrite").saveAsTable("gold_rep_performance")
 ```
+
+The gold notebook reads each silver table once and builds the four gold tables from it.
+
+![Gold notebook, load](screen:14)
+
+![Gold sales summary](screen:15)
+
+![Gold budget table](screen:16)
+
+![Gold rep performance](screen:17)
+
+![Gold row counts](screen:18)
 
 ### Three validation gates
 
@@ -200,9 +229,51 @@ print(f"{status} GrossRevenue: silver={silver_gross:,.2f}, gold={gold_gross:,.2f
 
 The totals check is the one to reuse. It catches a join that fans out or drops rows, which a row count alone can miss when the two errors cancel.
 
+These are the silver and gold gates as they ran. Each check prints its result, and the summary cell at the end is what lets the pipeline move on.
+
+**Silver gates**
+
+![Silver gate 1, row parity](screen:9)
+
+![Silver gate 2, column types](screen:10)
+
+![Silver gate 3, derived columns](screen:11)
+
+![Silver gate 4, business rules](screen:12)
+
+![Silver gate summary](screen:13)
+
+**Gold gates**
+
+![Gold gate 1, row counts](screen:19)
+
+![Gold gate 2, reconciliation](screen:20)
+
+![Gold gate 3, business rules](screen:21)
+
+![Gold gate summary](screen:22)
+
 ### Orchestration
 
 `PL_Generate_Manufacturing_Data` has six notebook activities. Each one depends on the previous one with the condition `Succeeded`, so a gate that fails stops the chain. Every activity has a 12 hour timeout, no retries and a 30 second retry interval, and the pipeline runs with concurrency 1 so two runs cannot overwrite each other's tables. The pipeline has no parameters. The item stores no schedule. [OWNER: confirm whether this ran on demand or on a schedule.]
+
+The workspace holds the six notebooks, the pipeline, the lakehouse, the semantic model and the report. Every item is synced with Fabric Git.
+
+![Workspace items](screen:1)
+
+The pipeline canvas shows the six notebooks in a straight chain. Each one runs only after the one before it succeeds.
+
+![Pipeline canvas](screen:2)
+
+The first two activities show the 12 hour timeout and no retries.
+
+![Generate step settings](screen:3)
+
+![Validate Bronze step settings](screen:4)
+
+The lakehouse is attached to the notebooks.
+
+![Lakehouse attached to a notebook](screen:24)
 
 ### What I would change
 

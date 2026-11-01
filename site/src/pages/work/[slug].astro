@@ -8,7 +8,7 @@ import Gallery from '../../components/Gallery.astro';
 import UnderTheHood from '../../components/UnderTheHood.astro';
 import { siteConfig } from '../../config';
 import { getProjects, getMedia, isApp, loadModelDoc, prevNext, related, tagsOf, type Project } from '../../lib/projects';
-import { splitChapters } from '../../lib/markdown';
+import { splitChapters, inlineShots, type Shot } from '../../lib/markdown';
 import { withBase, absoluteUrl } from '../../lib/url';
 
 export async function getStaticPaths() {
@@ -19,7 +19,9 @@ const { project: p } = Astro.props as { project: Project };
 const all = await getProjects();
 const media = getMedia(p);
 const doc = loadModelDoc(p);
-const { intro, chapters } = splitChapters(p.body);
+const shots: Shot[] = media.pages.filter((it) => it.group === 'screens').map((it) => ({ src: it.src, title: it.title, caption: it.caption, alt: it.alt, w: it.w, h: it.h }));
+const placed = [...new Set([...inlineShots(p.body), ...media.pages.flatMap((it) => (it.extras ?? []).map((e) => e.screen))])];
+const { intro, chapters } = splitChapters(p.body, shots);
 const { prev, next } = prevNext(p, all);
 const rel = related(p, all);
 const app = isApp(p);
@@ -74,8 +76,8 @@ if (app && d.ai_built) meta.push(['AI-built', 'Yes']);
             {c.name === 'Report' && (
               <>
                 {media.beforeAfter && <BeforeAfter before={media.beforeAfter.before} after={media.beforeAfter.after} caption={media.beforeAfter.caption} title={d.title} />}
-                {!app && <Gallery items={media.pages} title={d.title} slug={p.slug} />}
-                {app && media.pages.length > 0 && <Gallery items={media.pages} title={d.title} slug={p.slug} />}
+                {!app && <Gallery items={media.pages} title={d.title} slug={p.slug} placed={placed} />}
+                {app && media.pages.length > 0 && <Gallery items={media.pages} title={d.title} slug={p.slug} placed={placed} />}
                 {app && (d.appKind === 'static' || d.appKind === 'external') && appUrl && (
                   <div data-app-embed data-url={appUrl} data-kind={d.appKind}>
                     <div class="app-frame"><div style="padding:var(--s-5);display:grid;gap:var(--s-3)">

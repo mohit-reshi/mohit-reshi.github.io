@@ -32,6 +32,10 @@ The semantic model reads them in **DirectLake**, so there is no scheduled import
 Only the sales summary connects to the rep, customer and date tables; the other gold tables stay unrelated and are queried through measures.
 The load behind it, with its seeded data, validation gates and pipeline, is written up in [Manufacturing Medallion Pipeline](/work/manufacturing-medallion-pipeline/).
 
+The model view shows the gold tables, a date table, a measures table and the metric selector table.
+
+![Model view](screen:1)
+
 ## Report
 
 Seven pages with a drillthrough page for rep detail and 20 bookmarks that drive in-report navigation. Page titles are measures (seven dynamic titles), so a headline always matches the current selection.

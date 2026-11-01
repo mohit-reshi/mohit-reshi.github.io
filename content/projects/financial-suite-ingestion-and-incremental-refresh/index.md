@@ -207,12 +207,28 @@ WHEN NOT MATCHED BY TARGET THEN INSERT /* ...all columns */;
 The filter uses `>=`, so the watermark day is read again on every run. That costs a little work and removes the risk of missing rows loaded later on the same day, and MERGE makes the repeat safe. The silver-to-gold step also runs a delete for rows that are no longer in silver, so a row that moved to quarantine disappears from the fact table. The watermark moves only to the highest load date actually staged, and the procedure records `LastRowsStaged` for each run.
 The invoice procedure stores a ready-made ageing bucket measured from a fixed date in the code. [OWNER: confirm that the report ages invoices with its own as-of-date logic and does not read this stored bucket.]
 
+The gold schema in the warehouse holds the dimension, fact and template tables, the two control tables for the gold watermark and the run log, and the staging tables.
+
+![Warehouse gold tables](screen:2)
+
+Two incremental procedures load invoices and sales. A set of load procedures covers the dimensions and facts.
+
+![Warehouse stored procedures](screen:3)
+
+The gold views sit over the warehouse tables.
+
+![Warehouse views](screen:4)
+
 ### The pipeline, with a run log
 
 `PL_Daily_Financial_Suite` has five working activities in a straight chain. Each depends on the one before with the condition `Succeeded`. The two stored-procedure activities run one after the other, so gold sales finish before gold invoices start. Every activity has a 12 hour timeout and no retries. The pipeline has no parameters, and the item stores no schedule. [OWNER: confirm the schedule, which lives outside the item.]
 
 The end of the pipeline is worth reading closely. One Script activity logs success when the model refresh succeeds. A second logs failure when the model refresh `Failed` or `Skipped`. A step that fails earlier in the chain makes every later activity skip, so a single handler on the last activity catches a failure anywhere. The handler writes a row to `Ctl_PipelineRunLog` with the run id, then a `Fail` activity ends the run with an error code.
 Without that last activity, handling the error would mark the pipeline as succeeded in Monitor. With it, the log has the row and the run still shows as failed.
+
+The financial workspace holds three pipelines, the notebooks, a warehouse and the report items.
+
+![Workspace items](screen:1)
 
 ### Incremental refresh and the late-correction gap
 

@@ -15,7 +15,13 @@
       "h": 5.8,
       "label": "Click here for navigation",
       "note": "This report has a hidden navigation rail. The menu button at the top left opens it, and from there you jump to any other page. Every page except the drill-through page has the same button. Click it first when you open the report."
-    }
+    },
+    "extras": [
+      {
+        "screen": 4,
+        "note": "The menu button opens this navigation rail. It lists the six main pages. The rep detail page is reached by drillthrough."
+      }
+    ]
   },
   {
     "file": "02-manufacturing-sales-analytics.webp",
@@ -25,6 +31,16 @@
       "Next question a sales director asks: which channel is carrying us, and which is behind budget?",
       "The row of buttons under the tiles switches the metric on the bars, so one visual answers gross profit, margin, revenue, transactions and units sold. The channel buttons on the right filter the trend and the budget comparison.",
       "The last chart shows the difference to budget by channel. Green is ahead, red is behind, so the problem channels stand out before anyone reads a label."
+    ],
+    "extras": [
+      {
+        "screen": 2,
+        "note": "The metric selector set to Gross Profit. One visual answers all five metrics."
+      },
+      {
+        "screen": 3,
+        "note": "The same visual with Revenue selected."
+      }
     ]
   },
   {

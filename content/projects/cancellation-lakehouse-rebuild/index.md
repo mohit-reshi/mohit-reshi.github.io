@@ -55,6 +55,10 @@ NB_Optimize_Gold  (V-Order OPTIMIZE on the three large tables)
 
 The model uses only the eight gold tables. The silver dimensions are left out because gold already carries their resolved attributes, and keeping both would create two paths to the same field.
 
+The model view of the rebuilt semantic model shows the cancellation and reinstatement fact with its relationships.
+
+![Model view](screen:3)
+
 ## Report
 
 The report toggles (metric, count mode, date basis, calendar grain) are driven by four parameter tables. They are written by the gold dataflow as ordinary Delta tables. DirectLake does not support calculated tables, so a parameter table has to exist in the Lakehouse to exist in the model.
@@ -88,6 +92,7 @@ Five of the 15 termination codes are flagged to be excluded in gold. They must e
 These lines show how a defect is planted and logged. Boundary values, negatives and true duplicates each target a specific failure downstream.
 
 ```python
+
 # D2: force the exact boundary values that break Case_Size bucketing
 boundary_idx = rng.choice(N_POLICIES, 900, replace=False)
 live_count[boundary_idx[:450]] = 49
@@ -104,6 +109,10 @@ dupe_src = events.sample(n=15_000, random_state=42)
 events = pd.concat([events, dupe_src], ignore_index=True)
 log_defect("D4", "Duplicate history rows (identical histid)", 15_000)
 ```
+
+In the lakehouse, the bronze folder holds the generated files: seven source-shaped CSV files and the defect register. The silver and gold tables appear beside it.
+
+![Bronze files and tables](screen:2)
 
 ### Silver: normalise first, then deduplicate
 
@@ -216,6 +225,10 @@ The security check is marked partial. Only the unmapped-identity scenario was ru
 There is no pipeline item in the project folder. The silver and gold dataflows are separate items that read and write Lakehouse tables, and the notebooks run on their own. [OWNER: confirm how the generator, the two dataflows and the optimise notebook were sequenced and scheduled, since the source holds no pipeline.]
 A DirectLake model refreshes data, not schema. A column added in the gold dataflow does not appear in the model until the table is updated in the model, and a dataflow output remembers its column list, so a new column must be re-confirmed in the destination mapping or it is dropped without a message. Both points are recorded in the log.
 One dataflow step replaces a broker's mapped identity with a test account for row-level security testing, and the log lists removing it before promotion. Promotion itself (UAT and main branches, a deployment pipeline and rebinding rules) is listed in the log as not started.
+
+The workspace holds the report, the lakehouse, two Dataflow Gen2 items, two notebooks and the semantic model. It has no pipeline item, and the data is synthetic.
+
+![Workspace items](screen:1)
 
 ## Outcome
 

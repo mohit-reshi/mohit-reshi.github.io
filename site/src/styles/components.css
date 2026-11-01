@@ -350,3 +350,14 @@ html.has-cursor:has(dialog[open]) :is(input, textarea) { cursor: text; }
 .screens__item button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .screens__item figcaption { display: grid; gap: 0.15rem; font-size: var(--step--1); color: var(--fg-muted); }
 .screens__item figcaption strong { color: var(--fg); font-weight: 600; }
+
+.shot { margin: var(--s-5) 0; max-width: 46rem; display: grid; gap: var(--s-2); }
+.shot button { display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-sunken); cursor: zoom-in; }
+.shot img { display: block; width: 100%; height: auto; }
+.shot button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.shot figcaption { display: grid; gap: 0.15rem; font-size: var(--step--1); color: var(--fg-muted); }
+.shot figcaption strong { color: var(--fg); font-weight: 600; }
+.walk__text .shot { max-width: none; }
+
+/* Code comments in the highlighter theme are too faint on the dark code background (contrast); lift them. */
+pre.shiki span[style*="#6A737D" i] { color: #8b949e !important; }

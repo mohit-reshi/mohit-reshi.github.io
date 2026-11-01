@@ -2,10 +2,13 @@
 import Placeholder from './Placeholder.astro';
 interface HiddenNav { x: number; y: number; w: number; h: number; label: string; note: string }
 interface Item { src: string; thumb: string | null; title: string; caption: string; alt?: string; group?: string; story?: string[]; hidden_nav?: HiddenNav | null; w: number; h: number; tw: number }
-interface Props { items: Item[]; title: string; slug: string; placeholders?: number }
-const { items: all, title, slug, placeholders = 3 } = Astro.props;
+interface Extra { screen: number; note: string }
+interface Props { items: Item[]; title: string; slug: string; placeholders?: number; placed?: number[] }
+const { items: all, title, slug, placeholders = 3, placed = [] } = Astro.props;
 const items = all.filter((it) => it.group !== 'screens');
-const screens = all.filter((it) => it.group === 'screens');
+const allScreens = all.filter((it) => it.group === 'screens');
+const screens = allScreens.filter((_, i) => !placed.includes(i + 1));
+const extraOf = (e: Extra) => allScreens[e.screen - 1];
 const offset = items.length;
 const fallback = items.length === 0 ? Array.from({ length: placeholders }, (_, i) => ({ title: `Page ${i + 1}`, i })) : [];
 const walk = items.some((it) => (it.story?.length ?? 0) > 0 || it.hidden_nav);
@@ -29,6 +32,14 @@ const walk = items.some((it) => (it.story?.length ?? 0) > 0 || it.hidden_nav);
         <div class="walk__text prose">
           {(it.story ?? []).map((para) => <p>{para}</p>)}
           {it.hidden_nav && <p class="walk__note"><strong>Hidden navigation.</strong> {it.hidden_nav.note}</p>}
+          {((it as unknown as { extras?: Extra[] }).extras ?? []).map((e) => extraOf(e) && (
+            <figure class="shot">
+              <button type="button" data-lightbox-index="0" data-full={extraOf(e).src} data-title={extraOf(e).title} data-caption={extraOf(e).caption} data-cursor="view" aria-label={`Open ${extraOf(e).title} larger`}>
+                <img src={extraOf(e).src} width={extraOf(e).w} height={extraOf(e).h} alt={extraOf(e).alt || extraOf(e).title} loading="lazy" decoding="async" />
+              </button>
+              <figcaption><strong>{extraOf(e).title}</strong><span>{e.note}</span></figcaption>
+            </figure>
+          ))}
         </div>
       </li>
     ))}

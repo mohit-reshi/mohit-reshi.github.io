@@ -34,6 +34,10 @@ A sales table uses an **incremental refresh** policy (rolling 8-year window, 3-d
 Two inactive date relationships on invoices (invoice date and due date) keep the active date path unambiguous.
 The pipeline behind it (source copies, silver change feed, Warehouse MERGE and the model refresh that follows) is written up in [Financial Suite Ingestion](/work/financial-suite-ingestion-and-incremental-refresh/).
 
+The model view shows the 20 tables of the semantic model: dimension tables, six fact tables, template tables and a measures table.
+
+![Model view](screen:1)
+
 ## Report
 
 Seven pages: a navigation page, the three statements, aged receivables, a revenue insights page and budget variance. Each statement is driven by its template table, with the current line read by `SELECTEDVALUE`.
