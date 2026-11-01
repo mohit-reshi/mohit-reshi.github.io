@@ -19,8 +19,9 @@ model_doc: null
 
 ## Problem
 
-This is the data engineering behind [Cancellation & Reinstatement Analytics](/work/cancellation-reinstatement-analytics/). The reporting problem is a real one: count policies that cancel and policies that come back, from a history table that has duplicates, orphan keys, odd codes and a boundary bug in how case size is bucketed.
-The rebuild answers one question. What does a clean, versioned, testable pipeline look like for that data?
+This is the data engineering behind [Cancellation & Reinstatement Analytics](/work/cancellation-reinstatement-analytics/).
+In group insurance, the history of each policy is written by several processes over many years. Batches are replayed, so the same event arrives twice. Late records point at policies the master table does not have yet. Termination codes change meaning between systems and eras. A size band is cut at a different boundary in two places, so the same case lands in two buckets. The report on top still has to count cancellations and reinstatements correctly, and finance will ask why its number differs from the admin system.
+Most teams patch this inside the report. Each fix hides in a measure, and nobody can say which rows were dropped. The rebuild asks a different question. What does a clean, versioned, testable pipeline look like for that data, one that can account for every row it removes?
 No real data is used. The pipeline starts from a generator that plants twelve classes of defect on purpose, with a register of how many rows each one touches. Every later layer is then judged by whether it closes those defects and can account for every row it removed.
 
 ## Data model

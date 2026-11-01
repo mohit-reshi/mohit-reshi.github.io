@@ -19,7 +19,9 @@ model_doc: null
 
 ## Problem
 
-This is the data engineering behind [Manufacturing Sales Analytics](/work/manufacturing-sales-analytics/). A report is only as trustworthy as the tables under it, so the job here was to turn raw sales extracts into a small set of tested tables that a DirectLake model can read.
+This is the data engineering behind [Manufacturing Sales Analytics](/work/manufacturing-sales-analytics/).
+Manufacturers run sales on an ERP and keep quotas in spreadsheets. The raw extracts have the faults every plant knows: order lines that arrive twice after a resend, numbers stored as text, a customer renamed part way through the year, a product moved between categories. A report built straight on those extracts is slow, because it scans transactions on every click, and hard to trust, because nobody can say what was cleaned. When a load goes wrong, the wrong numbers reach sales leadership before anyone notices.
+So the job was to turn raw sales extracts into a small set of tested tables that a DirectLake model can read.
 Three things had to hold. Every run had to produce the same result. Each layer had to be checked before the next one started. The report had to read a few small tables, not scan transactions.
 All data is synthetic. The first notebook generates it with fixed seeds, which is what makes exact-count tests possible later.
 

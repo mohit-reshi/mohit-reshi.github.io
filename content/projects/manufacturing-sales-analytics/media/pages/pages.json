@@ -65,5 +65,33 @@
       "This is a drill-through page. You do not reach it from the menu. You right-click a representative on the Rep Performance page and choose drill through.",
       "It shows one person's revenue by month, product, channel and year, so a conversation about performance starts from facts."
     ]
+  },
+  {
+    "file": "screen-01-manufacturing-sales-analytics.webp",
+    "group": "screens",
+    "title": "Model view",
+    "caption": "Model view of the semantic model.",
+    "alt": "Model view of the semantic model: gold sales summary, customer summary, rep performance and budget tables, a date table, a measures table and a metric selector table, joined by relationships."
+  },
+  {
+    "file": "screen-02-manufacturing-sales-analytics.webp",
+    "group": "screens",
+    "title": "Metric selector, gross profit",
+    "caption": "The metric selector set to gross profit.",
+    "alt": "Metric button row with Gross Profit selected and a bar chart of five channels."
+  },
+  {
+    "file": "screen-03-manufacturing-sales-analytics.webp",
+    "group": "screens",
+    "title": "Metric selector, revenue",
+    "caption": "The metric selector set to revenue.",
+    "alt": "Metric button row with Revenue selected and a bar chart of five channels."
+  },
+  {
+    "file": "screen-04-manufacturing-sales-analytics.webp",
+    "group": "screens",
+    "title": "Report navigation",
+    "caption": "The six-page structure of the report.",
+    "alt": "Left navigation rail titled Manufacturing Sales with six page links: Executive Summary, Channel Performance, Product Analysis, Customer Analysis, Rep Performance and Trend Analysis."
   }
 ]

@@ -22,7 +22,8 @@ model_doc: /content/generated/insurance-portal-core.model.json
 
 ## Problem
 
-Employers using a group insurance portal want to see how their claims are progressing, how many are denied, and where volume is coming from, without seeing any other employer's data.
+Employers that buy group cover are asked by their staff where claims stand, and the benefits administrator often has to phone the carrier to find out. They want to see how claims are progressing, how many are denied and where the volume comes from, so they can spot a pattern before it turns into complaints.
+Claims data is sensitive. An employer must see only its own people, and one employer's numbers must never reach another. A portal report has to enforce that in the data layer, not by trusting the filters on the page.
 
 ## Data model
 

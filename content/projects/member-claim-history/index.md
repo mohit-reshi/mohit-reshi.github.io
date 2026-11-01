@@ -22,7 +22,8 @@ model_doc: /content/generated/insurance-portal-core.model.json
 
 ## Problem
 
-A plan member opening a portal wants a plain answer to "what happened to my claims?" The audience is non-technical, so the report has to be calm, readable and strictly limited to that one person's data.
+A member who opens the portal after a visit to the doctor wants one answer: what happened to my claim? Claim statuses are written for claims examiners and mean little to most members, and every unclear status turns into a call to the service centre.
+The report has to be calm and readable for a non-technical audience, show status and amount without jargon, and be strictly limited to that one person's claims. A member must never see anyone else's data.
 
 ## Data model
 

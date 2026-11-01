@@ -21,8 +21,10 @@ model_doc: /content/generated/financial-statement-suite.model.json
 
 ## Problem
 
+Finance teams close the month and then spend days in spreadsheets reshaping the same numbers into a profit and loss, a balance sheet and a cash flow. Each workbook has its own line order and hand-typed subtotals, so two people produce two slightly different statements.
 Finance reports are read by people who know exactly what a profit and loss statement should look like. Statement layout, line order, subtotals and the way a percentage row differs from an amount row all have to be right,
 and they should not depend on how the data happens to be sorted.
+Corrections to earlier periods and budget variances then have to flow through without anyone rebuilding the workbook, and sales leaders need their own territory's numbers without seeing everyone else's.
 
 ## Data model
 

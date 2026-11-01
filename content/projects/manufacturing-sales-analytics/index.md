@@ -21,7 +21,8 @@ model_doc: /content/generated/manufacturing-sales-analytics.model.json
 
 ## Problem
 
-Sales leadership needed to see, in one glance, whether the business was ahead of last year and ahead of budget, and then reach reps, customers and products without opening a second report.
+Sales leadership at a manufacturer needs to see, in one glance, whether the business is ahead of last year and ahead of budget, and then reach reps, customers and products without opening a second report.
+In practice the numbers sit in three places: orders in the ERP, quotas in spreadsheets and customer details elsewhere. Each report answers one question, the totals differ by a few percent, and the weekly sales meeting starts with a debate about which one to believe.
 The data arrived as raw operational extracts, so the first job was to make it trustworthy before making it pretty. [OWNER: one sentence on the real motivation or the "before" state, if you want it.]
 
 ## Data model

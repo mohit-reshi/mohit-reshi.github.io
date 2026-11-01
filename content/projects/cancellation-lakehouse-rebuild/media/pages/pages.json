@@ -38,5 +38,26 @@
     "story": [
       "The tenure and case size splits read the tenure keys that gold computes, which is why the pipeline builds both versions of the key."
     ]
+  },
+  {
+    "file": "screen-01-cancellation-lakehouse-rebuild.webp",
+    "group": "screens",
+    "title": "Workspace items",
+    "caption": "Items in the rebuild workspace. There is no pipeline item, and the data is synthetic.",
+    "alt": "Workspace item list under a blurred title and a subtitle saying it is a development workspace with synthetic data. Items: a report, a lakehouse and its SQL endpoint, two Dataflow Gen2 items, two notebooks and a semantic model, all synced with Git. A status bar shows branch dev."
+  },
+  {
+    "file": "screen-02-cancellation-lakehouse-rebuild.webp",
+    "group": "screens",
+    "title": "Bronze files and tables",
+    "caption": "Bronze CSV files and the gold and silver tables in the lakehouse.",
+    "alt": "Lakehouse explorer with the tables tree (eight gold and seven silver tables) and the bronze Files folder listing eight CSV files with modified times and sizes. One file is named like a defect register."
+  },
+  {
+    "file": "screen-03-cancellation-lakehouse-rebuild.webp",
+    "group": "screens",
+    "title": "Model view",
+    "caption": "Model view of the rebuilt semantic model.",
+    "alt": "Model view of the rebuilt semantic model: a key measures table, case tenure, date, a broker user map, four parameter tables, a calendar axis table and the cancel and reinstatement fact, with relationships to the fact."
   }
 ]

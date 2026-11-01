@@ -54,5 +54,173 @@
     "story": [
       "The drill-through page is fed by the rep performance table, so it follows the same gold tables as the page it opens from."
     ]
+  },
+  {
+    "file": "screen-01-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Workspace items",
+    "caption": "The items in the workspace: report, lakehouse, semantic model, six notebooks and one pipeline, all synced with Fabric Git.",
+    "alt": "Workspace item list with one report, a lakehouse and its SQL endpoint, a semantic model, six notebooks and a pipeline. Every row shows Git status Synced."
+  },
+  {
+    "file": "screen-02-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Pipeline canvas",
+    "caption": "The pipeline runs six notebooks in a straight chain; each step follows the previous one on success.",
+    "alt": "Pipeline canvas with six notebook activities in a row, named Generate_Synthetic_Data, Validate_Bronze, Transform_Silver, Validate_Silver, Aggregate_Gold and Validate_Gold, joined by green arrows."
+  },
+  {
+    "file": "screen-03-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Generate step settings",
+    "caption": "Generate step: 12 hour timeout and no retries.",
+    "alt": "General tab of the Generate_Synthetic_Data activity: state activated, timeout 0.12:00:00, enable retries unticked."
+  },
+  {
+    "file": "screen-04-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Validate Bronze step settings",
+    "caption": "Validate Bronze: 12 hour timeout and no retries.",
+    "alt": "General tab of the Validate_Bronze activity: state activated, timeout 0.12:00:00, enable retries unticked."
+  },
+  {
+    "file": "screen-05-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Silver notebook, cells 1 to 3",
+    "caption": "Bronze to silver: columns are cast to their types and text is trimmed.",
+    "alt": "Silver notebook, cells 1 to 3: imports, then a silver date table and a silver channel table built from bronze with type casts. Printed output shows 1096 rows and 5 rows."
+  },
+  {
+    "file": "screen-06-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Silver notebook, cells 4 to 6",
+    "caption": "Silver adds derived columns; customer tenure is measured from a fixed date written in the code.",
+    "alt": "Silver notebook, cells 4 to 6: product, customer and sales rep tables. Product gets a gross margin percent, customer gets tenure in days from a date written in the code, and sales rep gets a monthly target. Printed output shows 150, 500 and 30 rows."
+  },
+  {
+    "file": "screen-07-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Silver notebook, cells 7 and 8",
+    "caption": "Silver sales fact with derived columns and printed totals.",
+    "alt": "Silver notebook, cells 7 and 8: a budget table and the sales fact table with gross profit, a return flag and a return rate. Printed output shows 180 and 50000 rows, a total gross revenue and a count of rows with returns."
+  },
+  {
+    "file": "screen-08-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Silver row counts",
+    "caption": "Row counts of the seven silver tables.",
+    "alt": "Notebook cell that prints a row count for each of the seven silver tables, from 5 rows to 50,000 rows."
+  },
+  {
+    "file": "screen-09-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Silver gate 1, row parity",
+    "caption": "Silver gate 1: bronze and silver row counts match for every table.",
+    "alt": "Notebook cell that compares row counts between each bronze table and its silver table for seven pairs. All pairs match and the cell prints Row parity: PASSED."
+  },
+  {
+    "file": "screen-10-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Silver gate 2, column types",
+    "caption": "Silver gate 2: column types match the expected schema.",
+    "alt": "Notebook cell that checks the data type of ten columns of the silver sales table against expected types. All match and the cell prints Type validation: PASSED."
+  },
+  {
+    "file": "screen-11-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Silver gate 3, derived columns",
+    "caption": "Silver gate 3: derived columns are recomputed and agree.",
+    "alt": "Notebook cell that recomputes gross profit, the return flag and the return rate and counts mismatches. Each count is 0 and the cell prints Derived column validation: PASSED."
+  },
+  {
+    "file": "screen-12-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Silver gate 4, business rules",
+    "caption": "Silver gate 4: business rules hold.",
+    "alt": "Notebook cell with three business rule checks: margin between 0 and 1, return rate between 0 and 1 and tenure not negative. Each count is 0 and the cell prints Business rule checks: PASSED."
+  },
+  {
+    "file": "screen-13-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Silver gate summary",
+    "caption": "Silver gate summary: all four checks passed.",
+    "alt": "Notebook cell that prints a summary of four silver checks, all PASSED, and the line Silver layer ready for gold aggregation."
+  },
+  {
+    "file": "screen-14-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Gold notebook, load",
+    "caption": "Gold step starts by reading each silver table once.",
+    "alt": "Gold notebook, cell 1: imports and reads of the seven silver tables once, for reuse. Output: Silver tables loaded."
+  },
+  {
+    "file": "screen-15-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Gold sales summary",
+    "caption": "Gold sales summary: the fact joined to four dimensions and aggregated.",
+    "alt": "Gold notebook, cell 2: joins the sales fact to the date, product, channel and rep tables, groups and sums, and writes the gold sales summary in overwrite mode. Output shows 50000 rows."
+  },
+  {
+    "file": "screen-16-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Gold budget table",
+    "caption": "Gold budget table: actuals against budget with variance in basis points.",
+    "alt": "Gold notebook, cell 4: actual revenue by channel and month joined to budget, with variance, variance percent and variance in basis points. Writes the gold budget table. Output shows 180 rows."
+  },
+  {
+    "file": "screen-17-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Gold rep performance",
+    "caption": "Gold rep performance: monthly target achievement with ranks.",
+    "alt": "Gold notebook, cell 5: rep performance by month with target achievement, target variance, and a dense rank and percent rank inside each year and month. Output shows 1080 rows."
+  },
+  {
+    "file": "screen-18-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Gold row counts",
+    "caption": "Row counts of the four gold tables.",
+    "alt": "Gold notebook, cell 6: prints a row count for each of the four gold tables (50,000; 1,500; 180; 1,080) and the line Gold layer ready for DirectLake connection."
+  },
+  {
+    "file": "screen-19-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Gold gate 1, row counts",
+    "caption": "Gold gate 1: row counts match the expected values.",
+    "alt": "Notebook cell that compares the row counts of four gold tables with expected values. All four match and the cell prints Gold row counts: PASSED."
+  },
+  {
+    "file": "screen-20-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Gold gate 2, reconciliation",
+    "caption": "Gold gate 2: silver and gold totals reconcile with no difference.",
+    "alt": "Notebook cell that reconciles gross revenue, net revenue and units sold between silver and gold with a tolerance. Each difference is 0.00 and the cell prints Aggregation reconciliation: PASSED."
+  },
+  {
+    "file": "screen-21-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Gold gate 3, business rules",
+    "caption": "Gold gate 3: business logic checks pass.",
+    "alt": "Notebook cell with checks on budget variance in basis points, target achievement and rank ranges. Each count is 0 and the cell prints Business logic checks: PASSED."
+  },
+  {
+    "file": "screen-22-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Gold gate summary",
+    "caption": "Gold gate summary: all three checks passed.",
+    "alt": "Notebook cell that prints a summary of three gold checks, all PASSED, with lines saying the medallion architecture is complete and ready for a Direct Lake semantic model."
+  },
+  {
+    "file": "screen-23-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "SQL endpoint tables",
+    "caption": "The lakehouse tables seen through the SQL endpoint, grouped as bronze, silver and gold.",
+    "alt": "Explorer tree of the lakehouse SQL analytics endpoint listing tables under dbo with bronze, silver and gold prefixes."
+  },
+  {
+    "file": "screen-24-manufacturing-medallion-pipeline.webp",
+    "group": "screens",
+    "title": "Lakehouse attached to a notebook",
+    "caption": "The lakehouse attached to the notebooks.",
+    "alt": "Notebook explorer pane showing OneLake data items with one lakehouse pinned."
   }
 ]

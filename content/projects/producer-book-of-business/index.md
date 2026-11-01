@@ -22,7 +22,8 @@ model_doc: /content/generated/insurance-portal-core.model.json
 
 ## Problem
 
-Insurance producers (brokers and agents) manage a book of clients. They need to see their policies, premium in force and policy status at a glance, and never anyone else's book.
+Producers, the brokers and agents who sell group cover, earn their living from a book of clients. They want to know at a glance which policies are in force, how much premium that is and which clients are slipping towards cancellation, so they can phone the right client at the right time.
+That view often comes from spreadsheets exported from an admin system and already out of date when opened. It also has to be private. A producer must see only their own book, and a colleague's or a competitor's book must stay out of sight.
 
 ## Data model
 

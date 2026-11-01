@@ -21,8 +21,11 @@ model_doc: /content/generated/cancellation-reinstatement-analytics.model.json
 
 ## Problem
 
-Group insurance teams need to know how many cases cancel, how many come back, and how that changes depending on whether you count by the date the record was made or the date the policy ended.
-Both views are correct, and mixing them up is the most common way these reports mislead. This project is a rebuild of that real-world problem on synthetic data.
+Group insurance carriers, and the brokers who place the business, lose groups all the time, and some of them come back. Employers stop paying premium, move to another carrier or change plans at renewal. Some are reinstated after a grace period or once the missed payment is made good.
+Leadership asks two plain questions: how many cases did we lose, and how many did we win back? The answer changes with the date you count by. A cancellation can be counted on the day the record was made or on the day cover actually ended, and a retroactive cancellation moves between months depending on which one you pick.
+Both views are correct, and mixing them up is the most common way these reports mislead. It gets harder when a reinstatement has to be netted against the cancellation it reverses.
+Brokers add a second problem. Each broker should see only their own book, while a sales manager needs the whole picture from the same report.
+This project is a rebuild of that real-world problem on synthetic data.
 
 ## Data model
 

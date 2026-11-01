@@ -61,5 +61,12 @@
       "Budget against actuals, by account, with the variance shown and a year selector.",
       "Variance is the number a finance lead looks at first, so it has its own column rather than being left for the reader to calculate."
     ]
+  },
+  {
+    "file": "screen-01-financial-statement-suite.webp",
+    "group": "screens",
+    "title": "Model view",
+    "caption": "Model view of the financial statement semantic model.",
+    "alt": "Model view of the financial semantic model with twenty table cards: region, product, date, customer and GL account tables, a measures table, six fact tables, template tables and a grouping table, joined by many relationships."
   }
 ]

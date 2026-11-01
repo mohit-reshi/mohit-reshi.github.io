@@ -46,5 +46,33 @@
     "story": [
       "The sales facts are also kept current by the daily pipeline."
     ]
+  },
+  {
+    "file": "screen-01-financial-suite-ingestion-and-incremental-refresh.webp",
+    "group": "screens",
+    "title": "Workspace items",
+    "caption": "Items in the financial workspace: three pipelines, the notebooks and the warehouse.",
+    "alt": "Workspace item list with two paginated reports, a dashboard marked Unsupported for Git, a Dataflow Gen2 item, three pipelines, notebooks, a warehouse, lakehouses, a report and a semantic model. The status bar shows a development branch."
+  },
+  {
+    "file": "screen-02-financial-suite-ingestion-and-incremental-refresh.webp",
+    "group": "screens",
+    "title": "Warehouse gold tables",
+    "caption": "Gold tables in the warehouse, including the control tables.",
+    "alt": "Warehouse explorer, gold schema, Tables: dimension, fact and template tables, two control tables for the gold watermark and the pipeline run log, and two staging tables."
+  },
+  {
+    "file": "screen-03-financial-suite-ingestion-and-incremental-refresh.webp",
+    "group": "screens",
+    "title": "Warehouse stored procedures",
+    "caption": "The gold stored procedures, including the two incremental ones.",
+    "alt": "Warehouse explorer, gold schema, Stored Procedures: two incremental procedures for invoices and sales and a set of load procedures for dimensions and facts."
+  },
+  {
+    "file": "screen-04-financial-suite-ingestion-and-incremental-refresh.webp",
+    "group": "screens",
+    "title": "Warehouse views",
+    "caption": "The gold views over the warehouse tables.",
+    "alt": "Warehouse explorer, gold schema, Views: a list of views for the dimensions, facts and templates."
   }
 ]

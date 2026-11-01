@@ -19,7 +19,9 @@ model_doc: null
 
 ## Problem
 
-This is the data engineering behind [Financial Statement Reporting Suite](/work/financial-statement-suite/). A finance report needs two things from its pipeline. Yesterday's numbers must arrive without reloading seven years of history, and a correction to an old row must still reach the report.
+This is the data engineering behind [Financial Statement Reporting Suite](/work/financial-statement-suite/).
+Finance data arrives from the ledger and billing systems every night, and it does not stand still. A journal can be posted back into a closed month, an invoice is corrected weeks later, and a source system re-sends a batch. If the pipeline reloads seven years of history every night, it is slow, it uses capacity the business pays for, and a failure halfway leaves nobody sure what loaded. If it loads only the new rows, it misses the corrections and the report quietly disagrees with the ledger.
+A finance report needs two things from its pipeline. Yesterday's numbers must arrive without reloading seven years of history, and a correction to an old row must still reach the report.
 The daily pipeline therefore loads only what changed, keeps a control table of where it stopped, logs every run, and then refreshes only the semantic model partitions that need it.
 All data is synthetic. A seeded generator builds seven years of history, plants eight defect types, and the silver layer has to find and fix each one.
 

@@ -1,9 +1,12 @@
 ---
 import Placeholder from './Placeholder.astro';
 interface HiddenNav { x: number; y: number; w: number; h: number; label: string; note: string }
-interface Item { src: string; thumb: string | null; title: string; caption: string; story?: string[]; hidden_nav?: HiddenNav | null; w: number; h: number; tw: number }
+interface Item { src: string; thumb: string | null; title: string; caption: string; alt?: string; group?: string; story?: string[]; hidden_nav?: HiddenNav | null; w: number; h: number; tw: number }
 interface Props { items: Item[]; title: string; slug: string; placeholders?: number }
-const { items, title, slug, placeholders = 3 } = Astro.props;
+const { items: all, title, slug, placeholders = 3 } = Astro.props;
+const items = all.filter((it) => it.group !== 'screens');
+const screens = all.filter((it) => it.group === 'screens');
+const offset = items.length;
 const fallback = items.length === 0 ? Array.from({ length: placeholders }, (_, i) => ({ title: `Page ${i + 1}`, i })) : [];
 const walk = items.some((it) => (it.story?.length ?? 0) > 0 || it.hidden_nav);
 ---
@@ -39,6 +42,24 @@ const walk = items.some((it) => (it.story?.length ?? 0) > 0 || it.hidden_nav);
     ))}
     {fallback.map((f) => <li><div class="gallery__ph" style="aspect-ratio:16/10;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden"><Placeholder title={`${title} · ${f.title}`} seed={`${slug}-${f.i}`} label="Screenshot placeholder" /></div></li>)}
   </ul>
+)}
+{screens.length > 0 && (
+  <section class="screens" aria-labelledby="screens-h">
+    <h3 id="screens-h" class="screens__title">Inside Fabric</h3>
+    <p class="muted screens__note">Screens from the Fabric workspace behind this project. Workspace names are blurred and the month is hidden on dates. The data is synthetic.</p>
+    <ul class="screens__grid" data-gallery>
+      {screens.map((it, i) => (
+        <li class="screens__item">
+          <figure>
+            <button type="button" data-lightbox-index={offset + i} data-full={it.src} data-title={it.title} data-caption={it.caption} data-cursor="view" aria-label={`Open ${it.title} larger`}>
+              <img src={it.thumb ?? it.src} width={it.tw || it.w} height={Math.round((it.tw || it.w) * (it.h / (it.w || 1))) || undefined} alt={it.alt || it.title} loading="lazy" decoding="async" />
+            </button>
+            <figcaption><strong>{it.title}</strong><span>{it.caption}</span></figcaption>
+          </figure>
+        </li>
+      ))}
+    </ul>
+  </section>
 )}
 <dialog class="lightbox" data-lightbox aria-label="Screenshot viewer">
   <div class="lightbox__inner">

@@ -22,7 +22,9 @@ model_doc: /content/generated/service-reliability.model.json
 
 ## Problem
 
-Executives asked three questions at once: are our applications available, how fast do we respond to incidents, and which critical applications are at risk. The answers lived in three separate datasets.
+Executives ask three questions at once: are our applications available, how fast do we respond to incidents, and which critical applications are at risk.
+In most companies the answers come from three tools: monitoring for availability, a service desk for incidents, and a register of applications with their criticality tier. The owners differ, the definitions of an outage differ, and the numbers rarely line up, so the meeting ends up arguing about whose figure is right.
+This report puts the three sources on one page, so the discussion can move to what to fix.
 
 ## Data model
 
