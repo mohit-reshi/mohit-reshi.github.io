@@ -131,6 +131,7 @@ export class LiveLab implements LiveLabHandle {
     if (!entry) return;
     this.teardownSession();
     this.tourAbort = true;
+    this.el.stage.style.background = entry.stageBackground ?? '';
     this.el.reports.querySelectorAll('button[data-report]').forEach((b) => b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.report === key)));
     const p = persona !== undefined ? persona : entry.personas?.[0]?.key ?? null;
     this.s = { entry, persona: p, adapter: null, token: null, refreshTimer: null, pages: [], activePage: null, seq: ++this.seq };
@@ -180,7 +181,7 @@ export class LiveLab implements LiveLabHandle {
         s.activePage = s.pages[0]?.name ?? null;
         this.renderNav();
       }
-      await adapter.setTheme(this.opts.config.themes?.[this.theme] ?? DEFAULT_THEMES[this.theme]);
+      if (!s.entry.ownTheme) await adapter.setTheme(this.opts.config.themes?.[this.theme] ?? DEFAULT_THEMES[this.theme]);
       this.scheduleRefresh();
     } catch (err) {
       if (this.stale(seq)) return;
@@ -438,7 +439,7 @@ export class LiveLab implements LiveLabHandle {
     this.theme = t;
     this.root.dataset.theme = t;
     const ad = this.s?.adapter;
-    if (ad) {
+    if (ad && !this.s?.entry.ownTheme) {
       this.log('ui', 'theme', { theme: t });
       this.highlight('theme');
       void ad.setTheme(this.opts.config.themes?.[t] ?? DEFAULT_THEMES[t]).catch(() => {});

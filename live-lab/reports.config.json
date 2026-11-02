@@ -78,7 +78,9 @@
       "fallbackMedia": {
         "poster": "/media/live-lab/portfolio-financial.webp",
         "caption": "Recorded view of the report."
-      }
+      },
+      "ownTheme": true,
+      "stageBackground": "#20212B"
     },
     {
       "key": "portfolio-cancellation",

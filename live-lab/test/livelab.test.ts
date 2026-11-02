@@ -129,6 +129,17 @@ describe('Live Lab (mock mode)', () => {
     expect(host.querySelector('.ll-embed svg')!.getAttribute('aria-label')).toContain('Financial Statement Suite');
   });
 
+  it('a report with its own theme keeps it and gets a dark stage; other reports get the Live Lab theme', async () => {
+    const calls: Array<Record<string, unknown> | null> = [];
+    class Spy extends MockAdapter { async setTheme(th: Record<string, unknown> | null) { calls.push(th); } }
+    mount({ initialReport: 'portfolio-financial', adapterFactory: async () => new Spy() }); await settle();
+    expect(calls.length).toBe(0);
+    expect((host.querySelector('.ll-stage') as HTMLElement).style.background).not.toBe('');
+    (host.querySelector('button[data-report=portfolio-manufacturing]') as HTMLButtonElement).click(); await settle();
+    expect(calls.length).toBe(1);
+    expect((host.querySelector('.ll-stage') as HTMLElement).style.background).toBe('');
+  });
+
   it('code tab lists the extracted snippets and copy works without clipboard permission', async () => {
     mount(); await settle();
     const names = [...host.querySelectorAll('.ll-snips button')].map((b) => b.getAttribute('data-snippet'));

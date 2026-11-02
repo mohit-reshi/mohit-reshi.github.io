@@ -21,6 +21,10 @@ export interface ReportEntry {
   fallbackMedia?: FallbackMedia;
   projectSlug?: string;
   exportEnabled?: boolean;
+  /** Keep the report's own theme: the Live Lab does not apply its light or dark theme on top of it. */
+  ownTheme?: boolean;
+  /** CSS colour behind the embedded report (the embed is transparent, so this is the report's visible background). */
+  stageBackground?: string;
   controls?: ReportControls;
 }
 export interface LiveLabConfig { reports: ReportEntry[]; themes?: Partial<Record<Theme, Record<string, unknown>>> }
