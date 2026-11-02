@@ -12,9 +12,10 @@ tags: [power-bi, fabric, directlake, dax, time-intelligence, manufacturing]
 featured: true
 order: 10
 draft: false
-status: recorded-only
+status: live
 media: { cover: media/cover.webp, poster: media/poster.webp, video: media/video.mp4 }
 links: {}
+live_lab: { enabled: true, report_key: portfolio-manufacturing }
 featured_measures: ["Revenue YOY %", "Revenue YTD", "Selected Metric"]
 model_doc: /content/generated/manufacturing-sales-analytics.model.json
 ---

@@ -32,7 +32,7 @@ For each of the 5 embeds (1 service-governance interactive, 1 service-governance
 cd worker
 Copy-Item reports.config.example.json reports.config.json     # gitignored; edit with your IDs and report keys
 ```
-The example already uses the seven report keys of `live-lab/reports.config.json` (public file): `portfolio-manufacturing`, `portfolio-financial`, `portfolio-cancellation`, `service-governance-interactive`, `insurance-employer`, `insurance-member`, `insurance-producer`. The three portfolio reports need their workspace, report and dataset IDs, and for `portfolio-financial` and `portfolio-cancellation` a username per persona that the roles (`NSW_User`, `QLD_User`, `VIC_User`, `Broker`) can resolve; until the IDs are in the Worker secret those reports show their recorded view.
+The example already uses the seven report keys of `live-lab/reports.config.json` (public file): `portfolio-manufacturing`, `portfolio-financial`, `portfolio-cancellation`, `service-governance-interactive`, `insurance-employer`, `insurance-member`, `insurance-producer`. The three portfolio reports have no row-level security, so each needs only its workspace, report and dataset IDs (`rls: false`, no personas).
 Keep the keys identical in both files; only IDs, roles and UPNs change.
 
 ## 3. Deploy the broker

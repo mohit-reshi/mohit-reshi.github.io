@@ -75,23 +75,6 @@
       "group": "Portfolio reports",
       "kind": "interactive",
       "projectSlug": "financial-statement-suite",
-      "personas": [
-        {
-          "key": "nsw",
-          "label": "New South Wales",
-          "description": "Sees only the rows of the New South Wales territory."
-        },
-        {
-          "key": "qld",
-          "label": "Queensland",
-          "description": "Sees only the rows of the Queensland territory."
-        },
-        {
-          "key": "vic",
-          "label": "Victoria",
-          "description": "Sees only the rows of the Victoria territory."
-        }
-      ],
       "fallbackMedia": {
         "poster": "/media/live-lab/portfolio-financial.webp",
         "caption": "Recorded view of the report."
@@ -103,13 +86,6 @@
       "group": "Portfolio reports",
       "kind": "interactive",
       "projectSlug": "cancellation-reinstatement-analytics",
-      "personas": [
-        {
-          "key": "broker",
-          "label": "Broker",
-          "description": "Sees only the cases of one broker's own book."
-        }
-      ],
       "fallbackMedia": {
         "poster": "/media/live-lab/portfolio-cancellation.webp",
         "caption": "Recorded view of the report."

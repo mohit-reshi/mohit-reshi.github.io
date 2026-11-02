@@ -118,15 +118,14 @@ describe('Live Lab (mock mode)', () => {
     expect(host.querySelector('.ll-tools')!.textContent).toMatch(/Paginated report/);
   });
 
-  it('portfolio reports: member view hidden on employer and producer, row-level personas on financial and cancellation', async () => {
+  it('portfolio reports: member view hidden on employer and producer; the three portfolio reports have no persona switcher', async () => {
     const by = (k: string) => (config.reports as any[]).find((r) => r.key === k);
     expect(by('insurance-employer').personas.map((x: any) => x.key)).not.toContain('member');
     expect(by('insurance-producer').personas.map((x: any) => x.key)).not.toContain('member');
     expect(by('insurance-member').personas[0].key).toBe('member'); // the member portal's own default
-    expect(by('portfolio-financial').personas.map((x: any) => x.key)).toEqual(['nsw', 'qld', 'vic']);
-    expect(by('portfolio-cancellation').personas.map((x: any) => x.key)).toEqual(['broker']);
+    for (const k of ['portfolio-manufacturing', 'portfolio-financial', 'portfolio-cancellation']) expect(by(k).personas).toBeUndefined();
     mount({ initialReport: 'portfolio-financial' }); await settle();
-    expect(host.querySelectorAll('.ll-personas input').length).toBe(3);
+    expect(host.querySelector('.ll-personas')!.hasAttribute('hidden')).toBe(true);
     expect(host.querySelector('.ll-embed svg')!.getAttribute('aria-label')).toContain('Financial Statement Suite');
   });
 

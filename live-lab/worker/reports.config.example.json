@@ -17,28 +17,8 @@
       "datasetIds": [
         "00000000-0000-0000-0000-000000000312"
       ],
-      "rls": true,
-      "defaultPersona": "nsw",
-      "personas": {
-        "nsw": {
-          "username": "nsw.demo@example.com",
-          "roles": [
-            "NSW_User"
-          ]
-        },
-        "qld": {
-          "username": "qld.demo@example.com",
-          "roles": [
-            "QLD_User"
-          ]
-        },
-        "vic": {
-          "username": "vic.demo@example.com",
-          "roles": [
-            "VIC_User"
-          ]
-        }
-      }
+      "rls": false,
+      "personas": {}
     },
     "portfolio-cancellation": {
       "kind": "interactive",
@@ -47,16 +27,8 @@
       "datasetIds": [
         "00000000-0000-0000-0000-000000000313"
       ],
-      "rls": true,
-      "defaultPersona": "broker",
-      "personas": {
-        "broker": {
-          "username": "broker.demo@example.com",
-          "roles": [
-            "Broker"
-          ]
-        }
-      }
+      "rls": false,
+      "personas": {}
     },
     "service-governance-interactive": {
       "kind": "interactive",

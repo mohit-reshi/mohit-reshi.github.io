@@ -12,9 +12,10 @@ tags: [power-bi, fabric, rls, dax, time-intelligence, incremental-refresh, finan
 featured: true
 order: 30
 draft: false
-status: recorded-only
+status: live
 media: { cover: media/cover.webp, poster: media/poster.webp, video: media/video.mp4 }
 links: {}
+live_lab: { enabled: true, report_key: portfolio-financial }
 featured_measures: ["Revenue YoY %", "Budget Variance Fixed", "Receivables Per Group"]
 model_doc: /content/generated/financial-statement-suite.model.json
 ---

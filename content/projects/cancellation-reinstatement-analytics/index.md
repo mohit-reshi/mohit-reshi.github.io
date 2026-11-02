@@ -12,9 +12,10 @@ tags: [power-bi, fabric, directlake, rls, dax, userelationship, insurance]
 featured: true
 order: 20
 draft: false
-status: recorded-only
+status: live
 media: { cover: media/cover.webp, poster: media/poster.webp, video: media/video.mp4 }
 links: {}
+live_lab: { enabled: true, report_key: portfolio-cancellation }
 featured_measures: ["Metric YoY %", "Selected Metric", "KPI Card Title"]
 model_doc: /content/generated/cancellation-reinstatement-analytics.model.json
 ---
