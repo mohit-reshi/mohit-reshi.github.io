@@ -23,7 +23,8 @@ export const CSS = `
 .ll-tabs{display:flex;gap:6px}.ll-tab{border-radius:8px 8px 0 0}
 .ll-nav,.ll-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.ll-nav button[aria-current=true]{background:var(--ll-accent);color:var(--ll-accent-fg);border-color:var(--ll-accent)}
 .ll-stage{position:relative;border:1px solid var(--ll-line);border-radius:8px;min-height:240px;background:var(--ll-card);overflow:hidden}
-.ll-embed{width:100%;min-height:240px}.ll-embed iframe{color-scheme:normal;display:block;width:100%;aspect-ratio:16/9;height:auto;min-height:560px;max-height:92vh;border:0}
+.ll-embed{width:100%;min-height:240px}.ll-embed iframe{display:block;width:100%;aspect-ratio:16/9;height:auto;min-height:560px;max-height:92vh;border:0}
+.ll-own iframe{color-scheme:normal}
 .ll-loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--ll-muted);background:var(--ll-card)}
 .ll-fallback{padding:12px;display:grid;gap:8px}.ll-fallback video,.ll-fallback img{max-width:100%;border-radius:6px}.ll-fallback ul{list-style:none;margin:0;padding:0;display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
 .ll-side{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}

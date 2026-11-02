@@ -132,6 +132,7 @@ export class LiveLab implements LiveLabHandle {
     this.teardownSession();
     this.tourAbort = true;
     this.el.stage.style.background = entry.stageBackground ?? '';
+    this.el.stage.classList.toggle("ll-own", !!entry.ownTheme);
     this.el.reports.querySelectorAll('button[data-report]').forEach((b) => b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.report === key)));
     const p = persona !== undefined ? persona : entry.personas?.[0]?.key ?? null;
     this.s = { entry, persona: p, adapter: null, token: null, refreshTimer: null, pages: [], activePage: null, seq: ++this.seq };
