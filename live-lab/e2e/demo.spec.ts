@@ -11,9 +11,9 @@ test('mock-mode demo: persona switch, controls, event log and code highlighting'
   await expect(page.locator('.ll-log')).toContainText('rendered');
 
   // persona switch re-embeds and updates the explanation and the report
-  await page.getByLabel('Member', { exact: true }).check();
-  await expect(page.locator('.ll-rls')).toContainText('Now applied: "Member"');
-  await expect(page.locator('.ll-embed svg')).toContainText('as "member"');
+  await page.getByLabel('Producer', { exact: true }).check();
+  await expect(page.locator('.ll-rls')).toContainText('Now applied: "Producer"');
+  await expect(page.locator('.ll-embed svg')).toContainText('as "producer"');
   await expect(page.locator('.ll-log')).toContainText('persona');
   await expect(page.locator('.ll-codebox .line.ll-hl').first()).toBeAttached(); // Code tab is hidden until opened
   await page.screenshot({ path: shots + '01-live-persona.png', fullPage: true });
@@ -54,11 +54,18 @@ test('fallback: unreachable broker shows recorded media and a working Code tab',
   await page.screenshot({ path: shots + '05-fallback.png', fullPage: true });
 });
 
-test('keyboard: tabs and report selector are operable without a mouse', async ({ page }) => {
+test('report buttons: one per report, one pressed, operable with the keyboard, and the report area is large', async ({ page }) => {
   await page.goto('/');
   await page.locator('#ll-tab-live').focus();
   await page.keyboard.press('ArrowRight');
   await expect(page.locator('#ll-code')).toBeVisible();
   await page.keyboard.press('ArrowLeft');
   await expect(page.locator('#ll-live')).toBeVisible();
+  await expect(page.locator('button[data-report]')).toHaveCount(7);
+  await expect(page.locator('button[data-report][aria-pressed=true]')).toHaveCount(1);
+  const second = page.locator('button[data-report]').nth(1);
+  await second.focus(); await page.keyboard.press('Enter');
+  await expect(second).toHaveAttribute('aria-pressed', 'true');
+  const box = await page.locator('.ll-stage').boundingBox();
+  expect(box!.height).toBeGreaterThan(420); // the embedded report is shown large
 });

@@ -1,5 +1,63 @@
 {
   "reports": {
+    "portfolio-manufacturing": {
+      "kind": "interactive",
+      "workspaceId": "00000000-0000-0000-0000-000000000103",
+      "reportId": "00000000-0000-0000-0000-000000000211",
+      "datasetIds": [
+        "00000000-0000-0000-0000-000000000311"
+      ],
+      "rls": false,
+      "personas": {}
+    },
+    "portfolio-financial": {
+      "kind": "interactive",
+      "workspaceId": "00000000-0000-0000-0000-000000000103",
+      "reportId": "00000000-0000-0000-0000-000000000212",
+      "datasetIds": [
+        "00000000-0000-0000-0000-000000000312"
+      ],
+      "rls": true,
+      "defaultPersona": "nsw",
+      "personas": {
+        "nsw": {
+          "username": "nsw.demo@example.com",
+          "roles": [
+            "NSW_User"
+          ]
+        },
+        "qld": {
+          "username": "qld.demo@example.com",
+          "roles": [
+            "QLD_User"
+          ]
+        },
+        "vic": {
+          "username": "vic.demo@example.com",
+          "roles": [
+            "VIC_User"
+          ]
+        }
+      }
+    },
+    "portfolio-cancellation": {
+      "kind": "interactive",
+      "workspaceId": "00000000-0000-0000-0000-000000000103",
+      "reportId": "00000000-0000-0000-0000-000000000213",
+      "datasetIds": [
+        "00000000-0000-0000-0000-000000000313"
+      ],
+      "rls": true,
+      "defaultPersona": "broker",
+      "personas": {
+        "broker": {
+          "username": "broker.demo@example.com",
+          "roles": [
+            "Broker"
+          ]
+        }
+      }
+    },
     "service-governance-interactive": {
       "kind": "interactive",
       "workspaceId": "00000000-0000-0000-0000-000000000101",
@@ -9,15 +67,6 @@
       ],
       "rls": false,
       "personas": {}
-    },
-    "service-governance-paginated": {
-      "kind": "paginated",
-      "workspaceId": "00000000-0000-0000-0000-000000000101",
-      "reportId": "00000000-0000-0000-0000-000000000202",
-      "datasetIds": [],
-      "rls": false,
-      "personas": {},
-      "exportEnabled": true
     },
     "insurance-employer": {
       "kind": "interactive",

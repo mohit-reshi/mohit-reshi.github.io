@@ -365,3 +365,6 @@ pre.shiki span[style*="#6A737D" i] { color: #8b949e !important; }
 /* tall screens (a narrow navigation rail, for example) are shown short, not at full height; the larger view has the detail */
 .shot--tall button { width: fit-content; max-width: 100%; }
 .shot--tall img { width: auto; max-width: 100%; max-height: 26rem; }
+
+/* the Live Lab page uses most of the screen so the embedded report can be large */
+.container--wide { width: min(100% - 2 * var(--gutter), 112rem); }

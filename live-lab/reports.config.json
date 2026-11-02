@@ -1,35 +1,224 @@
 {
   "reports": [
     {
+      "key": "portfolio-manufacturing",
+      "title": "Manufacturing Sales Analytics",
+      "group": "Portfolio reports",
+      "kind": "interactive",
+      "projectSlug": "manufacturing-sales-analytics",
+      "fallbackMedia": {
+        "poster": "/media/live-lab/portfolio-manufacturing.webp",
+        "caption": "Recorded view of the report."
+      },
+      "controls": {
+        "filter": {
+          "label": "Direct channel",
+          "table": "gold_sales_summary",
+          "column": "ChannelName",
+          "values": [
+            "Direct"
+          ]
+        },
+        "bookmarks": [
+          {
+            "name": "cc8afe8ecc3065da8531",
+            "label": "Year to date"
+          },
+          {
+            "name": "d960de043ec6b4b90dea",
+            "label": "Trailing 12 months"
+          },
+          {
+            "name": "858c561df3b9d404861d",
+            "label": "Top 5 products"
+          },
+          {
+            "name": "3a3d4d41140c2ed4305d",
+            "label": "All products"
+          }
+        ],
+        "tour": [
+          {
+            "label": "Start on the executive summary",
+            "action": "page",
+            "arg": "a870d27aeb3590ceec6e",
+            "delayMs": 1500
+          },
+          {
+            "label": "Look at channels",
+            "action": "page",
+            "arg": "3972913e02770dc4305a",
+            "delayMs": 1800
+          },
+          {
+            "label": "Focus on the direct channel",
+            "action": "filter",
+            "delayMs": 1800
+          },
+          {
+            "label": "Switch to year to date",
+            "action": "bookmark",
+            "arg": "cc8afe8ecc3065da8531",
+            "delayMs": 1800
+          },
+          {
+            "label": "Back to everything",
+            "action": "reset",
+            "delayMs": 1200
+          }
+        ]
+      }
+    },
+    {
+      "key": "portfolio-financial",
+      "title": "Financial Statement Suite",
+      "group": "Portfolio reports",
+      "kind": "interactive",
+      "projectSlug": "financial-statement-suite",
+      "personas": [
+        {
+          "key": "nsw",
+          "label": "New South Wales",
+          "description": "Sees only the rows of the New South Wales territory."
+        },
+        {
+          "key": "qld",
+          "label": "Queensland",
+          "description": "Sees only the rows of the Queensland territory."
+        },
+        {
+          "key": "vic",
+          "label": "Victoria",
+          "description": "Sees only the rows of the Victoria territory."
+        }
+      ],
+      "fallbackMedia": {
+        "poster": "/media/live-lab/portfolio-financial.webp",
+        "caption": "Recorded view of the report."
+      }
+    },
+    {
+      "key": "portfolio-cancellation",
+      "title": "Cancellation & Reinstatement Analytics",
+      "group": "Portfolio reports",
+      "kind": "interactive",
+      "projectSlug": "cancellation-reinstatement-analytics",
+      "personas": [
+        {
+          "key": "broker",
+          "label": "Broker",
+          "description": "Sees only the cases of one broker's own book."
+        }
+      ],
+      "fallbackMedia": {
+        "poster": "/media/live-lab/portfolio-cancellation.webp",
+        "caption": "Recorded view of the report."
+      },
+      "controls": {
+        "bookmarks": [
+          {
+            "name": "25bc7c3a4d7ce087b5e6",
+            "label": "Reset attrition snapshot"
+          },
+          {
+            "name": "a7d604ad42cdb30b820e",
+            "label": "Reset recovery snapshot"
+          },
+          {
+            "name": "77a74292e0c66ab17040",
+            "label": "Reset non-payment watch"
+          }
+        ],
+        "tour": [
+          {
+            "label": "Start on the attrition snapshot",
+            "action": "page",
+            "arg": "bf3fac3290c9237318c6",
+            "delayMs": 1500
+          },
+          {
+            "label": "Look at recovery",
+            "action": "page",
+            "arg": "9b13aa212a0580b80a25",
+            "delayMs": 1800
+          },
+          {
+            "label": "Check non-payment",
+            "action": "page",
+            "arg": "14e3f0fe9657bb4108ad",
+            "delayMs": 1800
+          },
+          {
+            "label": "Back to the start",
+            "action": "reset",
+            "delayMs": 1200
+          }
+        ]
+      }
+    },
+    {
       "key": "service-governance-interactive",
       "title": "Service Reliability Overview",
       "group": "Enterprise service governance",
       "kind": "interactive",
       "projectSlug": "service-reliability-overview",
-      "fallbackMedia": { "video": "/media/live-lab/service-governance-interactive.mp4", "poster": "/media/live-lab/service-governance-interactive.webp", "caption": "Recorded walkthrough of the live report." },
+      "fallbackMedia": {
+        "video": "/media/live-lab/service-governance-interactive.mp4",
+        "poster": "/media/live-lab/service-governance-interactive.webp",
+        "caption": "Recorded walkthrough of the live report."
+      },
       "controls": {
-        "filter": { "label": "Service line", "table": "Dim_Application", "column": "ServiceLine", "values": ["Claims Management"] },
-        "slicer": { "label": "Service line", "visualName": "hdrSlicerServiceLine", "table": "Dim_Application", "column": "ServiceLine", "values": ["Policy Administration"] },
+        "filter": {
+          "label": "Service line",
+          "table": "Dim_Application",
+          "column": "ServiceLine",
+          "values": [
+            "Claims Management"
+          ]
+        },
+        "slicer": {
+          "label": "Service line",
+          "visualName": "hdrSlicerServiceLine",
+          "table": "Dim_Application",
+          "column": "ServiceLine",
+          "values": [
+            "Policy Administration"
+          ]
+        },
         "bookmarks": [
-          { "name": "Bookmark045906160b5473a4c469", "label": "Tier 1 critical apps" },
-          { "name": "Bookmarke589392220856f078fc0", "label": "Reset view" }
+          {
+            "name": "Bookmark045906160b5473a4c469",
+            "label": "Tier 1 critical apps"
+          },
+          {
+            "name": "Bookmarke589392220856f078fc0",
+            "label": "Reset view"
+          }
         ],
         "tour": [
-          { "label": "Start from the overview", "action": "reset", "delayMs": 1200 },
-          { "label": "Focus on one service line", "action": "filter", "delayMs": 1800 },
-          { "label": "Jump to a saved view", "action": "bookmark", "arg": "Bookmark045906160b5473a4c469", "delayMs": 1800 },
-          { "label": "Back to everything", "action": "reset", "delayMs": 1200 }
+          {
+            "label": "Start from the overview",
+            "action": "reset",
+            "delayMs": 1200
+          },
+          {
+            "label": "Focus on one service line",
+            "action": "filter",
+            "delayMs": 1800
+          },
+          {
+            "label": "Jump to a saved view",
+            "action": "bookmark",
+            "arg": "Bookmark045906160b5473a4c469",
+            "delayMs": 1800
+          },
+          {
+            "label": "Back to everything",
+            "action": "reset",
+            "delayMs": 1200
+          }
         ]
       }
-    },
-    {
-      "key": "service-governance-paginated",
-      "title": "Control Compliance Register (paginated)",
-      "group": "Enterprise service governance",
-      "kind": "paginated",
-      "projectSlug": "control-compliance-register",
-      "exportEnabled": true,
-      "fallbackMedia": { "poster": "/media/live-lab/service-governance-paginated.webp", "caption": "Recorded walkthrough of the paginated report." }
     },
     {
       "key": "insurance-employer",
@@ -38,21 +227,56 @@
       "kind": "interactive",
       "projectSlug": "employer-claims-status",
       "personas": [
-        { "key": "employer", "label": "Employer", "description": "Sees only the claims of their own employer account." },
-        { "key": "member", "label": "Member", "description": "Sees only the rows tied to a single member account." },
-        { "key": "producer", "label": "Producer", "description": "Sees only the book of business of one producer." }
+        {
+          "key": "employer",
+          "label": "Employer",
+          "description": "Sees only the claims of their own employer account."
+        },
+        {
+          "key": "producer",
+          "label": "Producer",
+          "description": "Sees only the book of business of one producer."
+        }
       ],
-      "fallbackMedia": { "video": "/media/live-lab/insurance-employer.mp4", "poster": "/media/live-lab/insurance-employer.webp" },
+      "fallbackMedia": {
+        "video": "/media/live-lab/insurance-employer.mp4",
+        "poster": "/media/live-lab/insurance-employer.webp"
+      },
       "controls": {
-        "filter": { "label": "Denied claims", "table": "Fact_Claim", "column": "Status", "values": ["Denied"] },
+        "filter": {
+          "label": "Denied claims",
+          "table": "Fact_Claim",
+          "column": "Status",
+          "values": [
+            "Denied"
+          ]
+        },
         "bookmarks": [
-          { "name": "Bookmark3121653eeacf5f80371b", "label": "Denied claims only" },
-          { "name": "Bookmark0aaa77bdda474586f7a4", "label": "Reset view" }
+          {
+            "name": "Bookmark3121653eeacf5f80371b",
+            "label": "Denied claims only"
+          },
+          {
+            "name": "Bookmark0aaa77bdda474586f7a4",
+            "label": "Reset view"
+          }
         ],
         "tour": [
-          { "label": "Start with the full portal view", "action": "reset", "delayMs": 1200 },
-          { "label": "Filter to denied claims", "action": "filter", "delayMs": 1800 },
-          { "label": "Reset", "action": "reset", "delayMs": 1200 }
+          {
+            "label": "Start with the full portal view",
+            "action": "reset",
+            "delayMs": 1200
+          },
+          {
+            "label": "Filter to denied claims",
+            "action": "filter",
+            "delayMs": 1800
+          },
+          {
+            "label": "Reset",
+            "action": "reset",
+            "delayMs": 1200
+          }
         ]
       }
     },
@@ -63,16 +287,44 @@
       "kind": "interactive",
       "projectSlug": "member-claim-history",
       "personas": [
-        { "key": "member", "label": "Member", "description": "Sees only their own claims." },
-        { "key": "employer", "label": "Employer", "description": "Sees only the rows tied to one employer account." },
-        { "key": "producer", "label": "Producer", "description": "Sees only the book of business of one producer." }
+        {
+          "key": "member",
+          "label": "Member",
+          "description": "Sees only their own claims."
+        },
+        {
+          "key": "employer",
+          "label": "Employer",
+          "description": "Sees only the rows tied to one employer account."
+        },
+        {
+          "key": "producer",
+          "label": "Producer",
+          "description": "Sees only the book of business of one producer."
+        }
       ],
-      "fallbackMedia": { "video": "/media/live-lab/insurance-member.mp4", "poster": "/media/live-lab/insurance-member.webp" },
+      "fallbackMedia": {
+        "video": "/media/live-lab/insurance-member.mp4",
+        "poster": "/media/live-lab/insurance-member.webp"
+      },
       "controls": {
-        "filter": { "label": "Paid claims", "table": "Fact_Claim", "column": "Status", "values": ["Paid"] },
+        "filter": {
+          "label": "Paid claims",
+          "table": "Fact_Claim",
+          "column": "Status",
+          "values": [
+            "Paid"
+          ]
+        },
         "bookmarks": [
-          { "name": "Bookmarkfb62c169ce029f6fe1d1", "label": "Paid claims only" },
-          { "name": "Bookmark2f594c143fc320a6f52b", "label": "Reset view" }
+          {
+            "name": "Bookmarkfb62c169ce029f6fe1d1",
+            "label": "Paid claims only"
+          },
+          {
+            "name": "Bookmark2f594c143fc320a6f52b",
+            "label": "Reset view"
+          }
         ]
       }
     },
@@ -83,16 +335,39 @@
       "kind": "interactive",
       "projectSlug": "producer-book-of-business",
       "personas": [
-        { "key": "producer", "label": "Producer", "description": "Sees only the policies of their own clients." },
-        { "key": "employer", "label": "Employer", "description": "Sees only the rows tied to one employer account." },
-        { "key": "member", "label": "Member", "description": "Sees only the rows tied to a single member account." }
+        {
+          "key": "producer",
+          "label": "Producer",
+          "description": "Sees only the policies of their own clients."
+        },
+        {
+          "key": "employer",
+          "label": "Employer",
+          "description": "Sees only the rows tied to one employer account."
+        }
       ],
-      "fallbackMedia": { "video": "/media/live-lab/insurance-producer.mp4", "poster": "/media/live-lab/insurance-producer.webp" },
+      "fallbackMedia": {
+        "video": "/media/live-lab/insurance-producer.mp4",
+        "poster": "/media/live-lab/insurance-producer.webp"
+      },
       "controls": {
-        "filter": { "label": "Active policies", "table": "Dim_Policy", "column": "Status", "values": ["Active"] },
+        "filter": {
+          "label": "Active policies",
+          "table": "Dim_Policy",
+          "column": "Status",
+          "values": [
+            "Active"
+          ]
+        },
         "bookmarks": [
-          { "name": "Bookmark70f93924b54fb66a3076", "label": "Active policies only" },
-          { "name": "Bookmark44b4e354d418a5d1166a", "label": "Reset view" }
+          {
+            "name": "Bookmark70f93924b54fb66a3076",
+            "label": "Active policies only"
+          },
+          {
+            "name": "Bookmark44b4e354d418a5d1166a",
+            "label": "Reset view"
+          }
         ]
       }
     }

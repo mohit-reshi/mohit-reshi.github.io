@@ -19,11 +19,15 @@ const btn = (label: string) => [...host.querySelectorAll('button')].find((b) => 
 const logText = () => host.querySelector('.ll-log')!.textContent!;
 
 describe('Live Lab (mock mode)', () => {
-  it('renders grouped report selector, embeds the first report and logs loaded/rendered', async () => {
+  it('renders report buttons grouped by area, embeds the first report and logs loaded/rendered', async () => {
     const h = mount(); await settle();
-    const groups = [...host.querySelectorAll('optgroup')].map((g) => g.getAttribute('label'));
-    expect(groups).toEqual(['Enterprise service governance', 'Group insurance portal analytics']);
-    expect(host.querySelectorAll('option').length).toBe(5);
+    const groups = [...host.querySelectorAll('.ll-rgroup')].map((g) => g.getAttribute('aria-label'));
+    expect(groups).toEqual(['Portfolio reports', 'Enterprise service governance', 'Group insurance portal analytics']);
+    expect(host.querySelectorAll('button[data-report]').length).toBe(7);
+    expect(host.querySelector('select')).toBeNull();
+    expect(host.querySelector('button[data-report=portfolio-manufacturing]')!.getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelectorAll('button[data-report][aria-pressed=true]').length).toBe(1);
+    expect(config.reports.some((r: any) => /compliance/i.test(r.title))).toBe(false);
     expect(host.querySelector('.ll-pill')!.textContent).toBe('Live');
     expect(host.querySelector('.ll-embed svg')).toBeTruthy();
     expect(logText()).toMatch(/loaded/); expect(logText()).toMatch(/rendered/);
@@ -33,8 +37,9 @@ describe('Live Lab (mock mode)', () => {
 
   it('renders only one embed at a time', async () => {
     mount(); await settle();
-    const sel = host.querySelector('select') as HTMLSelectElement;
-    sel.value = 'insurance-member'; sel.dispatchEvent(new Event('change')); await settle();
+    (host.querySelector('button[data-report=insurance-member]') as HTMLButtonElement).click(); await settle();
+    expect(host.querySelector('button[data-report=insurance-member]')!.getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('button[data-report=portfolio-manufacturing]')!.getAttribute('aria-pressed')).toBe('false');
     expect(host.querySelectorAll('.ll-embed svg').length).toBe(1);
     expect(host.querySelector('.ll-embed svg')!.getAttribute('aria-label')).toContain('Member Portal');
   });
@@ -44,21 +49,21 @@ describe('Live Lab (mock mode)', () => {
     const orig = createBroker('mock:', config.reports as any);
     mount(); await settle();
     expect(host.querySelector('.ll-personas')!.hasAttribute('hidden')).toBe(true); // first report has no personas
-    const sel = host.querySelector('select') as HTMLSelectElement;
-    sel.value = 'insurance-employer'; sel.dispatchEvent(new Event('change')); await settle();
+    (host.querySelector('button[data-report=insurance-employer]') as HTMLButtonElement).click(); await settle();
     expect(host.querySelector('.ll-personas')!.hasAttribute('hidden')).toBe(false);
     expect(host.querySelector('.ll-rls')!.textContent).toMatch(/effective identity/);
     expect(host.querySelector('.ll-embed svg')!.getAttribute('aria-label')).toContain('Employer Portal');
-    const member = host.querySelector('input[value=member]') as HTMLInputElement;
-    member.checked = true; member.dispatchEvent(new Event('change')); await settle();
+    expect(host.querySelector('input[value=member]')).toBeNull(); // the member view is not offered as an alternate here
+    const producer = host.querySelector('input[value=producer]') as HTMLInputElement;
+    producer.checked = true; producer.dispatchEvent(new Event('change')); await settle();
     expect(logText()).toMatch(/persona/);
-    expect(host.querySelector('.ll-embed svg text:nth-of-type(2)')!.textContent).toContain('as "member"');
-    expect(host.querySelector('.ll-rls')!.textContent).toMatch(/Now applied: "Member"/);
+    expect(host.querySelector('.ll-embed svg text:nth-of-type(2)')!.textContent).toContain('as "producer"');
+    expect(host.querySelector('.ll-rls')!.textContent).toMatch(/Now applied: "Producer"/);
     void orig; void tokenCalls;
   });
 
   it('controls drive the report and highlight the matching code lines', async () => {
-    mount(); await settle();
+    mount({ initialReport: 'service-governance-interactive' }); await settle();
     btn('Filter:').click(); await settle();
     expect(host.querySelectorAll('.ll-embed svg g[role=button]').length).toBe(1);
     expect(logText()).toMatch(/filter/);
@@ -105,11 +110,24 @@ describe('Live Lab (mock mode)', () => {
   });
 
   it('paginated reports: no page nav or filter tools, PDF export offered', async () => {
-    mount({ initialReport: 'service-governance-paginated' }); await settle();
+    const paginated = { reports: [{ key: 'paginated-test', title: 'Paginated test', group: 'Test', kind: 'paginated', exportEnabled: true }] };
+    mount({ config: paginated, initialReport: 'paginated-test' }); await settle();
     expect(host.querySelectorAll('.ll-nav button').length).toBe(0);
     expect(btn('Filter:')).toBeUndefined();
     expect(btn('Export PDF')).toBeTruthy();
     expect(host.querySelector('.ll-tools')!.textContent).toMatch(/Paginated report/);
+  });
+
+  it('portfolio reports: member view hidden on employer and producer, row-level personas on financial and cancellation', async () => {
+    const by = (k: string) => (config.reports as any[]).find((r) => r.key === k);
+    expect(by('insurance-employer').personas.map((x: any) => x.key)).not.toContain('member');
+    expect(by('insurance-producer').personas.map((x: any) => x.key)).not.toContain('member');
+    expect(by('insurance-member').personas[0].key).toBe('member'); // the member portal's own default
+    expect(by('portfolio-financial').personas.map((x: any) => x.key)).toEqual(['nsw', 'qld', 'vic']);
+    expect(by('portfolio-cancellation').personas.map((x: any) => x.key)).toEqual(['broker']);
+    mount({ initialReport: 'portfolio-financial' }); await settle();
+    expect(host.querySelectorAll('.ll-personas input').length).toBe(3);
+    expect(host.querySelector('.ll-embed svg')!.getAttribute('aria-label')).toContain('Financial Statement Suite');
   });
 
   it('code tab lists the extracted snippets and copy works without clipboard permission', async () => {
@@ -123,7 +141,7 @@ describe('Live Lab (mock mode)', () => {
 
 describe('fallback and token lifecycle', () => {
   it('health failure: every report shows recorded media with the banner', async () => {
-    mount({ brokerUrl: 'https://broker.example', fetchImpl: async () => { throw new Error('down'); }, healthTimeoutMs: 50 }); await settle();
+    mount({ initialReport: 'service-governance-interactive', brokerUrl: 'https://broker.example', fetchImpl: async () => { throw new Error('down'); }, healthTimeoutMs: 50 }); await settle();
     expect(host.querySelector('.ll-pill')!.textContent).toBe('Recorded');
     expect(host.querySelector('.ll-banner')!.textContent).toBe('Live capacity has ended - recorded walkthrough');
     expect(host.querySelector('.ll-fallback video')).toBeTruthy();
@@ -172,8 +190,7 @@ describe('fallback and token lifecycle', () => {
     expect(host.querySelector('.ll-fallback')!.hasAttribute('hidden')).toBe(false);
     // other reports are unaffected
     fail = 0;
-    const sel = host.querySelector('select') as HTMLSelectElement;
-    sel.value = 'insurance-employer'; sel.dispatchEvent(new Event('change'));
+    (host.querySelector('button[data-report=insurance-employer]') as HTMLButtonElement).click();
     await vi.advanceTimersByTimeAsync(10); await micro();
     expect(host.querySelector('.ll-banner')!.hasAttribute('hidden')).toBe(true);
     expect(host.querySelector('.ll-embed svg')).toBeTruthy();
@@ -181,7 +198,7 @@ describe('fallback and token lifecycle', () => {
 
   it('tokenExpired event triggers a refresh; an embed error degrades that report to recorded media', async () => {
     let adapter!: MockAdapter;
-    mount({ adapterFactory: async () => (adapter = new MockAdapter()) }); await settle();
+    mount({ initialReport: 'service-governance-interactive', adapterFactory: async () => (adapter = new MockAdapter()) }); await settle();
     adapter.simulateTokenExpired(); await settle();
     expect(adapter.tokenSetCount).toBe(1);
     adapter.simulateError(); await settle();
@@ -191,7 +208,7 @@ describe('fallback and token lifecycle', () => {
 
   it('guided tour runs its steps and can be interrupted by changing report', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
-    mount(); await vi.advanceTimersByTimeAsync(10); await micro();
+    mount({ initialReport: 'service-governance-interactive' }); await vi.advanceTimersByTimeAsync(10); await micro();
     btn('Guided tour').click();
     await vi.advanceTimersByTimeAsync(300); await micro();
     expect(logText()).toMatch(/tour start/);
@@ -202,7 +219,7 @@ describe('fallback and token lifecycle', () => {
 
   it('guided tour can be stopped with the Stop tour button', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
-    mount(); await vi.advanceTimersByTimeAsync(10); await micro();
+    mount({ initialReport: 'service-governance-interactive' }); await vi.advanceTimersByTimeAsync(10); await micro();
     btn('Guided tour').click();
     await vi.advanceTimersByTimeAsync(300); await micro();
     const stop = btn('Stop tour');

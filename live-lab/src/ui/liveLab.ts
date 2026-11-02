@@ -64,9 +64,9 @@ export class LiveLab implements LiveLabHandle {
     const e = this.el;
     e.pill = h('span', { class: 'll-pill', 'data-state': 'checking' }, 'checking…');
     e.banner = h('div', { class: 'll-banner', role: 'status', hidden: true });
-    e.select = h('select', { id: 'll-report', onchange: (ev: Event) => void this.selectReport((ev.target as HTMLSelectElement).value) });
+    e.reports = h('div', { class: 'll-reports', id: 'll-report', role: 'group', 'aria-label': 'Report' });
     e.personas = h('fieldset', { class: 'll-personas', hidden: true });
-    e.pick = h('div', { class: 'll-pick' }, h('label', { for: 'll-report' }, 'Report', e.select), e.personas);
+    e.pick = h('div', { class: 'll-pick' }, e.reports, e.personas);
     e.nav = h('div', { class: 'll-nav', role: 'toolbar', 'aria-label': 'Report pages' });
     e.tools = h('div', { class: 'll-tools', role: 'toolbar', 'aria-label': 'Report controls' });
     e.embed = h('div', { class: 'll-embed' });
@@ -95,10 +95,14 @@ export class LiveLab implements LiveLabHandle {
     } }, e.tabLive, e.tabCode);
     this.root.append(h('div', { class: 'll-head' }, h('h2', {}, 'Live Lab'), e.pill), e.banner, e.pick, e.tabs, e.livePanel, e.codePanel);
     this.buildSnippetList();
-    // report select
+    // report buttons, one row per group
     const groups = new Map<string, ReportEntry[]>();
     for (const r of this.opts.config.reports) groups.set(r.group, [...(groups.get(r.group) ?? []), r]);
-    for (const [g, rs] of groups) e.select.append(h('optgroup', { label: g }, ...rs.map((r) => h('option', { value: r.key }, r.title))));
+    for (const [g, rs] of groups) {
+      e.reports.append(h('div', { class: 'll-rgroup', role: 'group', 'aria-label': g },
+        h('span', { class: 'll-rlabel' }, g),
+        h('div', { class: 'll-rbtns' }, ...rs.map((r) => h('button', { type: 'button', class: 'll-rbtn', 'data-report': r.key, 'aria-pressed': 'false', onclick: () => void this.selectReport(r.key) }, r.title)))));
+    }
   }
 
   private showTab(which: 'live' | 'code') {
@@ -116,7 +120,7 @@ export class LiveLab implements LiveLabHandle {
     this.mode = health.ok ? 'live' : 'offline';
     this.setPill(this.mode === 'live' ? 'live' : 'recorded', this.mode === 'live' ? 'Live' : 'Recorded');
     const first = this.opts.config.reports.find((r) => r.key === this.opts.initialReport) ?? this.opts.config.reports[0];
-    if (first) { (this.el.select as HTMLSelectElement).value = first.key; await this.selectReport(first.key); }
+    if (first) await this.selectReport(first.key);
   }
 
   private setPill(state: string, text: string) { this.el.pill.dataset.state = state; this.el.pill.textContent = text; }
@@ -127,6 +131,7 @@ export class LiveLab implements LiveLabHandle {
     if (!entry) return;
     this.teardownSession();
     this.tourAbort = true;
+    this.el.reports.querySelectorAll('button[data-report]').forEach((b) => b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.report === key)));
     const p = persona !== undefined ? persona : entry.personas?.[0]?.key ?? null;
     this.s = { entry, persona: p, adapter: null, token: null, refreshTimer: null, pages: [], activePage: null, seq: ++this.seq };
     this.renderPersonas(entry, p);
